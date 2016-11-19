@@ -2,7 +2,7 @@
 
 
 # loading the input data
-load("BcellNet/data/control.RData")
+load("data/control.RData")
 
 
 # positive and negative patient data are included in the data.frame control.data
@@ -22,7 +22,7 @@ table(control.data$VJ.segment, control.data$patient)
 
 
 # reading first BCR sequence
-control.data$seqs[1]
+control.data$sequence[1]
 
 
 
