@@ -1,5 +1,5 @@
 # Some background information about the data to get you going...
-
+source("DistanceMetric.R")
 
 # loading the input data
 load("data/control.RData")
@@ -23,6 +23,16 @@ table(control.data$VJ.segment, control.data$patient)
 
 # reading first BCR sequence
 control.data$sequence[1]
+
+
+
+# calculate distances from data
+bcr1 <- control.data$sequence[1]
+bcr2 <- control.data$sequence[2]
+dist <- distanceb2b(bcr1, bcr2)
+
+
+
 
 
 
