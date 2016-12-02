@@ -1,10 +1,10 @@
 # Building the GUI and/or provide methods for it
-# package: eWidget
+# package: gWidget
 
 # Some example code for a simple gui
 
 library(gWidgets)
-library(gWidgetsGtk2) #gWidgetsrJava , gWidgetsGtk2, gWidgetstcltk
+library(gWidgetstcltk) #gWidgetsrJava , gWidgetsGtk2, gWidgetstcltk
 
 win <- gwindow("Tab delimited file upload example")
 
