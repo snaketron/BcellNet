@@ -9,3 +9,6 @@ r_packages:
   - gWidgetstcltk
   - stringdist
   - igraph
+
+notifications:
+  email: false
