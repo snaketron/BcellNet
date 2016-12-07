@@ -1,0 +1,11 @@
+language: r
+r:
+  - release
+cache: packages
+latex: false
+pandoc: false
+r_packages:
+  - gWidgets
+  - gWidgetstcltk
+  - stringdist
+  - igraph
