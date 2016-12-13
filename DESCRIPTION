@@ -7,5 +7,12 @@ Description: A bioinformatic tool for biologists to visualize B-Cell correlation
 License: GPL (>= 2)
 Url: https://github.com/snaketron/BcellNet
 BugReports: https://github.com/snaketron/BcellNet/issues
-Imports: igraph, stringdist, gWidgetstcltk, gWidgets
-Suggests: testthat, covr
+Imports: 
+  igraph,
+  stringdist,
+  gWidgetstcltk,
+  gWidgets
+Suggests:
+  testthat,
+  covr
+RoxygenNote: 5.0.1
