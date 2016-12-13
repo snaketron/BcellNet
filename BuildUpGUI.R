@@ -1,10 +1,32 @@
 # Building the GUI and/or provide methods for it
-# package: gWidget
+# package: gWidget, RGtk2,gWidgetsGtk2
+
 
 # Some example code for a simple gui
 
 library(gWidgets)
-library(gWidgetstcltk) #gWidgetsrJava , gWidgetsGtk2, gWidgetstcltk
+library(gWidgetsGtk2) #gWidgetsrJava , gWidgetsGtk2, gWidgetstcltk
+require("RGtk2")
+
+
+# GUI Behnaz 
+win2<-gtkWindow("hallo")
+frame<-gtkFrameNew("test")
+win2$add(frame)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 win <- gwindow("Tab delimited file upload example")
 
