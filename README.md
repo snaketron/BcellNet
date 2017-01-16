@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/snaketron/BcellNet.svg?branch=build-system)](https://travis-ci.org/snaketron/BcellNet)
+[![Build Status Travis](https://travis-ci.org/snaketron/BcellNet.svg?branch=build-system)](https://travis-ci.org/snaketron/BcellNet)
+[![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/1uqh4xdpgeicpahp?svg=true)](https://ci.appveyor.com/project/thatsIch/bcellnet)
 
 # BcellNet
 Tool for network-based analysis of B-cell clonal expansion
