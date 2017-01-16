@@ -2,12 +2,17 @@ Package: BcellNet
 Type: Package
 Title: B-Cell-Network Visualization Tool Package
 Version: 0.0.1
+Authors@R: as.person(c(
+  "Simo Kitanovski <simo.kitanovski@uni-due.de> [cre, aut]",
+  "Behnaz Spieker <behnaz.shokr-khodaie@stud.uni-due.de> [aut]",
+  "Chistoph Waterkamp <christoph.waterkamp@stud.uni-duisburg-essen.de> [aut]",
+  "Minh Do <minh.do@mail.de> [aut]"))
 Date: 2016-12-07
 Description: A bioinformatic tool for biologists to visualize B-Cell correlation
 License: GPL (>= 2)
 Url: https://github.com/snaketron/BcellNet
 BugReports: https://github.com/snaketron/BcellNet/issues
-Depends: R (>= 3.1.0)
+Depends: R (>= 3.3.0)
 Imports:
   igraph,
   stringdist,
