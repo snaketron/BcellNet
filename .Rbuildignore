@@ -1,0 +1,14 @@
+## Ignore R related files
+^.*\.Rproj$
+^\.Rproj\.user$
+
+## Avoid git(hub) related files
+\.git/*
+\.gitignore
+README.md
+
+## Ignore CI related files
+^\.travis\.yml$
+
+## Ignore test data
+^data$
