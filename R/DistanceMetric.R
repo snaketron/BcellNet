@@ -3,7 +3,8 @@
 library(stringdist)
 
 
-# calculate distance between two bcrs
+#' calculate distance between two bcrs
+#' @export 
 distanceb2b <- function(bcr1, bcr2){
   
   # using the Damerau-Levenshtein distance for two
