@@ -1,24 +1,35 @@
 language: r
 r:
   - release
-sudo: false
+sudo: required
 cache: packages
+
+env:
+ global:
+   - CRAN: http://cran.rstudio.com
+
 latex: false
 pandoc: false
 r_packages:
-  - gWidgets
-  - gWidgetstcltk
+#  - gWidgets
+#  - gWidgetstcltk
   - stringdist
-  - igraph
+#  - igraph
+  # - covr
 
 # r packages directly installed from github
-r_github_pages:
-  - jimhester/covr
+#r_github_pages:
+#  - jimhester/covr
+  
+before_install:
+  - sudo apt-get install tk
 
-after_success:
-  - Rscript -e 'covr::codecov()'
-  # - Rscript -e 'library("covr");codecov()'
-  # - 
+#after_success:
+  # - Rscript -e 'covr::codecov()'
+  # - Rscript -e 'library(covr); codecov()'
+  # or coveralls
+  # - Rscript -e 'covr::coverall()'
+  # - Rscript -e 'library(covr); coveralls()'
 
 notifications:
   email: false

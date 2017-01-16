@@ -14,11 +14,8 @@ Url: https://github.com/snaketron/BcellNet
 BugReports: https://github.com/snaketron/BcellNet/issues
 Depends: R (>= 3.3.0)
 Imports:
-  igraph,
-  stringdist,
-  gWidgetstcltk,
-  gWidgets
+  stringdist
 Suggests:
-  testthat,
-  covr
+  devtools,
+  testthat
 RoxygenNote: 5.0.1

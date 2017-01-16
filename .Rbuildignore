@@ -2,6 +2,11 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 
+## Avoid git(hub) related files
+\.git/*
+\.gitignore
+README.md
+
 ## Ignore CI related files
 ^\.travis\.yml$
 

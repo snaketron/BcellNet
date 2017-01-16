@@ -23,7 +23,8 @@ library(stringdist)
 #' @aliases DM
 #' 
 #' @keywords distance metric levenshtein damerau bcr
-#' 
+#'
+#' @import stringdist
 #' @export 
 distanceb2b <- function(bcr1, bcr2){
   

@@ -8,7 +8,7 @@ library(testthat)
 
 # use this for local package
 # load_all(".")
-# library(BcellNet)
+library(BcellNet)
 # test_package("BcellNet")
 test_check("BcellNet")
 
