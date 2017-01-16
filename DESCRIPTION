@@ -8,8 +8,8 @@ Authors@R: as.person(c(
   "Chistoph Waterkamp <christoph.waterkamp@stud.uni-duisburg-essen.de> [aut]",
   "Minh Do <minh.do@mail.de> [aut]"))
 Date: 2016-12-07
-Description: A bioinformatic tool for biologists to visualize B-Cell correlation
-License: MIT
+Description: A bioinformatic tool for biologists to visualize B-Cell correlation.
+License: MIT + file LICENSE
 Url: https://github.com/snaketron/BcellNet
 BugReports: https://github.com/snaketron/BcellNet/issues
 Depends: R (>= 3.3.0)

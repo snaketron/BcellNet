@@ -7,13 +7,14 @@ library(testthat)
 # or test_package("BcellNet")
 
 # use this for local package
-load_all(".")
-test_package("BcellNet")
-
+# load_all(".")
+# library(BcellNet)
+# test_package("BcellNet")
+test_check("BcellNet")
 
 # use this to run a single test
 # you can also use source(".")
-# source("DistanceMetric.R")
+# source("R/DistanceMetric.R")
 # source("tests/testthat/test_distance_metric.R")
 
 # the first argument is the directory to the tests

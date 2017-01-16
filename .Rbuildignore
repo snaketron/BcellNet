@@ -1,3 +1,9 @@
+## Ignore R related files
 ^.*\.Rproj$
 ^\.Rproj\.user$
+
+## Ignore CI related files
 ^\.travis\.yml$
+
+## Ignore test data
+^data$
