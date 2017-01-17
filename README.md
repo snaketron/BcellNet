@@ -11,6 +11,7 @@ Tool for network-based analysis of B-cell clonal expansion
 3. Create a tool for network-based analysis of clonal expansion
 
 ![layout-shaded-or8](https://cloud.githubusercontent.com/assets/2210496/22018334/9deab5b2-dcae-11e6-8cc0-c37164d598c0.png)
+
 **Example Output**
 
 # At the end of the project (to be announced, but somewhere in February) you would need to:
