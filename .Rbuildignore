@@ -9,6 +9,7 @@ README.md
 
 ## Ignore CI related files
 ^\.travis\.yml$
+^appveyor\.yml$
 
 ## Ignore test data
 ^data$
