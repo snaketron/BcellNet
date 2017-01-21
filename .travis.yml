@@ -1,6 +1,5 @@
 language: r
-r:
-  - release
+r: release
 sudo: required
 cache: packages
 
@@ -14,22 +13,20 @@ r_packages:
 #  - gWidgets
 #  - gWidgetstcltk
   - stringdist
-#  - igraph
+  - igraph
   # - covr
 
 # r packages directly installed from github
-#r_github_pages:
-#  - jimhester/covr
+r_github_pages:
+  - jimhester/covr
   
-before_install:
-  - sudo apt-get install tk
+# before_install:
+#  - sudo apt-get install tk
 
-#after_success:
-  # - Rscript -e 'covr::codecov()'
-  # - Rscript -e 'library(covr); codecov()'
+after_success:
+  - Rscript -e 'covr::codecov()'
   # or coveralls
-  # - Rscript -e 'covr::coverall()'
-  # - Rscript -e 'library(covr); coveralls()'
+  - Rscript -e 'covr::coveralls()'
 
 notifications:
   email: false

@@ -1,6 +1,10 @@
 [![Build Status Travis](https://travis-ci.org/snaketron/BcellNet.svg?branch=build-system)](https://travis-ci.org/snaketron/BcellNet)
 [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/1uqh4xdpgeicpahp?svg=true)](https://ci.appveyor.com/project/thatsIch/bcellnet)
 
+[![Coverage Status](https://coveralls.io/repos/github/snaketron/BcellNet/badge.svg)](https://coveralls.io/github/snaketron/BcellNet)
+[![codecov](https://codecov.io/gh/snaketron/BcellNet/branch/master/graph/badge.svg)](https://codecov.io/gh/snaketron/BcellNet)
+
+
 # BcellNet
 Tool for network-based analysis of B-cell clonal expansion
 

@@ -19,5 +19,6 @@ Imports:
   graphics
 Suggests:
   devtools,
-  testthat
+  testthat,
+  covr
 RoxygenNote: 5.0.1
