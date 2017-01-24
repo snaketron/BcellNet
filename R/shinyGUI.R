@@ -1,5 +1,5 @@
 library(shiny)
-#UI 
+#UI
 ui <- fluidPage(
  # h1("test"),
  # p(style = "font-family:Times New Roman","See other apps in the"),
