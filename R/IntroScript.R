@@ -82,14 +82,12 @@ ecount(graph)
 # simple plot (not recommended)
 # plot(graph)
 
+
+#convert to undirected graph
 graph <- as.undirected(graph)
 
 # plot graph
-plot_graph(weighted_graph = graph, edge_threshold=6, community_threshold=1)
+plot_graph(weighted_graph = graph, edge_threshold=6, community_threshold=2)
 
 
 
-# some interesting packages:
-# - network analysis => igraph
-# - string distance computation stringdist
-# - ....
