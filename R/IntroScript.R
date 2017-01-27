@@ -1,6 +1,7 @@
 # Some background information about the data to get you going...
-source("DistanceMetric.R")
+source("R/DistanceMetric.R")
 library(igraph)
+#library(igraphdata)
 
 # loading the input data
 load("data/control.RData")
@@ -34,19 +35,59 @@ bcr3 <- control.data$sequence[2]
 dist <- distanceb2b(bcr1, bcr2)
 
 
+
 subData <- control.data$sequence[1:100]
 arrayBcr1 <- subData
 arrayBcr2 <- subData
 
 
 matrix <- distanceArrayOfBcr(arrayBcr1, arrayBcr2)
-matrix
 
 
-graph <- graph.empty(n=3, directed = FALSE)
 
-V(graph)
-E(graph, P=NULL, path=NULL, directed=FALSE)
+
+graph <- graph.empty(n=100, directed = FALSE)
+graph <- graph.empty()
+
+
+i <- 1
+#fill graph
+#add bcrs as verticies 
+for(element in arrayBcr1){
+  
+  graph <- graph + vertex(name = i) #name = element
+  i <- i+1
+}
+
+i <- 1
+
+
+#and connect them with their distance
+for(bcr1 in arrayBcr1){
+  j <- 1
+  for(bcr2 in arrayBcr2){ 
+    
+    weight <- matrix[i,j]
+    if(weight > 5){
+      graph <- graph + edge(i,j, weight = matrix[i,j])
+    }
+    
+    j <- j+1
+  }
+  i <- i+1
+}
+
+
+vcount(graph)
+ecount(graph)
+
+
+plot(graph)
+
+
+
+
+
 
 
 # some interesting packages:
