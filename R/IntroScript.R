@@ -1,5 +1,6 @@
 # Some background information about the data to get you going...
 source("R/DistanceMetric.R")
+source("R/PlotBCR.R")
 library(igraph)
 #library(igraphdata)
 
@@ -24,33 +25,27 @@ table(control.data$VJ.segment, control.data$patient)
 
 
 # reading first BCR sequence
-control.data$sequence[1]
+# control.data$sequence[1]
 
 
 
-# calculate distances from data
-bcr1 <- control.data$sequence[1]
-bcr2 <- control.data$sequence[10000]
-bcr3 <- control.data$sequence[2]
-dist <- distanceb2b(bcr1, bcr2)
-
-
-
+# create subdata 
 subData <- control.data$sequence[1:100]
 arrayBcr1 <- subData
 arrayBcr2 <- subData
 
-
+# calculate distance between all entries in subData
 matrix <- distanceArrayOfBcr(arrayBcr1, arrayBcr2)
 
 
 
-
-graph <- graph.empty(n=100, directed = FALSE)
+#graph <- graph.empty(n=100, directed = FALSE)
+# create an empty graph
 graph <- graph.empty()
 
 
 i <- 1
+
 #fill graph
 #add bcrs as verticies 
 for(element in arrayBcr1){
@@ -62,7 +57,7 @@ for(element in arrayBcr1){
 i <- 1
 
 
-#and connect them with their distance
+# Connect them with their distance (add edges) 
 for(bcr1 in arrayBcr1){
   j <- 1
   for(bcr2 in arrayBcr2){ 
@@ -78,15 +73,19 @@ for(bcr1 in arrayBcr1){
 }
 
 
+#print number of vertices
 vcount(graph)
+#print number of edges
 ecount(graph)
 
 
-plot(graph)
+# simple plot (not recommended)
+# plot(graph)
 
+graph <- as.undirected(graph)
 
-
-
+# plot graph
+plot_graph(weighted_graph = graph, edge_threshold=6, community_threshold=1)
 
 
 
