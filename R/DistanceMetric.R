@@ -26,6 +26,7 @@ library(stringdist)
 #'
 #' @import stringdist
 #' @export 
+
 # calculate distance between two bcrs
 distanceb2b <- function(bcr1, bcr2){
   
@@ -39,9 +40,9 @@ distanceb2b <- function(bcr1, bcr2){
 # bcr1 and bcr2 should be of same length
 distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2){
   
-  stringdistmatrix()
+  #stringdistmatrix()
   
-  matrix <- matrix(, nrow = length(arrayBcr1), ncol = length(arrayBcr2))
+  matrix <- matrix(nrow = length(arrayBcr1), ncol = length(arrayBcr2))
   
   for(i in 1:length(arrayBcr1)){
     for(j in 1:i){
