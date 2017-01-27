@@ -50,7 +50,7 @@ i <- 1
 #add bcrs as verticies 
 for(element in arrayBcr1){
   
-  graph <- graph + vertex(name = i) #name = element
+  graph <- graph + vertex(name = element) #name = element
   i <- i+1
 }
 
@@ -64,7 +64,7 @@ for(bcr1 in arrayBcr1){
     
     weight <- matrix[i,j]
     if(weight > 5){
-      graph <- graph + edge(i,j, weight = matrix[i,j])
+      graph <- graph + edge(bcr1,bcr2, weight = matrix[i,j])
     }
     
     j <- j+1
