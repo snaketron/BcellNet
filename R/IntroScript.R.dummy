@@ -46,3 +46,4 @@ E(graph, P=NULL, path=NULL, directed=FALSE)
 # - network analysis => igraph
 # - string distance computation stringdist
 # - ....
+
