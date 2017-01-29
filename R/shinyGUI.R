@@ -19,19 +19,19 @@ ui <- fluidPage(
 sidebarLayout(
   sidebarPanel (
   selectInput(inputId = "combo1",label = "",
-              list(`East Coast` = c("Select B-cell subset", "NJ", "CT"),`West Coast` = c("WA", "OR", "CA")),
+              list(`A` = c("Select B-cell subset", "a", "b"),`AB` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
   
   selectInput(inputId = "combo1",label = "",
-              list(`East Coast` = c("Select 1st patient", "NJ", "CT"),`West Coast` = c("WA", "OR", "CA")),
+              list(`B` = c("Select 1st patient", "a", "b"),`BC` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
   
   selectInput(inputId = "combo1",label = "",
-              list(`East Coast` = c("Select 2nd patient", "NJ", "CT"),`West Coast` = c("WA", "OR", "CA")),
+              list(`C` = c("Select 2nd patient", "a", "b"),`CD` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
   
   selectInput(inputId = "combo1",label = "",
-              list(`East Coast` = c("Select VH-JH segment", "NJ", "CT"),`West Coast` = c("WA", "OR", "CA")),
+              list(`D` = c("Select VH-JH segment", "a", "b"),`DE` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
 
  tags$hr(),
