@@ -1,4 +1,4 @@
-[![Build Status Travis](https://travis-ci.org/snaketron/BcellNet.svg?branch=build-system)](https://travis-ci.org/snaketron/BcellNet)
+[![Build Status Travis](https://travis-ci.org/snaketron/BcellNet.svg?branch=master)](https://travis-ci.org/snaketron/BcellNet)
 [![Build Status AppVeyor](https://ci.appveyor.com/api/projects/status/1uqh4xdpgeicpahp?svg=true)](https://ci.appveyor.com/project/thatsIch/bcellnet)
 
 [![Coverage Status](https://coveralls.io/repos/github/snaketron/BcellNet/badge.svg)](https://coveralls.io/github/snaketron/BcellNet)
