@@ -17,7 +17,7 @@ Imports:
   stringdist,
   RGtk2,
   cairoDevice,
-  shiny
+  shiny,
   igraph,
   graphics
 Suggests:
