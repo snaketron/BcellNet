@@ -12,13 +12,16 @@ Description: A bioinformatic tool for biologists to visualize B-Cell correlation
 License: MIT + file LICENSE
 Url: https://github.com/snaketron/BcellNet
 BugReports: https://github.com/snaketron/BcellNet/issues
-Depends: R (>= 3.3.0)
+Depends: R (>= 3.3.2)
 Imports:
   stringdist,
   RGtk2,
   cairoDevice,
   shiny
+  igraph,
+  graphics
 Suggests:
   devtools,
-  testthat
+  testthat,
+  covr
 RoxygenNote: 5.0.1
