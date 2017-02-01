@@ -17,7 +17,8 @@ Imports:
   stringdist,
   shiny,
   igraph,
-  graphics
+  graphics,
+  visNetwork
 Suggests:
   devtools,
   testthat,

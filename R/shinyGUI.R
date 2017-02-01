@@ -1,7 +1,5 @@
 library(shiny)
-library(igraphdata)
 
-data("karate")
 #UI
 ui <- fluidPage(
  # h1("test"),
@@ -106,9 +104,10 @@ sidebarLayout(
 server <- function(input,output){
   
   # renderPlot is a plot
-  output$firstPatient <- renderPlot({
+  output$firstPatient <- renderVisNetwork({
     title <- " Patient 1"
-    hist(rnorm(input$num), main = title)}) # here the input value changes whenever a user changes the input ( slidinput).
+    plot_graph(igraph::graph(edges=c(1,2), n=4, directed=FALSE), edge_threshold=input$num, label=title)
+  }) # here the input value changes whenever a user changes the input ( slidinput).
   
   # you can also use : data <- reactive({ rnorm(input$num) })
   # Then => output$hist <- renderPlot({ hist(data()) })
@@ -125,7 +124,7 @@ server <- function(input,output){
   # })
   output$secondPatient <- renderVisNetwork({
     title <- " Patient 2"
-    plot_graph(karate, edge_threshold=input$num, label=title)
+    plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
     # you can also use: main =input$titleInTextBox
     
     # isolate() makes an non-reactive object
@@ -137,6 +136,5 @@ server <- function(input,output){
   
   
 }
-
 
 shinyApp(ui = ui, server = server)

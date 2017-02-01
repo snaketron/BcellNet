@@ -23,6 +23,7 @@ library(visNetwork)
 #' @keywords plot graph bcr community highlight
 #'
 #' @import igraph
+#' @import visNetwork
 #' @import graphics
 #' @export
 #' 
@@ -57,8 +58,8 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   community_colors[singles] <- vertex_color
   
   # mark.groups are a list of c(a,b,c) thus need to filter out the ones with size bigger than 1
-  mark_groups <- communities(communities)
-  mark_groups <- mark_groups[as.numeric(names(mark_groups)[tab>community_threshold])]
+  # mark_groups <- communities(communities)
+  # mark_groups <- mark_groups[as.numeric(names(mark_groups)[tab>community_threshold])]
   
   # igraph will colorize communities provided by the col=X statement
   # if given plot(communities, network, ...) form and not just plot(network, ...)
@@ -66,9 +67,10 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   #      vertex.label=NA, edge.color=edge_color,layout=network_layout, col=community_colors,
   #      main=label, edge.label=NA) 
   # visNetwork()
-  network_data <- toVisNetworkData(weighted_graph)
-  nodes <- data[[1]]
-  edges <- data[[2]]
+  network_data <- toVisNetworkData(trimmed_network)
+
+  nodes <- network_data[[1]]
+  edges <- network_data[[2]]
   
   # library(RColorBrewer)
 
