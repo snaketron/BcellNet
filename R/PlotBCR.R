@@ -1,4 +1,4 @@
-library(igraph)
+# library(igraph)
 library(visNetwork)
 
 #' @title Plots graphs containing thresholded communties
@@ -22,7 +22,6 @@ library(visNetwork)
 #' 
 #' @keywords plot graph bcr community highlight
 #'
-#' @import igraph
 #' @import visNetwork
 #' @import graphics
 #' @export
@@ -34,28 +33,28 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # for reproducibility
   set.seed(23548723)
   
-  network_layout <- layout_with_fr(weighted_graph)
+  # network_layout <- layout_with_fr(weighted_graph)
   
   # to plot only the edges with at least of threshold level
   # we need to copy the graph and delete the edges from it
-  trimmed_network <- delete.edges(weighted_graph, which(E(weighted_graph)$weight < edge_threshold))
+  # trimmed_network <- delete.edges(weighted_graph, which(E(weighted_graph)$weight < edge_threshold))
   
   # detect communities
-  communities <- cluster_louvain(trimmed_network)
+  # communities <- cluster_louvain(trimmed_network)
   
   # Get community membership
-  memb <- membership(communities)
+  # memb <- membership(communities)
   
   # Find number of members in each community
-  tab <- table(memb)
+  # tab <- table(memb)
   
   # Set colors for each member. (Adjust these as desired)
   # need to copy it first
-  community_colors <- memb
+  # community_colors <- memb
   
   # But for members of communities of one, set the color to white
-  singles <- which(memb %in% as.numeric(names(tab)[tab<=community_threshold]))
-  community_colors[singles] <- vertex_color
+  # singles <- which(memb %in% as.numeric(names(tab)[tab<=community_threshold]))
+  # community_colors[singles] <- vertex_color
   
   # mark.groups are a list of c(a,b,c) thus need to filter out the ones with size bigger than 1
   # mark_groups <- communities(communities)
@@ -67,7 +66,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   #      vertex.label=NA, edge.color=edge_color,layout=network_layout, col=community_colors,
   #      main=label, edge.label=NA) 
   # visNetwork()
-  network_data <- toVisNetworkData(trimmed_network)
+  network_data <- toVisNetworkData(weighted_graph)
 
   nodes <- network_data[[1]]
   edges <- network_data[[2]]
