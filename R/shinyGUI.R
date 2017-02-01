@@ -71,7 +71,8 @@ sidebarLayout(
  mainPanel(
    tabsetPanel(
      tabPanel("tab1", plotOutput("firstPatient"),
-              plotOutput("secondPatient")),
+              
+              visNetworkOutput("secondPatient")),
               
      tabPanel("tab2"),
               
@@ -122,7 +123,7 @@ server <- function(input,output){
   #   #you can use isolate for main = isolate({input$title}))
   #   
   # })
-  output$secondPatient <- renderPlot({
+  output$secondPatient <- renderVisNetwork({
     title <- " Patient 2"
     plot_graph(karate, edge_threshold=input$num, label=title)
     # you can also use: main =input$titleInTextBox
