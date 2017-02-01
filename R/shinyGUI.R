@@ -1,4 +1,7 @@
 library(shiny)
+library(igraphdata)
+
+data("karate")
 #UI
 ui <- fluidPage(
  # h1("test"),
@@ -6,7 +9,7 @@ ui <- fluidPage(
  # a("Shiny Showcase",href = "http://www.rstudio.com/products/shiny/shiny-user-showcase/"),
   
   #html code with tags
- tags$img(height=50, width=50, src="rstudioLogo.png"),
+ tags$img(height=80, width=80, src="logo.png"),
  tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
  tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;"),
  # tags$br(), line break 
@@ -18,6 +21,13 @@ ui <- fluidPage(
   #comboBoxes
 sidebarLayout(
   sidebarPanel (
+    #select File
+    fileInput('file1', 'Choose CSV File',
+              accept=c('text/csv', 
+                       'text/comma-separated-values,text/plain', 
+                     '.csv')),  
+    #ende fileInput
+    
   selectInput(inputId = "combo1",label = "",
               list(`A` = c("Select B-cell subset", "a", "b"),`AB` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
@@ -59,10 +69,21 @@ sidebarLayout(
 ),
 
  mainPanel(
+   tabsetPanel(
+     tabPanel("tab1", plotOutput("firstPatient"),
+              plotOutput("secondPatient")),
+              
+     tabPanel("tab2"),
+              
+     tabPanel("tab3")
+     
+   ),
   #output function
   # You must build the object in the server function
-   plotOutput("firstPatient"),
-   plotOutput("secondPatient"),
+  # plotOutput("firstPatient"),
+  # plotOutput("secondPatient"),
+   
+ 
  #fluidRow(column(7,plotOutput("firstPatient"), 
  # plotOutput("secondPatient")),offset=5),
  
@@ -92,15 +113,26 @@ server <- function(input,output){
   # Then => output$hist <- renderPlot({ hist(data()) })
   
   
+  # output$secondPatient <- renderPlot({
+  #   title <- " Patient 2"
+  #   hist(rnorm(100), main = title)
+  #   # you can also use: main =input$titleInTextBox
+  #   
+  #   # isolate() makes an non-reactive object
+  #   #you can use isolate for main = isolate({input$title}))
+  #   
+  # })
   output$secondPatient <- renderPlot({
     title <- " Patient 2"
-    hist(rnorm(100), main = title)
+    plot_graph(karate, edge_threshold=input$num, label=title)
     # you can also use: main =input$titleInTextBox
     
     # isolate() makes an non-reactive object
     #you can use isolate for main = isolate({input$title}))
     
   })
+  
+
   
   
 }
