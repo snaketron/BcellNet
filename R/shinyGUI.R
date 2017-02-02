@@ -1,7 +1,5 @@
 library(shiny)
-library(igraphdata)
 
-data("karate")
 #UI
 ui <- fluidPage(
  # h1("test"),
@@ -28,77 +26,86 @@ sidebarLayout(
                      '.csv')),  
     #ende fileInput
     #checkBOx
-    checkboxInput(inputId = "checkbox1", label = " select input File", value = FALSE),
+     checkboxInput(inputId = "checkbox1", label = " select input File", value = FALSE),
     
-  selectInput(inputId = "combo1",label = "",
+     selectInput(inputId = "combo1",label = "",
               list(`A` = c("Select B-cell subset", "a", "b"),`AB` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
   
-  selectInput(inputId = "combo1",label = "",
+     selectInput(inputId = "combo1",label = "",
               list(`B` = c("Select 1st patient", "a", "b"),`BC` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
   
-  selectInput(inputId = "combo1",label = "",
+     selectInput(inputId = "combo1",label = "",
               list(`C` = c("Select 2nd patient", "a", "b"),`CD` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
   
-  selectInput(inputId = "combo1",label = "",
+     selectInput(inputId = "combo1",label = "",
               list(`D` = c("Select VH-JH segment", "a", "b"),`DE` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
 
  tags$hr(),
+ 
   #Slider
-  sliderInput(inputId = "num", label = "Egde definition", 
+     sliderInput(inputId = "num", label = "Egde definition", 
               value = 30, min = 1, max = 100),
   
   # comboBox
-  selectInput(inputId = "combo1",label = "",
+     selectInput(inputId = "combo1",label = "",
               list(`East Coast` = c("Community detection", "NJ", "CT"),`West Coast` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
   #Buttons
-  actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;"),
-  actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;"),
-  actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;"),
-  actionButton(inputId = "pdd", label = " Export as...", style="margin-top:10px;")
+     actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;"),
+     actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;"),
+     actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;"),
+     actionButton(inputId = "pdd", label = " Export as...", style="margin-top:10px;")
   
  # textBox
  
  # textInput(inputId = "titleInTextBox",
  # label = "Write a title",
  # value = "test label of Histogram"),
- 
  #column(width = 2),
-),
+ 
+), # End of sidebarLayout
+
+
 
  mainPanel(
+   #output function
+   # You must build the object in the server function
    tabsetPanel(
      tabPanel("tab1", plotOutput("firstPatient"),
-              plotOutput("secondPatient")),
+              
+              visNetworkOutput("secondPatient")),
               
      tabPanel("tab2"),
               
      tabPanel("tab3")
      
+     # plotOutput("firstPatient"),
+     # plotOutput("secondPatient"),
+     #fluidRow(column(7,plotOutput("firstPatient"), 
+     # plotOutput("secondPatient")),offset=5),
    ),
-  #output function
-  # You must build the object in the server function
-  # plotOutput("firstPatient"),
-  # plotOutput("secondPatient"),
+  
+  
+  
    
  
- #fluidRow(column(7,plotOutput("firstPatient"), 
- # plotOutput("secondPatient")),offset=5),
+ 
  
  # link for ourGitHub just for test href :)
   tags$p(tags$a(href="https://github.com/snaketron/BcellNet","GitHub-BcellNet"))
   
   
   
- )#end of mainPanel
-) #end of sidebarLayout
+    )#end of mainPanel
+
+  ) #end of sidebarLayout
 
 
-   )  #end of UI
+)  #end of UI
 
 
 
@@ -107,9 +114,10 @@ sidebarLayout(
 server <- function(input,output){
   
   # renderPlot is a plot
-  output$firstPatient <- renderPlot({
+  output$firstPatient <- renderVisNetwork({
     title <- " Patient 1"
-    hist(rnorm(input$num), main = title)}) # here the input value changes whenever a user changes the input ( slidinput).
+    plot_graph(igraph::graph(edges=c(1,2), n=4, directed=FALSE), edge_threshold=input$num, label=title)
+  }) # here the input value changes whenever a user changes the input ( slidinput).
   
   # you can also use : data <- reactive({ rnorm(input$num) })
   # Then => output$hist <- renderPlot({ hist(data()) })
@@ -124,11 +132,10 @@ server <- function(input,output){
   #   #you can use isolate for main = isolate({input$title}))
   #   
   # })
-  output$secondPatient <- renderPlot({
+  output$secondPatient <- renderVisNetwork({
     title <- " Patient 2"
-    plot_graph(karate, edge_threshold=input$num, label=title)
+    plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
     # you can also use: main =input$titleInTextBox
-    
     # isolate() makes an non-reactive object
     #you can use isolate for main = isolate({input$title}))
     
@@ -138,6 +145,5 @@ server <- function(input,output){
   
   
 }
-
 
 shinyApp(ui = ui, server = server)

@@ -1,6 +1,8 @@
 ## Ignore R related files
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^Rplots\.pdf$
+^.*\.dummy$
 
 ## Avoid git(hub) related files
 \.git/*
