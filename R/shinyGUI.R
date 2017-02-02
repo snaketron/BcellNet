@@ -1,22 +1,25 @@
 library(shiny)
 
+
 #UI
 ui <- fluidPage(
- # h1("test"),
+ 
  # p(style = "font-family:Times New Roman","See other apps in the"),
  # a("Shiny Showcase",href = "http://www.rstudio.com/products/shiny/shiny-user-showcase/"),
-  
-  #html code with tags
+ #html code with tags, you can also write h1("test")
  tags$img(height=80, width=80, src="logo.png"),
  tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
  tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;"),
+ 
  # tags$br(), line break 
  tags$hr(),
  
-  # here we write *Input() & *Output() functions
-  #Create *input functions
+# here we write *Input() & *Output() functions
+ 
+ 
+#Create *input functions
   
-  #comboBoxes
+#comboBoxes
 sidebarLayout(
   sidebarPanel (
     #select File
@@ -25,6 +28,7 @@ sidebarLayout(
                        'text/comma-separated-values,text/plain', 
                      '.csv')),  
     #ende fileInput
+    
     #checkBOx
      checkboxInput(inputId = "checkbox1", label = " select input File", value = FALSE),
     
@@ -70,14 +74,15 @@ sidebarLayout(
 ), # End of sidebarLayout
 
 
-
+###################def output function in main###################################
  mainPanel(
-   #output function
+  
    # You must build the object in the server function
    tabsetPanel(
-     tabPanel("tab1", plotOutput("firstPatient"),
+     tabPanel("tab1", visNetworkOutput("firstPatient"),
               
-              visNetworkOutput("secondPatient")),
+              visNetworkOutput("secondPatient"),
+              tableOutput('contents')),
               
      tabPanel("tab2"),
               
@@ -95,7 +100,7 @@ sidebarLayout(
  
  
  
- # link for ourGitHub just for test href :)
+ # link for BcellNet in GitHub just for test href :)
   tags$p(tags$a(href="https://github.com/snaketron/BcellNet","GitHub-BcellNet"))
   
   
@@ -109,19 +114,28 @@ sidebarLayout(
 
 
 
-#server side
- 
-server <- function(input,output){
+#####################server side####################################
+
+ server <- function(input,output){
   
   # renderPlot is a plot
   output$firstPatient <- renderVisNetwork({
     title <- " Patient 1"
     plot_graph(igraph::graph(edges=c(1,2), n=4, directed=FALSE), edge_threshold=input$num, label=title)
   }) # here the input value changes whenever a user changes the input ( slidinput).
+     # you can also use : data <- reactive({ rnorm(input$num) })
+     # Then => output$hist <- renderPlot({ hist(data()) })
   
-  # you can also use : data <- reactive({ rnorm(input$num) })
-  # Then => output$hist <- renderPlot({ hist(data()) })
-  
+
+
+  output$secondPatient <- renderVisNetwork({
+    title <- " Patient 2"
+    plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
+    # you can also use: main =input$titleInTextBox
+    # isolate() makes an non-reactive object
+    #you can use isolate for main = isolate({input$title}))
+    
+  })
   
   # output$secondPatient <- renderPlot({
   #   title <- " Patient 2"
@@ -132,18 +146,11 @@ server <- function(input,output){
   #   #you can use isolate for main = isolate({input$title}))
   #   
   # })
-  output$secondPatient <- renderVisNetwork({
-    title <- " Patient 2"
-    plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
-    # you can also use: main =input$titleInTextBox
-    # isolate() makes an non-reactive object
-    #you can use isolate for main = isolate({input$title}))
-    
-  })
   
 
   
   
 }
+
 
 shinyApp(ui = ui, server = server)
