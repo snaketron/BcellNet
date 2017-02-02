@@ -27,6 +27,8 @@ sidebarLayout(
                        'text/comma-separated-values,text/plain', 
                      '.csv')),  
     #ende fileInput
+    #checkBOx
+    checkboxInput(inputId = "checkbox1", label = " select input File", value = FALSE),
     
   selectInput(inputId = "combo1",label = "",
               list(`A` = c("Select B-cell subset", "a", "b"),`AB` = c("WA", "OR", "CA")),
