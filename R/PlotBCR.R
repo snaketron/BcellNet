@@ -91,7 +91,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 }
 
 # 
-# library(igraphdata)
-# data("karate")
+ #library(igraphdata)
+ #data("karate")
 # 
-# plot_graph(karate)
+#plot_graph(karate)
