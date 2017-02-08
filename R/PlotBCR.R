@@ -17,9 +17,17 @@ data("karate")
 #' @param edge_width Controls width of edges.
 #' @param edge_color Controls color of edges.
 #' @param label title of the image directly plotted to the image.
+#' @param community_algorithm which algorithm is used to calculate the communities
 #' 
 #' @examples
 #' plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE))
+#' 
+#' \dontrun{
+#' library(igraphdata)
+#' data("karate")
+#'  
+#' plot_graph(karate)
+#' }
 #' 
 #' @aliases gp
 #' 
@@ -31,7 +39,7 @@ data("karate")
 #' 
 #' @seealso \code{\link[igraph]{igraph}}
 #' @seealso \code{\link[igraph]{communities}}
-plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, vertex_size=10, vertex_color="grey", edge_width=1, edge_color="darkgrey", label="Patient X") {
+plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, vertex_size=10, vertex_color="grey", edge_width=1, edge_color="darkgrey", label="Patient X", community_algorithm="cluster_louvain") {
   
   # for reproducibility
   set.seed(23548723)
@@ -43,7 +51,9 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   trimmed_network <- delete.edges(weighted_graph, which(E(weighted_graph)$weight < edge_threshold))
   
   # detect communities
-  communities <- cluster_louvain(trimmed_network)
+  # need to parse the network first. We use strings since the IO only supports string to string dictionaries
+  algo <- eval(parse(text = community_algorithm))
+  communities <- algo(trimmed_network)
   
   # Get community membership
   memb <- membership(communities)
@@ -81,7 +91,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   
   E(trimmed_network)$color <- "black"
   # print(community_colors)
-  visIgraph(trimmed_network, layout="layout_with_fr", physics = FALSE, smooth = FALSE, type = "square", idToLabel = FALSE) %>%
+  visIgraph(trimmed_network, layout = "layout_with_fr", physics = FALSE, smooth = FALSE, type = "full", idToLabel = FALSE) %>%
     visInteraction(dragNodes = FALSE)
   # network_data <- toVisNetworkData(weighted_graph)
   
@@ -112,15 +122,22 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 }
 plot_graph(karate)
 
+all_communtiy_algorithms <- function() {
+  algos <- c(
+    "Edge Betweenness" = "cluster_edge_betweenness", # dense connected, loose interconnection
+    "Fast Greedy" = "cluster_fast_greedy", # dense subgraphs
+    "Label Prop" = "cluster_label_prop", # majority vote neighbors
+    "Leading Eigen" = "cluster_leading_eigen", # dense subgraphs
+    "Louvain" = "cluster_louvain", # modularity
+    "Optimal" = "cluster_optimal", # modularity
+    "Spinglass" = "cluster_spinglass", # spin
+    "Walktrap" = "cluster_walktrap" # random
+  )
+
+  return(algos)
+}
+
 sample_n_colors <- function(n) {
   colors <- grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
   sample(colors, n)
 }
-
-
-
-# 
- #library(igraphdata)
- #data("karate")
-# 
-#plot_graph(karate)

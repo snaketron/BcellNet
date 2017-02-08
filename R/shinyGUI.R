@@ -1,13 +1,24 @@
-library(shiny)
 source("R/BuildIGraph.R")
+
+usePackage <- function(p) {
+  if (!is.element(p, installed.packages()[,1]))
+    install.packages(p, dep = TRUE, repos="http://cran.us.r-project.org")
+  require(p, character.only = TRUE)
+}
+
+usePackage("shiny")
+usePackage("shinyjs")
 
 data <- NULL
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
 graphFirst <- NULL
 
+
 #UI
 ui <- fluidPage(
+  # activate shinyjs which enables easy commands without JS knowledge
+  shinyjs::useShinyjs(),
   
   # p(style = "font-family:Times New Roman","See other apps in the"),
   # a("Shiny Showcase",href = "http://www.rstudio.com/products/shiny/shiny-user-showcase/"),
@@ -59,14 +70,14 @@ ui <- fluidPage(
                   value = 30, min = 1, max = 100),
       
       # comboBox
-      selectInput(inputId = "combo1",label = "",
-                  list(`East Coast` = c("Community detection", "NJ", "CT"),`West Coast` = c("WA", "OR", "CA")),
+      selectInput(inputId = "select_community",label = "",
+                  choices = all_communtiy_algorithms(),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       #Buttons
-      actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;"),
-      actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;"),
-      actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;"),
-      actionButton(inputId = "pdd", label = " Export as...", style="margin-top:10px;")
+      disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;")),
+      disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;")),
+      disabled(actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;")),
+      disabled(actionButton(inputId = "exportButton", label = " Export as...", style="margin-top:10px;"))
       
       # textBox
       
@@ -76,7 +87,6 @@ ui <- fluidPage(
       #column(width = 2),
       
     ), # End of sidebarLayout
-    
     
     ###################def output function in main###################################
     mainPanel(
@@ -129,7 +139,6 @@ server <- function(input,output, session){
     # return(data)
   })
   
-  
   #update content of patient combobox
   observe({
     if(is.null(input$csvFile$datapath)) return(NULL)
@@ -160,6 +169,14 @@ server <- function(input,output, session){
   })
   observeEvent(input$comboSecondPatient, {
     selectSecondPatient <<- input$comboSecondPatient
+  })
+    
+  
+  observeEvent(input$csvFile, {
+    shinyjs::enable("pn")
+    shinyjs::enable("pdd")
+    shinyjs::enable("pcsd")
+    shinyjs::enable("exportButton")
   })
   
 
