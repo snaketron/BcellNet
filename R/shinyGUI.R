@@ -113,7 +113,7 @@ ui <- fluidPage(
 #####################server side####################################
 
 
-server <- function(input,output){
+server <- function(input,output, session){
   
   # input$csvFile will be NULL initially. After the user selects
   # and uploads a file, it will be a data frame with 'name',
@@ -158,7 +158,7 @@ server <- function(input,output){
   observeEvent(input$comboFirstPatient, {
     selectFirstPatient <<- input$comboFirstPatient
   })
-  observeEvent(input$comboFirstPatient, {
+  observeEvent(input$comboSecondPatient, {
     selectSecondPatient <<- input$comboSecondPatient
   })
   
