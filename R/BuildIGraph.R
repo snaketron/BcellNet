@@ -1,6 +1,15 @@
 library(igraph)
-source("R/DistanceMetric.R")
-source("R/PlotBCR.R")
+
+loadSource <- function(sourceName) {
+  pattern <- paste("^", sourceName, "$", sep = "")
+  files <- list.files(pattern=pattern, recursive = FALSE)
+  for (file in files) {
+    source(file)
+  }
+}
+
+loadSource("DistanceMetric.R")
+loadSource("PlotBCR.R")
 
 
 #' @title calculate distance between given bcr arrays

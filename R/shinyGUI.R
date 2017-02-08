@@ -1,4 +1,12 @@
-source("R/BuildIGraph.R")
+# setwd("R") is done by shiny since the server file is in here
+loadSource <- function(sourceName) {
+  pattern <- paste("^", sourceName, "$", sep = "")
+  files <- list.files(pattern=pattern, recursive = FALSE)
+  for (file in files) {
+    source(file)
+  }
+}
+loadSource("BuildIGraph.R")
 
 usePackage <- function(p) {
   if (!is.element(p, installed.packages()[,1]))
