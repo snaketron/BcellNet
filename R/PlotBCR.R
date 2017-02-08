@@ -34,7 +34,6 @@ library(visNetwork)
 #' 
 #' @keywords plot graph bcr community highlight
 #'
-#' @import igraph
 #' @import visNetwork
 #' @import graphics
 #' @export
@@ -42,7 +41,7 @@ library(visNetwork)
 #' @seealso \code{\link[igraph]{igraph}}
 #' @seealso \code{\link[visNetwork]{visNetwork}}
 #' @seealso \code{\link[igraph]{communities}}
-plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, vertex_size=10, vertex_color="grey", edge_width=1, edge_color="darkgrey", label="Patient X", community_algorithm="cluster_louvain") {
+plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, vertex_size=10, vertex_color="grey", edge_width=1, edge_color="darkgrey", label="Patient X", community_algorithm=cluster_louvain, layout_algorithm="layout_nicely") {
   
   # for reproducibility
   set.seed(23548723)
@@ -67,7 +66,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # Set colors for each member. (Adjust these as desired)
   # need to copy it first
   # print(length(communities))
-  community_colors <- sample_n_colors(34)[memb]
+  community_colors <- sample_n_colors(100)[memb]
   
   # But for members of communities of one, set the color to white
   singles <- which(memb %in% as.numeric(names(tab)[tab<=community_threshold]))
@@ -89,11 +88,15 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   V(trimmed_network)$frame.color <- "black"
   V(trimmed_network)$color.border <- "black"
   # V(trimmed_network)$color <- list(background="red", border="black")
-  
+  # V(trimmed_network)$color.border.wtf <- "wtf"
   
   
   E(trimmed_network)$color <- "black"
+  trimmed_network$main <- label
   # print(community_colors)
+  # visNetwork(V(trimmed_network), E(trimmed_network), main=label) %>%
+    # visIgraphLayout(layout="layout_with_fr", physics = FALSE, smooth = FALSE, type = "full") %>%
+    # visInteraction(dragNodes = FALSE)
   visIgraph(trimmed_network, layout = "layout_with_fr", physics = FALSE, smooth = FALSE, type = "full", idToLabel = FALSE) %>%
     visInteraction(dragNodes = FALSE)
   # network_data <- toVisNetworkData(weighted_graph)
@@ -142,17 +145,21 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 #' @seealso \code{\link[igraph]{communities}}
 all_communtiy_algorithms <- function() {
   algos <- c(
-    "Edge Betweenness" = "cluster_edge_betweenness", # dense connected, loose interconnection
-    "Fast Greedy" = "cluster_fast_greedy", # dense subgraphs
-    "Label Prop" = "cluster_label_prop", # majority vote neighbors
-    "Leading Eigen" = "cluster_leading_eigen", # dense subgraphs
-    "Louvain" = "cluster_louvain", # modularity
-    "Optimal" = "cluster_optimal", # modularity
-    "Spinglass" = "cluster_spinglass", # spin
-    "Walktrap" = "cluster_walktrap" # random
+    "Edge Betweenness" = cluster_edge_betweenness, # dense connected, loose interconnection
+    "Fast Greedy" = cluster_fast_greedy, # dense subgraphs
+    "Label Prop" = cluster_label_prop, # majority vote neighbors
+    "Leading Eigen" = cluster_leading_eigen, # dense subgraphs
+    "Louvain" = cluster_louvain, # modularity
+    "Optimal" = cluster_optimal, # modularity
+    "Spinglass" = cluster_spinglass, # spin
+    "Walktrap" = cluster_walktrap # random
   )
 
   return(algos)
+}
+
+all_layout_algorithms <- function() {
+  
 }
 
 sample_n_colors <- function(n) {
