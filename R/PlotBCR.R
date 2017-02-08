@@ -1,8 +1,8 @@
 library(igraph)
 library(visNetwork)
 
-library(igraphdata)
-data("karate")
+# library(igraphdata)
+# data("karate")
 
 #' @title Plots graphs containing thresholded communties
 #' 
@@ -20,6 +20,7 @@ data("karate")
 #' @param community_algorithm which algorithm is used to calculate the communities
 #' 
 #' @examples
+#' require(igraph)
 #' plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE))
 #' 
 #' \dontrun{
@@ -29,15 +30,17 @@ data("karate")
 #' plot_graph(karate)
 #' }
 #' 
-#' @aliases gp
+#' @aliases plot_graph
 #' 
 #' @keywords plot graph bcr community highlight
 #'
+#' @import igraph
 #' @import visNetwork
 #' @import graphics
 #' @export
 #' 
 #' @seealso \code{\link[igraph]{igraph}}
+#' @seealso \code{\link[visNetwork]{visNetwork}}
 #' @seealso \code{\link[igraph]{communities}}
 plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, vertex_size=10, vertex_color="grey", edge_width=1, edge_color="darkgrey", label="Patient X", community_algorithm="cluster_louvain") {
   
@@ -120,8 +123,23 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # visNetwork(nodes, edges)
   # visOptions(highlightNearest = TRUE, selectedBy = "community", nodesIdSelection = TRUE)
 }
-plot_graph(karate)
+# plot_graph(karate)
 
+#' @title Provides all community algorithms available
+#' 
+#' @description \code{all_communtiy_algorithms} provides an easy dictionary of all algorithms to determine the communities. This enables access to a human readable representation of the internal functions. "Foo Bar" could be called foo_bar internally, which is not something supposed to being displayed. It will returns a dictionary mapping from \code{string} to \code{string}. The \code{plot_graph} will handle the decryption of the functions internally.
+#' 
+#' @examples
+#' all_communtiy_algorithms()
+#' 
+#' @aliases all_communtiy_algorithms
+#' 
+#' @keywords igraph community algorithm provider
+#'
+#' @export
+#' 
+#' @seealso \code{\link[igraph]{igraph}}
+#' @seealso \code{\link[igraph]{communities}}
 all_communtiy_algorithms <- function() {
   algos <- c(
     "Edge Betweenness" = "cluster_edge_betweenness", # dense connected, loose interconnection
