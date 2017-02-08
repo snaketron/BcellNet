@@ -171,49 +171,8 @@ sidebarLayout(
    })
    
    
-   #plot networt button action
-   observeEvent(input$pn, {
-     
-     if(is.null(data)) session$sendCustomMessage(type = 'testmessage',
-                               message = 'Select data first')
-     
-     
-     #create and plot graph of "negative" patient
-     arrayFirst <- data[[selectFirstPatient]]$sequence
-     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
-     graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 10, thresholdMin = 1)
-      print("graphfirst create")
-     
-     arraySecond <- data[[selectSecondPatient]]$sequence
-     matrixSecond <- calculateDistances(arraySecond,arraySecond)
-     graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 10, thresholdMin = 1)
-     
-   })
+ 
    
-   
-   if(!is.null(graphFirst)) {
-     print("test")
-     # renderPlot is a plot
-     output$firstPatient <- renderVisNetwork({
-       title <- paste("Patient ", selectFirstPatient)
-       plot_graph(graphFirst, edge_threshold=input$num, label=title)
-       #plot_graph(igraph::graph(edges=c(1,2), n=4, directed=FALSE), edge_threshold=input$num, label=title)
-     }) # here the input value changes whenever a user changes the input ( slidinput).
-     # you can also use : data <- reactive({ rnorm(input$num) })
-     # Then => output$hist <- renderPlot({ hist(data()) })
-   }else{
-     print("fail")
-   }
-   
-   # output$secondPatient <- renderVisNetwork({
-   #   title <- paste("Patient ", selectSecondPatient)
-   #   plot_graph(graphSecond, edge_threshold=input$num, label=title)
-   #   #plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
-   #   # you can also use: main =input$titleInTextBox
-   #   # isolate() makes an non-reactive object
-   #   #you can use isolate for main = isolate({input$title}))
-   #   
-   # })
 
 
 
@@ -230,6 +189,48 @@ sidebarLayout(
   #
   # })
   
+   
+   
+   #plot networt button action
+   observeEvent(input$pn, {
+     
+     if(is.null(data)) session$sendCustomMessage(type = 'testmessage',
+                                                 message = 'Select data first')
+     
+     
+     #create and plot graph of "negative" patient
+     arrayFirst <- data[[selectFirstPatient]]$sequence
+     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
+     graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 10, thresholdMin = 1)
+     print("graphfirst create")
+     
+     arraySecond <- data[[selectSecondPatient]]$sequence
+     matrixSecond <- calculateDistances(arraySecond,arraySecond)
+     graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 10, thresholdMin = 1)
+     print("graphsecond created")
+     
+
+       # renderPlot is a plot
+       output$firstPatient <- renderVisNetwork({
+         title <- paste("Patient ", selectFirstPatient)
+         plot_graph(graphFirst, edge_threshold=input$num, label=title)
+         #plot_graph(igraph::graph(edges=c(1,2), n=4, directed=FALSE), edge_threshold=input$num, label=title)
+       }) # here the input value changes whenever a user changes the input ( slidinput).
+       # you can also use : data <- reactive({ rnorm(input$num) })
+       # Then => output$hist <- renderPlot({ hist(data()) })
+
+     
+     output$secondPatient <- renderVisNetwork({
+       title <- paste("Patient ", selectSecondPatient)
+       plot_graph(graphSecond, edge_threshold=input$num, label=title)
+       #plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
+       # you can also use: main =input$titleInTextBox
+       # isolate() makes an non-reactive object
+       #you can use isolate for main = isolate({input$title}))
+
+     })
+     
+   })
 
 }
 
