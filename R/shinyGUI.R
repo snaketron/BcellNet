@@ -62,8 +62,8 @@ ui <- fluidPage(
                   value = 30, min = 1, max = 100),
       
       # comboBox
-      selectInput(inputId = "combo1",label = "",
-                  list(`East Coast` = c("Community detection", "NJ", "CT"),`West Coast` = c("WA", "OR", "CA")),
+      selectInput(inputId = "select_community",label = "",
+                  choices = all_communtiy_algorithms(),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       #Buttons
       disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;")),
@@ -115,17 +115,18 @@ ui <- fluidPage(
 server <- function(input,output){
   
   observeEvent(input$pn, {
+    
     # renderPlot is a plot
     output$firstPatient <- renderVisNetwork({
       title <- " Patient 1"
-      plot_graph(igraph::graph(edges=c(1,2), n=input$num, directed=FALSE), edge_threshold=input$num, label=title)
+      plot_graph(igraph::graph(edges=c(1,2), n=input$num, directed=FALSE), edge_threshold=input$num, label=title, community_algorithm=input$select_community)
     }) # here the input value changes whenever a user changes the input ( slidinput).
     # you can also use : data <- reactive({ rnorm(input$num) })
     # Then => output$hist <- renderPlot({ hist(data()) })
     
     output$secondPatient <- renderVisNetwork({
       title <- " Patient 2"
-      plot_graph(igraph::make_star(300, mode="undirected"), edge_threshold=input$num, label=title)
+      plot_graph(igraph::make_star(300, mode="undirected"), edge_threshold=input$num, label=title, community_algorithm=input$select_community)
       # you can also use: main =input$titleInTextBox
       # isolate() makes an non-reactive object
       #you can use isolate for main = isolate({input$title}))
