@@ -1,5 +1,10 @@
 library(shiny)
+source("R/BuildIGraph.R")
 
+data <- NULL
+selectFirstPatient <- NULL
+selectSecondPatient <- NULL
+graphFirst <- NULL
 
 #UI
 ui <- fluidPage(
@@ -32,19 +37,20 @@ sidebarLayout(
     #checkBOx
      checkboxInput(inputId = "checkbox1", label = " select input File", value = FALSE),
     
+    
      selectInput(inputId = "combo1",label = "",
               list(`A` = c("Select B-cell subset", "a", "b"),`AB` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
+   
+     #first patient
+     selectInput(inputId = "comboFirstPatient",label = "Select 1st patient",
+              choices = NULL, selected = NULL, multiple = FALSE, selectize = TRUE),
+    
+    #second patient
+     selectInput(inputId = "comboSecondPatient", label = "Select 2nd patient",
+              choices = NULL, selected = NULL, multiple = FALSE, selectize = TRUE),
   
-     selectInput(inputId = "combo1",label = "",
-              list(`B` = c("Select 1st patient", "a", "b"),`BC` = c("WA", "OR", "CA")),
-              selected = NULL, multiple = FALSE, selectize = TRUE),
-  
-     selectInput(inputId = "combo1",label = "",
-              list(`C` = c("Select 2nd patient", "a", "b"),`CD` = c("WA", "OR", "CA")),
-              selected = NULL, multiple = FALSE, selectize = TRUE),
-  
-     selectInput(inputId = "combo1",label = "",
+     selectInput(inputId = "combo2",label = "",
               list(`D` = c("Select VH-JH segment", "a", "b"),`DE` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
 
@@ -55,7 +61,7 @@ sidebarLayout(
               value = 30, min = 1, max = 100),
   
   # comboBox
-     selectInput(inputId = "combo1",label = "",
+     selectInput(inputId = "commDetect",label = "",
               list(`East Coast` = c("Community detection", "NJ", "CT"),`West Coast` = c("WA", "OR", "CA")),
               selected = NULL, multiple = FALSE, selectize = TRUE),
   #Buttons
@@ -97,9 +103,8 @@ sidebarLayout(
   
   
    
- 
- 
- 
+ #show messages
+   tags$head(tags$script(src = "message-handler.js")),
  # link for BcellNet in GitHub just for test href :)
   tags$p(tags$a(href="https://github.com/snaketron/BcellNet","GitHub-BcellNet"))
   
@@ -116,40 +121,116 @@ sidebarLayout(
 
 #####################server side####################################
 
- server <- function(input,output){
+ server <- function(input, output, session){
+   
+   # input$file1 will be NULL initially. After the user selects
+   # and uploads a file, it will be a data frame with 'name',
+   # 'size', 'type', and 'datapath' columns. The 'datapath'
+   # column will contain the local filenames where the data can
+   # be found.
+   output$contents <- renderDataTable({
+     #read selected csv data
+     inFile <- input$file1
+     if (is.null(inFile))
+       return(NULL)
+     # data <- csvToSubset(inFile$datapath)
+     # return(data)
+   })
   
-  # renderPlot is a plot
-  output$firstPatient <- renderVisNetwork({
-    title <- " Patient 1"
-    plot_graph(igraph::graph(edges=c(1,2), n=4, directed=FALSE), edge_threshold=input$num, label=title)
-  }) # here the input value changes whenever a user changes the input ( slidinput).
+   
+   #update content of patient combobox
+   observe({
+      if(is.null(input$file1$datapath)) return(NULL)
+     
+     
+     data <<- csvToSubset(input$file1$datapath)
+     x <- names(data)
+     
+     # Can use character(0) to remove all choices
+     if (is.null(x))
+       x <- character(0)
+
+     # Can also set the label and select items
+     updateSelectInput(session, "comboFirstPatient",
+                       choices = x,
+                       selected = head(x, 1)
+     )
+     updateSelectInput(session, "comboSecondPatient",
+                       choices = x,
+                       selected = head(x, 2)
+     )
+   })
+   
+   
+   #save selected patient into global var
+   observeEvent(input$comboFirstPatient, {
+     selectFirstPatient <<- input$comboFirstPatient
+   })
+   observeEvent(input$comboFirstPatient, {
+     selectSecondPatient <<- input$comboSecondPatient
+   })
+   
+   
+   #plot networt button action
+   observeEvent(input$pn, {
+     
+     if(is.null(data)) session$sendCustomMessage(type = 'testmessage',
+                               message = 'Select data first')
+     
+     
+     #create and plot graph of "negative" patient
+     arrayFirst <- data[[selectFirstPatient]]$sequence
+     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
+     graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 10, thresholdMin = 1)
+      print("graphfirst create")
+     
+     arraySecond <- data[[selectSecondPatient]]$sequence
+     matrixSecond <- calculateDistances(arraySecond,arraySecond)
+     graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 10, thresholdMin = 1)
+     
+   })
+   
+   
+   if(!is.null(graphFirst)) {
+     print("test")
+     # renderPlot is a plot
+     output$firstPatient <- renderVisNetwork({
+       title <- paste("Patient ", selectFirstPatient)
+       plot_graph(graphFirst, edge_threshold=input$num, label=title)
+       #plot_graph(igraph::graph(edges=c(1,2), n=4, directed=FALSE), edge_threshold=input$num, label=title)
+     }) # here the input value changes whenever a user changes the input ( slidinput).
      # you can also use : data <- reactive({ rnorm(input$num) })
      # Then => output$hist <- renderPlot({ hist(data()) })
-  
+   }else{
+     print("fail")
+   }
+   
+   # output$secondPatient <- renderVisNetwork({
+   #   title <- paste("Patient ", selectSecondPatient)
+   #   plot_graph(graphSecond, edge_threshold=input$num, label=title)
+   #   #plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
+   #   # you can also use: main =input$titleInTextBox
+   #   # isolate() makes an non-reactive object
+   #   #you can use isolate for main = isolate({input$title}))
+   #   
+   # })
 
 
-  output$secondPatient <- renderVisNetwork({
-    title <- " Patient 2"
-    plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
-    # you can also use: main =input$titleInTextBox
-    # isolate() makes an non-reactive object
-    #you can use isolate for main = isolate({input$title}))
-    
-  })
-  
+
+
+
+   
   # output$secondPatient <- renderPlot({
   #   title <- " Patient 2"
   #   hist(rnorm(100), main = title)
   #   # you can also use: main =input$titleInTextBox
-  #   
+  #
   #   # isolate() makes an non-reactive object
   #   #you can use isolate for main = isolate({input$title}))
-  #   
+  #
   # })
   
 
-  
-  
 }
 
 
