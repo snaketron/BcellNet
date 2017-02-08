@@ -1,8 +1,16 @@
-library(shiny)
+usePackage <- function(p) {
+  if (!is.element(p, installed.packages()[,1]))
+    install.packages(p, dep = TRUE, repos="http://cran.us.r-project.org")
+  require(p, character.only = TRUE)
+}
 
+usePackage("shiny")
+usePackage("shinyjs")
 
 #UI
 ui <- fluidPage(
+  # activate shinyjs which enables easy commands without JS knowledge
+  shinyjs::useShinyjs(),
   
   # p(style = "font-family:Times New Roman","See other apps in the"),
   # a("Shiny Showcase",href = "http://www.rstudio.com/products/shiny/shiny-user-showcase/"),
@@ -58,10 +66,10 @@ ui <- fluidPage(
                   list(`East Coast` = c("Community detection", "NJ", "CT"),`West Coast` = c("WA", "OR", "CA")),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       #Buttons
-      actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;"),
-      actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;"),
-      actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;"),
-      actionButton(inputId = "pdd", label = " Export as...", style="margin-top:10px;")
+      disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;")),
+      disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;")),
+      disabled(actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;")),
+      disabled(actionButton(inputId = "exportButton", label = " Export as...", style="margin-top:10px;"))
       
       # textBox
       
@@ -71,7 +79,6 @@ ui <- fluidPage(
       #column(width = 2),
       
     ), # End of sidebarLayout
-    
     
     ###################def output function in main###################################
     mainPanel(
@@ -127,6 +134,12 @@ server <- function(input,output){
   } 
   )
   
+  observeEvent(input$csvFile, {
+    shinyjs::enable("pn")
+    shinyjs::enable("pdd")
+    shinyjs::enable("pcsd")
+    shinyjs::enable("exportButton")
+  })
   
   # output$secondPatient <- renderPlot({
   #   title <- " Patient 2"

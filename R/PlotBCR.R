@@ -81,7 +81,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   
   E(trimmed_network)$color <- "black"
   # print(community_colors)
-  visIgraph(trimmed_network, layout="layout_with_fr", physics = FALSE, smooth = FALSE, type = "square", idToLabel = FALSE) %>%
+  visIgraph(trimmed_network, layout = "layout_with_fr", physics = FALSE, smooth = FALSE, type = "full", idToLabel = FALSE) %>%
     visInteraction(dragNodes = FALSE)
   # network_data <- toVisNetworkData(weighted_graph)
   
