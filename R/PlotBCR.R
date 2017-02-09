@@ -1,8 +1,6 @@
 library(igraph)
 library(visNetwork)
 
-# library(igraphdata)
-# data("karate")
 
 #' @title Plots graphs containing thresholded communties
 #' 
@@ -41,7 +39,25 @@ library(visNetwork)
 #' @seealso \code{\link[igraph]{igraph}}
 #' @seealso \code{\link[visNetwork]{visNetwork}}
 #' @seealso \code{\link[igraph]{communities}}
-plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, vertex_size=10, vertex_color="grey", edge_width=1, edge_color="darkgrey", label="Patient X", community_algorithm=cluster_louvain, layout_algorithm="layout_nicely") {
+plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, vertex_size=10, vertex_color="grey", edge_width=1, edge_color="darkgrey", label="Patient X", community_algorithm=cluster_louvain, layout_algorithm="layout_nicely", dynamic=TRUE) {
+  # preconditions: input validation
+  if (!any(class(weighted_graph) %in% "igraph")) {
+    stop("weighted_graph must be an igraph object")
+  }
+  validateInputNumeric(edge_threshold)
+  validateInputNumeric(community_threshold)  
+  validateInputNumeric(vertex_size)  
+  validateInputString(vertex_color)
+  validateInputString(edge_color)
+  validateInputString(label)
+  if (!is.function(community_algorithm)) {
+    stop("community_algorithm must be a function but found '", class(community_algorithm), "'")
+  }
+  validateInputString(layout_algorithm)  
+  if (!is.logical(dynamic)) {
+    stop("dynamic must be a logical but found '", class(dynamic), "'")
+  }
+  
   
   # for reproducibility
   set.seed(23548723)
@@ -54,8 +70,9 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   
   # detect communities
   # need to parse the network first. We use strings since the IO only supports string to string dictionaries
-  algo <- eval(parse(text = community_algorithm))
-  communities <- algo(trimmed_network)
+  # algo <- eval(parse(text = community_algorithm))
+  # print(parse(text = community_algorithm))
+  communities <- community_algorithm(trimmed_network)
   
   # Get community membership
   memb <- membership(communities)
@@ -126,7 +143,26 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # visNetwork(nodes, edges)
   # visOptions(highlightNearest = TRUE, selectedBy = "community", nodesIdSelection = TRUE)
 }
-# plot_graph(karate)
+
+validateInputNumeric <- function(numeric) {
+  if (!is.numeric(numeric)) {
+    stop("'", quote(numeric), "' must be a numeric but found '", class(numeric), "'")
+  }
+  if (numeric <= 0) {
+    stop("'", quote(numeric), "' must be positve")
+  }
+}
+
+validateInputString <- function(string) {
+  if (!is.character(string)) {
+    stop("'", quote(string), "' must be a string but found '", class(string), "'")
+  }
+  if (nchar(string) <= 0) {
+    stop("'", quote(string), "' must be a non-empty string")
+  }
+}
+
+
 
 #' @title Provides all community algorithms available
 #' 
@@ -145,13 +181,13 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 #' @seealso \code{\link[igraph]{communities}}
 all_communtiy_algorithms <- function() {
   algos <- c(
-    "Edge Betweenness" = cluster_edge_betweenness, # dense connected, loose interconnection
+    # "Edge Betweenness" = cluster_edge_betweenness, # dense connected, loose interconnection does not work - crashes RStudio
     "Fast Greedy" = cluster_fast_greedy, # dense subgraphs
     "Label Prop" = cluster_label_prop, # majority vote neighbors
     "Leading Eigen" = cluster_leading_eigen, # dense subgraphs
     "Louvain" = cluster_louvain, # modularity
     "Optimal" = cluster_optimal, # modularity
-    "Spinglass" = cluster_spinglass, # spin
+    # "Spinglass" = cluster_spinglass, # spin # needs connected graphs
     "Walktrap" = cluster_walktrap # random
   )
 

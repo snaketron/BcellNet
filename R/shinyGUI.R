@@ -205,19 +205,24 @@ server <- function(input,output, session){
     graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 10, thresholdMin = 1)
     print("graphsecond created")
     
+    comAlgo <- all_communtiy_algorithms()[[input$select_community]]
+    comAlgo <- eval(comAlgo)
+    cat("community algorithm selected:", input$select_community, "\n")
+    
     # renderPlot is a plot
     output$firstPatient <- renderVisNetwork({
-      title <- paste("Patient ", selectFirstPatient)
-      comAlgo <- switch(input$select_community, all_communtiy_algorithms())
-      
-      plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm=comAlgo)
+      tryCatch({
+        title <- paste("Patient ", selectFirstPatient)
+        print(identical(comAlgo, cluster_louvain))
+        print(identical(comAlgo, eval(comAlgo)))
+        plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo)
+      })
     }) # here the input value changes whenever a user changes the input ( slidinput).
     # you can also use : data <- reactive({ rnorm(input$num) })
     # Then => output$hist <- renderPlot({ hist(data()) })
     
     output$secondPatient <- renderVisNetwork({
       title <- paste("Patient ", selectSecondPatient)
-      comAlgo <- switch(input$select_community, all_communtiy_algorithms())
       
       plot_graph(graphSecond, edge_threshold=input$num, label=title, community_algorithm = comAlgo)
       #plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
