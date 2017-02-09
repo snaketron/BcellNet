@@ -7,7 +7,8 @@
 plot_graph(weighted_graph, edge_threshold = 4, community_threshold = 1,
   vertex_size = 10, vertex_color = "grey", edge_width = 1,
   edge_color = "darkgrey", label = "Patient X",
-  community_algorithm = "cluster_louvain")
+  community_algorithm = cluster_louvain, layout_algorithm = "layout_nicely",
+  dynamic = TRUE)
 }
 \arguments{
 \item{weighted_graph}{The base graph. Will be used as a base for the layout of the final graph.}
@@ -27,6 +28,10 @@ plot_graph(weighted_graph, edge_threshold = 4, community_threshold = 1,
 \item{label}{title of the image directly plotted to the image.}
 
 \item{community_algorithm}{which algorithm is used to calculate the communities}
+
+\item{layout_algorithm}{which algorithm is used to calculate the layout of the graph}
+
+\item{dynamic}{Logical Type. Determines if the plot is rendered dynamically via JS or static as a SVG}
 }
 \description{
 \code{plot_graph} transforms a graph into an internal representation to abstract unnecessary noise away

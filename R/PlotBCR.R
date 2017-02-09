@@ -16,6 +16,7 @@ library(visNetwork)
 #' @param edge_color Controls color of edges.
 #' @param label title of the image directly plotted to the image.
 #' @param community_algorithm which algorithm is used to calculate the communities
+#' @param layout_algorithm which algorithm is used to calculate the layout of the graph
 #' @param dynamic Logical Type. Determines if the plot is rendered dynamically via JS or static as a SVG
 #' 
 #' @examples
@@ -145,6 +146,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # visOptions(highlightNearest = TRUE, selectedBy = "community", nodesIdSelection = TRUE)
 }
 
+# Helper function to validate the inputs
 validateInputNumeric <- function(numeric) {
   if (!is.numeric(numeric)) {
     stop("'", quote(numeric), "' must be a numeric but found '", class(numeric), "'")

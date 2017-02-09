@@ -81,6 +81,11 @@ ui <- fluidPage(
       selectInput(inputId = "select_community",label = "",
                   choices = names(all_communtiy_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
+      
+      selectInput(inputId = "select_community",label = "",
+                  choices = names(all_communtiy_algorithms()),
+                  selected = NULL, multiple = FALSE, selectize = TRUE),
+      
       #Buttons
       disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;")),
       disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;")),
