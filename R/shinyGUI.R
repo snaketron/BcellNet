@@ -212,16 +212,14 @@ server <- function(input,output, session){
     print("graphsecond created")
     
     comAlgo <- all_communtiy_algorithms()[[input$select_community]]
-    comAlgo <- eval(comAlgo)
+    # comAlgo <- eval(comAlgo)
     cat("community algorithm selected:", input$select_community, "\n")
     
     # renderPlot is a plot
     output$firstPatient <- renderVisNetwork({
-      tryCatch({
-        title <- paste("Patient ", selectFirstPatient)
-        
-        plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo)
-      })
+      title <- paste("Patient ", selectFirstPatient)
+      
+      plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo)
     }) # here the input value changes whenever a user changes the input ( slidinput).
     # you can also use : data <- reactive({ rnorm(input$num) })
     # Then => output$hist <- renderPlot({ hist(data()) })
@@ -230,7 +228,6 @@ server <- function(input,output, session){
       title <- paste("Patient ", selectSecondPatient)
       
       plot_graph(graphSecond, edge_threshold=input$num, label=title, community_algorithm = comAlgo)
-      #plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
       # you can also use: main =input$titleInTextBox
       # isolate() makes an non-reactive object
       #you can use isolate for main = isolate({input$title}))
