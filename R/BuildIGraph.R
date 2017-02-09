@@ -46,7 +46,7 @@ calculateDistances <- function(arrayBcr1, arrayBcr2, distanceMetric = "LD"){
 }
 
 
-
+#' @import utils
 csvToSubset <- function(path, header = TRUE, sep = ";"){
   data <- read.csv(path, header = header, sep = sep,stringsAsFactors=FALSE)
   

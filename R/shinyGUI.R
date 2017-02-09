@@ -10,7 +10,7 @@ loadSource("BuildIGraph.R")
 
 usePackage <- function(p) {
   if (!is.element(p, installed.packages()[,1]))
-    install.packages(p, dep = TRUE, repos="http://cran.us.r-project.org")
+    install.packages(p, dependencies = TRUE, repos="http://cran.us.r-project.org")
   require(p, character.only = TRUE)
 }
 
@@ -135,7 +135,8 @@ ui <- fluidPage(
 
 #####################server side####################################
 
-
+#' @import shiny
+#' @import shinyjs
 server <- function(input,output, session){
   
   # input$csvFile will be NULL initially. After the user selects

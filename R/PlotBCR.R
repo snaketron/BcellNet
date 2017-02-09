@@ -46,16 +46,16 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   if (!any(class(weighted_graph) %in% "igraph")) {
     stop("weighted_graph must be an igraph object")
   }
-  validateInputNumeric(edge_threshold)
-  validateInputNumeric(community_threshold)  
-  validateInputNumeric(vertex_size)  
-  validateInputString(vertex_color)
-  validateInputString(edge_color)
-  validateInputString(label)
+  .validate_input_numeric(edge_threshold)
+  .validate_input_numeric(community_threshold)  
+  .validate_input_numeric(vertex_size)  
+  .validate_input_string(vertex_color)
+  .validate_input_string(edge_color)
+  .validate_input_string(label)
   if (!is.function(community_algorithm)) {
     stop("community_algorithm must be a function but found '", class(community_algorithm), "'")
   }
-  validateInputString(layout_algorithm)  
+  .validate_input_string(layout_algorithm)  
   if (!is.logical(dynamic)) {
     stop("dynamic must be a logical but found '", class(dynamic), "'")
   }
@@ -85,7 +85,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # Set colors for each member. (Adjust these as desired)
   # need to copy it first
   # print(length(communities))
-  community_colors <- sample_n_colors(100)[memb]
+  community_colors <- .sample_n_colors(100)[memb]
   
   # But for members of communities of one, set the color to white
   singles <- which(memb %in% as.numeric(names(tab)[tab<=community_threshold]))
@@ -147,7 +147,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 }
 
 # Helper function to validate the inputs
-validateInputNumeric <- function(numeric) {
+.validate_input_numeric <- function(numeric) {
   if (!is.numeric(numeric)) {
     stop("'", quote(numeric), "' must be a numeric but found '", class(numeric), "'")
   }
@@ -156,7 +156,7 @@ validateInputNumeric <- function(numeric) {
   }
 }
 
-validateInputString <- function(string) {
+.validate_input_string <- function(string) {
   if (!is.character(string)) {
     stop("'", quote(string), "' must be a string but found '", class(string), "'")
   }
@@ -201,7 +201,7 @@ all_layout_algorithms <- function() {
   
 }
 
-sample_n_colors <- function(n) {
+.sample_n_colors <- function(n) {
   colors <- grDevices::colors()[grep('gr(a|e)y', grDevices::colors(), invert = T)]
   sample(colors, n)
 }

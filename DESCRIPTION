@@ -19,7 +19,8 @@ Imports:
   shinyjs,
   igraph,
   graphics,
-  visNetwork
+  visNetwork,
+  utils
 Suggests:
   devtools,
   testthat,
