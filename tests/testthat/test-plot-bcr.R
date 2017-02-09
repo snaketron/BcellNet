@@ -1,6 +1,5 @@
 context("Plotting")
 
-## TODO: Add more tests
 
 test_that("default plotting with karate dataset works", {
   library(igraph)
