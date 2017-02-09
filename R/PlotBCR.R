@@ -16,6 +16,7 @@ library(visNetwork)
 #' @param edge_color Controls color of edges.
 #' @param label title of the image directly plotted to the image.
 #' @param community_algorithm which algorithm is used to calculate the communities
+#' @param dynamic Logical Type. Determines if the plot is rendered dynamically via JS or static as a SVG
 #' 
 #' @examples
 #' require(igraph)
