@@ -33,7 +33,14 @@ library(visNetwork)
 #' @aliases plot_graph
 #' 
 #' @keywords plot graph bcr community highlight
-#'
+#' 
+#' @importFrom igraph delete.edges
+#' @importFrom igraph E
+#' @importFrom igraph E<-
+#' @importFrom igraph V
+#' @importFrom igraph V<-
+#' @importFrom igraph membership
+#' 
 #' @import visNetwork
 #' @import graphics
 #' 
@@ -179,7 +186,12 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 #' 
 #' @keywords igraph community algorithm provider
 #'
-#' @import igraph
+#' @importFrom igraph cluster_fast_greedy
+#' @importFrom igraph cluster_label_prop
+#' @importFrom igraph cluster_leading_eigen
+#' @importFrom igraph cluster_louvain
+#' @importFrom igraph cluster_optimal
+#' @importFrom igraph cluster_walktrap
 #' 
 #' @export
 #'

@@ -76,22 +76,25 @@ csvToDistanceMatrices <- function(path, header = TRUE, sep = ";", distanceMetric
   return(distances)
 }
 
-
+#' @importFrom igraph graph.empty
+#' @importFrom igraph vertex
+#' @importFrom igraph edge
+#' @importFrom igraph as.undirected
 buildIGraph <- function(arrayBcr, distanceMatrix, thresholdMax = 5, thresholdMin = 1){
   
   graph <- graph.empty()
   #fill graph
   #add bcrs as verticies 
   for(i in 1:length(arrayBcr)){
-  
+    
     graph <- graph + vertex(name = arrayBcr[i]) 
-
+    
   }
   
   
   # Connect them with their distance (add edges) 
   for(i in 1:length(arrayBcr)){
-
+    
     #for(bcr2 in arrayBcr2){ 
     for(j in i:length(arrayBcr)){ 
       weight <- distanceMatrix[i,j]
@@ -102,17 +105,18 @@ buildIGraph <- function(arrayBcr, distanceMatrix, thresholdMax = 5, thresholdMin
     
   }
   
-
+  
   graph <- as.undirected(graph)
   
   return(graph)
 }
 
-
+#' @importFrom igraph vcount
+#' @importFrom igraph ecount
 printInformation <- function(iGraphData){
   
   
-  #print number of vertices
+  #print number of verticesd
   cat("vertices:", vcount(iGraphData),"\n")
   #print number of edges
   cat("edges:", toString(ecount(iGraphData)),"\n")
