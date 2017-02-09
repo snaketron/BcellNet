@@ -124,7 +124,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # visNetwork(V(trimmed_network), E(trimmed_network), main=label) %>%
     # visIgraphLayout(layout="layout_with_fr", physics = FALSE, smooth = FALSE, type = "full") %>%
     # visInteraction(dragNodes = FALSE)
-  visIgraph(trimmed_network, layout = layout_algorithm, physics = FALSE, smooth = FALSE, type = "full", idToLabel = FALSE) %>%
+  visIgraph(trimmed_network, layout = layout_algorithm, physics = FALSE, smooth = FALSE, idToLabel = FALSE) %>%
     visInteraction(dragNodes = FALSE)
   # network_data <- toVisNetworkData(weighted_graph)
   
