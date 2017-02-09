@@ -213,8 +213,7 @@ server <- function(input,output, session){
     output$firstPatient <- renderVisNetwork({
       tryCatch({
         title <- paste("Patient ", selectFirstPatient)
-        print(identical(comAlgo, cluster_louvain))
-        print(identical(comAlgo, eval(comAlgo)))
+        
         plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo)
       })
     }) # here the input value changes whenever a user changes the input ( slidinput).
