@@ -63,6 +63,14 @@ test_that("plotting with invalid vertex color length fails", {
   expect_error(plot_graph(karate, vertex_color = ""))
 })
 
+test_that("plotting with invalid dynamic type fails", {
+  library(igraph)
+  library(igraphdata)
+  data("karate")
+  
+  expect_error(plot_graph(karate, dynamic = 0))
+})
+
 test_that("we have some algorithms to detect communities", {
   expect_true(length(all_communtiy_algorithms()) > 0)
 })
