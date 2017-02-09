@@ -99,33 +99,29 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   singles <- which(memb %in% as.numeric(names(tab)[tab<=community_threshold]))
   community_colors[singles] <- vertex_color
   
-  # mark.groups are a list of c(a,b,c) thus need to filter out the ones with size bigger than 1
-  # mark_groups <- communities(communities)
-  # mark_groups <- mark_groups[as.numeric(names(mark_groups)[tab>community_threshold])]
-  
   # igraph will colorize communities provided by the col=X statement
   # if given plot(communities, network, ...) form and not just plot(network, ...)
   # plot(communities, trimmed_network, mark.groups=mark_groups, vertex.size=vertex_size, edge.width=edge_width,
   #      vertex.label=NA, edge.color=edge_color,layout=network_layout, col=community_colors,
   #      main=label, edge.label=NA) 
-  # visNetwork()
   
-  V(trimmed_network)$label <- NA
-  V(trimmed_network)$color <- community_colors
-  V(trimmed_network)$frame.color <- "black"
-  V(trimmed_network)$color.border <- "black"
-  # V(trimmed_network)$color <- list(background="red", border="black")
-  # V(trimmed_network)$color.border.wtf <- "wtf"
+  weighted_graph <- .colorize_graph(weighted_graph, community_colors)
   
-  
-  E(trimmed_network)$color <- "black"
-  trimmed_network$main <- label
-  # print(community_colors)
-  # visNetwork(V(trimmed_network), E(trimmed_network), main=label) %>%
-    # visIgraphLayout(layout="layout_with_fr", physics = FALSE, smooth = FALSE, type = "full") %>%
-    # visInteraction(dragNodes = FALSE)
-  visIgraph(trimmed_network, layout = layout_algorithm, physics = FALSE, smooth = FALSE, idToLabel = FALSE) %>%
-    visInteraction(dragNodes = FALSE)
+  # nData <- toVisNetworkData(trimmed_network, FALSE)
+  nData <- toVisNetworkData(weighted_graph, FALSE)
+  nData$edges$hidden <- if (!is.null(nData$edges$weight)) {
+    nData$edges$weight < edge_threshold
+  }
+  # nData$nodes$color$border <- "black"
+  # nData$nodes$color[border] <- "black"
+  # print(nData$nodes$color)
+  # nData$nodes$color <- list(background=nData$nodes$color$background, border="black")
+
+  visNetwork(nodes = nData$nodes, edges = nData$edges, main = label) %>%
+    visInteraction(dragNodes = FALSE) %>%
+    visIgraphLayout(layout = layout_algorithm, smooth = FALSE, physics = FALSE, type = "square", randomSeed = NULL, layoutMatrix = NULL) %>%
+    visOptions(highlightNearest = list(enabled = T, hover = T))
+    
   # network_data <- toVisNetworkData(weighted_graph)
   
   # nodes <- network_data[[1]]
@@ -149,9 +145,18 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # nodes$color.highlight.border <- "darkred"
   # edges$title <- round(edges$edge.width,3)
   
+}
+
+.colorize_graph <- function(igraph_graph, community_colors) {
+  V(igraph_graph)$label <- NA
+  V(igraph_graph)$color <- community_colors
+  V(igraph_graph)$frame.color <- "black"
+  V(igraph_graph)$color.border <- "black"
+  # V(igraph_graph)$color <- list(background="red", border="black")
   
-  # visNetwork(nodes, edges)
-  # visOptions(highlightNearest = TRUE, selectedBy = "community", nodesIdSelection = TRUE)
+  E(igraph_graph)$color <- "black"
+  
+  return (igraph_graph)
 }
 
 # Helper function to validate the inputs
