@@ -34,7 +34,6 @@ loadSource("PlotBCR.R")
 #' 
 #' @keywords distance metric levenshtein damerau bcr
 #'
-#' @import igraph
 #' @export 
 
 calculateDistances <- function(arrayBcr1, arrayBcr2, distanceMetric = "LD"){

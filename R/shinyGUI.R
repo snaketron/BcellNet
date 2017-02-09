@@ -136,7 +136,7 @@ ui <- fluidPage(
 #####################server side####################################
 
 #' @import shiny
-#' @import shinyjs
+#' @importFrom shinyjs enable
 server <- function(input,output, session){
   
   # input$csvFile will be NULL initially. After the user selects

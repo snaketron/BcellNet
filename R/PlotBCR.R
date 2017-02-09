@@ -36,6 +36,7 @@ library(visNetwork)
 #'
 #' @import visNetwork
 #' @import graphics
+#' 
 #' @export
 #' 
 #' @seealso \code{\link[igraph]{igraph}}
@@ -178,8 +179,10 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 #' 
 #' @keywords igraph community algorithm provider
 #'
-#' @export
+#' @import igraph
 #' 
+#' @export
+#'
 #' @seealso \code{\link[igraph]{igraph}}
 #' @seealso \code{\link[igraph]{communities}}
 all_communtiy_algorithms <- function() {
