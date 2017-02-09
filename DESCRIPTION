@@ -24,5 +24,6 @@ Imports:
 Suggests:
   devtools,
   testthat,
-  covr
+  covr,
+  igraphdata
 RoxygenNote: 5.0.1
