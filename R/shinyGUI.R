@@ -78,12 +78,12 @@ ui <- fluidPage(
                   value = 30, min = 1, max = 100),
       
       # comboBox
-      selectInput(inputId = "select_community",label = "",
+      selectInput(inputId = "select_community",label = "Community Selection",
                   choices = names(all_communtiy_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       
-      selectInput(inputId = "select_community",label = "",
-                  choices = names(all_communtiy_algorithms()),
+      selectInput(inputId = "select_layout",label = "Layout Generator",
+                  choices = names(all_layout_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       
       #Buttons
@@ -212,14 +212,16 @@ server <- function(input,output, session){
     print("graphsecond created")
     
     comAlgo <- all_communtiy_algorithms()[[input$select_community]]
-    # comAlgo <- eval(comAlgo)
     cat("community algorithm selected:", input$select_community, "\n")
     
+    layout_algo <- all_layout_algorithms()[[input$select_layout]]
+    cat("layout algorithm selected:", input$select_layout, "\n")
+        
     # renderPlot is a plot
     output$firstPatient <- renderVisNetwork({
       title <- paste("Patient ", selectFirstPatient)
       
-      plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo)
+      plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
     }) # here the input value changes whenever a user changes the input ( slidinput).
     # you can also use : data <- reactive({ rnorm(input$num) })
     # Then => output$hist <- renderPlot({ hist(data()) })
@@ -227,7 +229,7 @@ server <- function(input,output, session){
     output$secondPatient <- renderVisNetwork({
       title <- paste("Patient ", selectSecondPatient)
       
-      plot_graph(graphSecond, edge_threshold=input$num, label=title, community_algorithm = comAlgo)
+      plot_graph(graphSecond, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
       # you can also use: main =input$titleInTextBox
       # isolate() makes an non-reactive object
       #you can use isolate for main = isolate({input$title}))

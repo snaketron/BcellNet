@@ -124,7 +124,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # visNetwork(V(trimmed_network), E(trimmed_network), main=label) %>%
     # visIgraphLayout(layout="layout_with_fr", physics = FALSE, smooth = FALSE, type = "full") %>%
     # visInteraction(dragNodes = FALSE)
-  visIgraph(trimmed_network, layout = "layout_with_fr", physics = FALSE, smooth = FALSE, type = "full", idToLabel = FALSE) %>%
+  visIgraph(trimmed_network, layout = layout_algorithm, physics = FALSE, smooth = FALSE, type = "full", idToLabel = FALSE) %>%
     visInteraction(dragNodes = FALSE)
   # network_data <- toVisNetworkData(weighted_graph)
   
@@ -213,7 +213,27 @@ all_communtiy_algorithms <- function() {
 }
 
 all_layout_algorithms <- function() {
+  algos <- c(
+    "Auto" = "layout_nicely",
+    # "", layout_as_bipartite, # not possible since it is not partitioned
+    "Star" = "layout_as_star",
+    # "Tree" = "layout_as_tree", # not usefull since this is not a tree or if we have cycles
+    "Cicle" = "layout_in_circle",
+    "Grid" = "layout_on_grid",
+    "Sphere" = "layout_on_sphere",
+    "Random" = "layout_randomly",
+    "Davidson-Harel" = "layout_with_dh",
+    "Distributed Recursive Layout" = "layout_with_drl",
+    "Fruchterman-Reingold" = "layout_with_fr",
+    "Generalized Expectation-Maximization" = "layout_with_gem",
+    "GraphOpt" = "layout_with_graphopt",
+    "Kamada-Kawai" = "layout_with_kk",
+    "Large Graph" = "layout_with_lgl",
+    "Multidimensional Scaling" = "layout_with_mds"
+    # "Sugiyama" = "layout_with_sugiyama" not useful since this is for directed acyclic graphs
+  )
   
+  return (algos)
 }
 
 .sample_n_colors <- function(n) {
