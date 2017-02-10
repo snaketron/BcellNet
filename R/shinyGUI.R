@@ -18,6 +18,7 @@ usePackage <- function(p) {
 
 usePackage("shiny")
 usePackage("shinyjs")
+#usePackage("shinyBS")
 
 data <- NULL
 selectFirstPatient <- NULL
@@ -50,15 +51,15 @@ ui <- fluidPage(
       fileInput('csvFile', 'Choose CSV File',
                 accept=c('text/csv', 
                          'text/comma-separated-values,text/plain', 
-                         '.csv')),  
+                         '.csv')),
       #ende fileInput
       
       #checkBOx
-      checkboxInput(inputId = "checkbox1", label = " select input File", value = FALSE),
+      #checkboxInput(inputId = "checkbox1", label = " select input File", value = FALSE),
       
-      selectInput(inputId = "combo1",label = "",
-                  list(`A` = c("Select B-cell subset", "a", "b"),`AB` = c("WA", "OR", "CA")),
-                  selected = NULL, multiple = FALSE, selectize = TRUE),
+      # selectInput(inputId = "combo1",label = "",
+      #             list(`A` = c("Select B-cell subset", "a", "b"),`AB` = c("WA", "OR", "CA")),
+      #             selected = NULL, multiple = FALSE, selectize = TRUE),
       
       #first patient
       selectInput(inputId = "comboFirstPatient",label = "Select 1st patient",
@@ -68,15 +69,18 @@ ui <- fluidPage(
       selectInput(inputId = "comboSecondPatient", label = "Select 2nd patient",
                   choices = NULL, selected = NULL, multiple = FALSE, selectize = TRUE),
       
-      selectInput(inputId = "combo2",label = "",
-                  list(`D` = c("Select VH-JH segment", "a", "b"),`DE` = c("WA", "OR", "CA")),
-                  selected = NULL, multiple = FALSE, selectize = TRUE),
+      # selectInput(inputId = "combo2",label = "",
+      #             list(`D` = c("Select VH-JH segment", "a", "b"),`DE` = c("WA", "OR", "CA")),
+      #             selected = NULL, multiple = FALSE, selectize = TRUE),
       
       tags$hr(),
       
+      #numericInput
+      numericInput( inputId = "num",label = " Egde definition",value =0.01,min = 0,max = 1, step = 0.01, width = "50%"),
+     
       #Slider
-      sliderInput(inputId = "num", label = "Egde definition", 
-                  value = 30, min = 1, max = 100),
+     # sliderInput(inputId = "num", label = "Egde definition", 
+                  #value = 0.3, min = 0, max = 1, step= 0.1),
       
       # comboBox
       selectInput(inputId = "select_community",label = "Community Selection",
@@ -90,27 +94,40 @@ ui <- fluidPage(
       #Buttons
       disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;")),
       disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;")),
-      disabled(actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;")),
-      disabled(actionButton(inputId = "exportButton", label = " Export as...", style="margin-top:10px;"))
+      disabled(actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px; margin-bottom:15px;")),
+     # disabled(actionButton(inputId = "exportButton", label = " Export as...", style="margin-top:10px;")),
       
-      # textBox
       
-      # textInput(inputId = "titleInTextBox",
-      # label = "Write a title",
-      # value = "test label of Histogram"),
-      #column(width = 2),
+      # RadioButton
+      radioButtons(inputId = "saveAs", label = "Download as type:", choices = list("PNG","PDF"), inline = TRUE),
+      textInput(inputId = "downloadPlotFileName", label = h5("Enter file name for download")),
+      
+      # add Export as Button for Download
+     disabled(downloadButton(outputId = "down", label = "Download the plot")),
+
+      #popUp windows Test
+     disabled(actionButton("go", "PopUpWindows", style="margin-left:10px;"))
+     
+
+     #####################
       
     ), # End of sidebarLayout
     
-    ###################def output function in main###################################
+    
+    
+    
+    ###################def output function in mainPanel ###################################
     mainPanel(
       
       # You must build the object in the server function
       tabsetPanel(
         tabPanel("tab1", visNetworkOutput("firstPatient"),
                  
-                 visNetworkOutput("secondPatient"),
-                 tableOutput('contents')),
+                 visNetworkOutput("secondPatient")
+                 #popupWindows
+               # bsModal("modalExample", "Your plot", "go", size = "large",visNetworkOutput("firstPatient"),downloadButton('downloadPlot', 'Download'))
+                
+                 ),
         
         tabPanel("tab2"),
         
@@ -140,21 +157,8 @@ ui <- fluidPage(
 #' @importFrom shinyjs enable
 server <- function(input,output, session){
   
-  # input$csvFile will be NULL initially. After the user selects
-  # and uploads a file, it will be a data frame with 'name',
-  # 'size', 'type', and 'datapath' columns. The 'datapath'
-  # column will contain the local filenames where the data can
-  # be found.
-  output$contents <- renderDataTable({
-    #read selected csv data
-    inFile <- input$csvFile
-    if (is.null(inFile))
-      return(NULL)
-    # data <- csvToSubset(inFile$datapath)
-    # return(data)
-  })
   
-  #update content of patient combobox
+##########   update content of patient combobox #############
   observe({
     if(is.null(input$csvFile$datapath)) return(NULL)
     
@@ -177,7 +181,7 @@ server <- function(input,output, session){
     )
   })
   
-  #save selected patient into global var
+#save selected patient into global var
   observeEvent(input$comboFirstPatient, {
     selectFirstPatient <<- input$comboFirstPatient
   })
@@ -192,7 +196,9 @@ server <- function(input,output, session){
     shinyjs::enable("pn")
     shinyjs::enable("pdd")
     shinyjs::enable("pcsd")
-    shinyjs::enable("exportButton")
+    shinyjs::enable("down")
+    # for pop up Windows
+   # shinyjs::enable("go")
   })
   
   #plot networt button action
@@ -201,7 +207,9 @@ server <- function(input,output, session){
     if(is.null(data)) session$sendCustomMessage(type = 'testmessage',
                                                 message = 'Select data first')
     
-    #create and plot graph of "negative" patient
+    
+    ########## create and plot graph of "negative" patient ###############
+    
     arrayFirst <- data[[selectFirstPatient]]$sequence
     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
     graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 10, thresholdMin = 1)
@@ -218,26 +226,85 @@ server <- function(input,output, session){
     layout_algo <- all_layout_algorithms()[[input$select_layout]]
     cat("layout algorithm selected:", input$select_layout, "\n")
         
-    # renderPlot is a plot
-    output$firstPatient <- renderVisNetwork({
+    
+    ################ Plot Graphs #####################
+    
+    plota = function(){
+   
       title <- paste("Patient ", selectFirstPatient)
       
       plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
-    }) # here the input value changes whenever a user changes the input ( slidinput).
-    # you can also use : data <- reactive({ rnorm(input$num) })
-    # Then => output$hist <- renderPlot({ hist(data()) })
+    } 
+    output$firstPatient <- renderVisNetwork({
+      plota()
+    })
     
+
+  
     output$secondPatient <- renderVisNetwork({
       title <- paste("Patient ", selectSecondPatient)
       
       plot_graph(graphSecond, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+ 
       # you can also use: main =input$titleInTextBox
       # isolate() makes an non-reactive object
       #you can use isolate for main = isolate({input$title}))
       
     })
     
+    
+    
+    ############ Download as...#####################
+    #  Get the download file name.
+    downloadPlotFileName <- reactive({
+      input$downloadPlotFileName
+    })
+    
+    output$down<- downloadHandler(
+      #Specify the file name
+      filename = function(){
+        paste(downloadPlotFileName(), input$saveAs, sep = ".")
+        # paste("Plot", input$saveAs, sep = ".")
+        
+      },
+      
+      
+      # open the device (png() or pdf())
+      content = function(file){
+        if(input$saveAs == "PNG")
+          png(file)
+        else
+          pdf(file)
+        
+        # 2:create the plot 
+        
+        # here you can call (by Print or Func.) your Plot, which you want to print 
+        #print(hist(rnorm(100), main = " Patient 2"))
+      
+        # for GGPLOT
+        # print(ggplot(iris, aes(x=x(), y=y())) + geom_point(shape=1)) 
+       #plota()
+      # plotb() 
+       
+        # 3:close the device
+        dev.off()   
+      }
+    )
+    #################### End of Download as..###############
+    
+    
+    
+    
+    
+    
+    
+    
   })
+  
+  
+  
+ 
+  
   
 }
 
