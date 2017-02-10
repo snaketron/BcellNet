@@ -1,4 +1,4 @@
-source("R/BuildIGraph.R")
+
 
 usePackage <- function(p) {
   if (!is.element(p, installed.packages()[,1]))
@@ -13,7 +13,6 @@ data <- NULL
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
 graphFirst <- NULL
-
 
 #UI
 ui <- fluidPage(
