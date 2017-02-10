@@ -1,6 +1,15 @@
 library(igraph)
-source("R/DistanceMetric.R")
-source("R/PlotBCR.R")
+
+loadSource <- function(sourceName) {
+  pattern <- paste("^", sourceName, "$", sep = "")
+  files <- list.files(pattern=pattern, recursive = FALSE)
+  for (file in files) {
+    source(file)
+  }
+}
+
+loadSource("DistanceMetric.R")
+loadSource("PlotBCR.R")
 
 
 #' @title calculate distance between given bcr arrays
@@ -25,7 +34,6 @@ source("R/PlotBCR.R")
 #' 
 #' @keywords distance metric levenshtein damerau bcr
 #'
-#' @import igraph
 #' @export 
 
 calculateDistances <- function(arrayBcr1, arrayBcr2, distanceMetric = "LD"){
@@ -37,7 +45,7 @@ calculateDistances <- function(arrayBcr1, arrayBcr2, distanceMetric = "LD"){
 }
 
 
-
+#' @import utils
 csvToSubset <- function(path, header = TRUE, sep = ";"){
   data <- read.csv(path, header = header, sep = sep,stringsAsFactors=FALSE)
   
@@ -68,22 +76,25 @@ csvToDistanceMatrices <- function(path, header = TRUE, sep = ";", distanceMetric
   return(distances)
 }
 
-
+#' @importFrom igraph graph.empty
+#' @importFrom igraph vertex
+#' @importFrom igraph edge
+#' @importFrom igraph as.undirected
 buildIGraph <- function(arrayBcr, distanceMatrix, thresholdMax = 5, thresholdMin = 1){
   
   graph <- graph.empty()
   #fill graph
   #add bcrs as verticies 
   for(i in 1:length(arrayBcr)){
-  
+    
     graph <- graph + vertex(name = arrayBcr[i]) 
-
+    
   }
   
   
   # Connect them with their distance (add edges) 
   for(i in 1:length(arrayBcr)){
-
+    
     #for(bcr2 in arrayBcr2){ 
     for(j in i:length(arrayBcr)){ 
       weight <- distanceMatrix[i,j]
@@ -94,17 +105,18 @@ buildIGraph <- function(arrayBcr, distanceMatrix, thresholdMax = 5, thresholdMin
     
   }
   
-
+  
   graph <- as.undirected(graph)
   
   return(graph)
 }
 
-
+#' @importFrom igraph vcount
+#' @importFrom igraph ecount
 printInformation <- function(iGraphData){
   
   
-  #print number of vertices
+  #print number of verticesd
   cat("vertices:", vcount(iGraphData),"\n")
   #print number of edges
   cat("edges:", toString(ecount(iGraphData)),"\n")

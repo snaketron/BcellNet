@@ -19,9 +19,11 @@ Imports:
   shinyjs,
   igraph,
   graphics,
-  visNetwork
+  visNetwork,
+  utils
 Suggests:
   devtools,
   testthat,
-  covr
+  covr,
+  igraphdata
 RoxygenNote: 5.0.1

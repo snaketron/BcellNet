@@ -1,8 +1,18 @@
 
+# setwd("R") is done by shiny since the server file is in here
+loadSource <- function(sourceName) {
+  pattern <- paste("^", sourceName, "$", sep = "")
+  files <- list.files(pattern=pattern, recursive = FALSE)
+  for (file in files) {
+    source(file)
+  }
+}
+loadSource("BuildIGraph.R")
+
 
 usePackage <- function(p) {
   if (!is.element(p, installed.packages()[,1]))
-    install.packages(p, dep = TRUE, repos="http://cran.us.r-project.org")
+    install.packages(p, dependencies = TRUE, repos="http://cran.us.r-project.org")
   require(p, character.only = TRUE)
 }
 
@@ -69,9 +79,14 @@ ui <- fluidPage(
                   value = 30, min = 1, max = 100),
       
       # comboBox
-      selectInput(inputId = "select_community",label = "",
-                  choices = all_communtiy_algorithms(),
+      selectInput(inputId = "select_community",label = "Community Selection",
+                  choices = names(all_communtiy_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
+      
+      selectInput(inputId = "select_layout",label = "Layout Generator",
+                  choices = names(all_layout_algorithms()),
+                  selected = NULL, multiple = FALSE, selectize = TRUE),
+      
       #Buttons
       disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;")),
       disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;")),
@@ -121,7 +136,8 @@ ui <- fluidPage(
 
 #####################server side####################################
 
-
+#' @import shiny
+#' @importFrom shinyjs enable
 server <- function(input,output, session){
   
   # input$csvFile will be NULL initially. After the user selects
@@ -196,18 +212,25 @@ server <- function(input,output, session){
     graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 10, thresholdMin = 1)
     print("graphsecond created")
     
+    comAlgo <- all_communtiy_algorithms()[[input$select_community]]
+    cat("community algorithm selected:", input$select_community, "\n")
+    
+    layout_algo <- all_layout_algorithms()[[input$select_layout]]
+    cat("layout algorithm selected:", input$select_layout, "\n")
+        
     # renderPlot is a plot
     output$firstPatient <- renderVisNetwork({
       title <- paste("Patient ", selectFirstPatient)
-      plot_graph(graphFirst, edge_threshold=input$num, label=title)
+      
+      plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
     }) # here the input value changes whenever a user changes the input ( slidinput).
     # you can also use : data <- reactive({ rnorm(input$num) })
     # Then => output$hist <- renderPlot({ hist(data()) })
     
     output$secondPatient <- renderVisNetwork({
       title <- paste("Patient ", selectSecondPatient)
-      plot_graph(graphSecond, edge_threshold=input$num, label=title)
-      #plot_graph(igraph::graph(edges=c(1,2), n=3, directed=FALSE), edge_threshold=input$num, label=title)
+      
+      plot_graph(graphSecond, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
       # you can also use: main =input$titleInTextBox
       # isolate() makes an non-reactive object
       #you can use isolate for main = isolate({input$title}))
