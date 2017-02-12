@@ -2,7 +2,7 @@ library(igraph)
 
 loadSource <- function(sourceName) {
   pattern <- paste("^", sourceName, "$", sep = "")
-  files <- list.files(pattern=pattern, recursive = FALSE)
+  files <- list.files(pattern=pattern, recursive = TRUE)
   for (file in files) {
     source(file)
   }

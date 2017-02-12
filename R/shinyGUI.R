@@ -1,13 +1,15 @@
-
+files <- NULL
 # setwd("R") is done by shiny since the server file is in here
 loadSource <- function(sourceName) {
   pattern <- paste("^", sourceName, "$", sep = "")
-  files <- list.files(pattern=pattern, recursive = FALSE)
+  print(pattern)
+  files <<- list.files(pattern=pattern, recursive = TRUE)
   for (file in files) {
     source(file)
   }
 }
 loadSource("BuildIGraph.R")
+
 
 
 usePackage <- function(p) {
@@ -212,13 +214,18 @@ server <- function(input,output, session){
     
     arrayFirst <- data[[selectFirstPatient]]$sequence
     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
-    graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 10, thresholdMin = 1)
-    print("graphfirst create")
-    
+
     arraySecond <- data[[selectSecondPatient]]$sequence
     matrixSecond <- calculateDistances(arraySecond,arraySecond)
-    graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 10, thresholdMin = 1)
-    print("graphsecond created")
+    
+    matrices <- normalizeMatrix(matrixFirst, matrixSecond)
+    
+    matrixSecond <- matrices[[1]]
+    matrixFirst <- matrices[[2]]
+    
+    graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = 0.0)
+    graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = 0.0)
+
     
     comAlgo <- all_communtiy_algorithms()[[input$select_community]]
     cat("community algorithm selected:", input$select_community, "\n")
