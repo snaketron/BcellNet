@@ -21,6 +21,7 @@ data <- NULL
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
 graphFirst <- NULL
+graphSecond <- NULL
 
 
 #UI
@@ -208,7 +209,7 @@ server <- function(input,output, session){
     
     arraySecond <- data[[selectSecondPatient]]$sequence
     matrixSecond <- calculateDistances(arraySecond,arraySecond)
-    graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 10, thresholdMin = 1)
+    graphSecond <<- buildIGraph(arraySecond, matrixSecond, thresholdMax = 10, thresholdMin = 1)
     print("graphsecond created")
     
     comAlgo <- all_communtiy_algorithms()[[input$select_community]]
