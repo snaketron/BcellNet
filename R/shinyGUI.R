@@ -230,11 +230,18 @@ server <- function(input,output, session){
     
     
     ########## create and plot graph of "negative" patient ###############
+    if(input$partOfSequence == "whole sequence"){
+      arrayFirst <- data[[selectFirstPatient]]$sequence
+      arraySecond <- data[[selectSecondPatient]]$sequence
+    }else if(input$partOfSequence == "CDR3"){
+      arrayFirst <- data[[selectFirstPatient]]$CDR3
+      arraySecond <- data[[selectSecondPatient]]$CDR3
+    }else{
+      arrayFirst <- data[[selectFirstPatient]]$V.sequence
+      arraySecond <- data[[selectSecondPatient]]$V.sequence
+    }
     
-    arrayFirst <- data[[selectFirstPatient]]$sequence
     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
-
-    arraySecond <- data[[selectSecondPatient]]$sequence
     matrixSecond <- calculateDistances(arraySecond,arraySecond)
 
     matrices <- normalizeMatrix(matrixFirst, matrixSecond)
