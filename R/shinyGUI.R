@@ -76,11 +76,11 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-      numericInput( inputId = "num",label = " Egde definition",value =0.01,min = 0,max = 1, step = 0.01, width = "50%"),
-     
+      numericInput( inputId = "num2",label = " Egde definition",value =0.01,min = 0,max = 1, step = 0.01, width = "50%"),
+  
       #Slider
-     # sliderInput(inputId = "num", label = "Egde definition", 
-                  #value = 0.3, min = 0, max = 1, step= 0.1),
+     sliderInput(inputId = "num", label = "Egde definition", 
+                  value = 0.3, min = 0, max = 1, step= 0.1),
       
       # comboBox
       selectInput(inputId = "select_community",label = "Community Selection",
@@ -244,7 +244,7 @@ server <- function(input,output, session){
     output$secondPatient <- renderVisNetwork({
       title <- paste("Patient ", selectSecondPatient)
       
-      plot_graph(graphSecond, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+      plot_graph(graphSecond, edge_threshold=input$num,label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
  
       # you can also use: main =input$titleInTextBox
       # isolate() makes an non-reactive object
@@ -252,7 +252,7 @@ server <- function(input,output, session){
       
     })
     
-    
+   
     
     ############ Download as...#####################
     #  Get the download file name.
@@ -292,7 +292,7 @@ server <- function(input,output, session){
     )
     #################### End of Download as..###############
     
-    
+  
     
     
     
