@@ -57,6 +57,71 @@ distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2){
   return(matrix)
 }
 
+# normalize values between 0 - 1; set groundzero to false you will get relatively values, 
+# otherwise the minimum will be 0 and the maximum 1
+normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
+  
+  normalizedMatrixA <- matrix(nrow =nrow(matrixA), ncol = ncol(matrixA), 2)
+  normalizedMatrixB <- matrix(nrow =nrow(matrixB), ncol = ncol(matrixB), 2)
+  
+  minVal <- matrixA[1,1]
+  maxVal <- matrixA[1,1]
+
+  for(i in 1:nrow(matrixA)){
+    for(j in 1:i){
+      
+      if(matrixA[i,j] > maxVal) maxVal <- matrixA[i,j]
+      if(matrixA[j,i] < minVal) minVal <- matrixA[i,j]
+      
+    }
+  }
+  for(i in 1:nrow(matrixB)){
+    for(j in 1:i){
+      
+      if(matrixB[i,j] > maxVal) maxVal <- matrixB[i,j]
+      if(matrixB[j,i] < minVal) minVal <- matrixB[i,j]
+      
+    }
+  }
+  
+  if(groundZero == TRUE){
+    for(i in 1:nrow(matrixA)){
+      for(j in 1:i){
+
+        normalizedMatrixA[i,j] <- (matrixA[i,j] - minVal) / maxVal
+        normalizedMatrixA[j,i] <- normalizedMatrixA[i,j]
+        
+      }
+    }
+    for(i in 1:nrow(matrixB)){
+      for(j in 1:i){
+        
+        normalizedMatrixB[i,j] <- (matrixB[i,j] - minVal) / maxVal
+        normalizedMatrixB[j,i] <- normalizedMatrixB[i,j]
+        
+      }
+    }
+  } else {
+    for(i in 1:nrow(matrixA)){
+      for(j in 1:i){
+        
+        normalizedMatrixA[i,j] <- matrixA[i,j] / maxVal
+        normalizedMatrixA[j,i] <- normalizedMatrixA[i,j]
+        
+      }
+    }
+    for(i in 1:nrow(matrixB)){
+      for(j in 1:i){
+        
+        normalizedMatrixB[i,j] <- matrixB[i,j] / maxVal
+        normalizedMatrixB[j,i] <- normalizedMatrixB[i,j]
+        
+      }
+    }
+  } 
+
+  return(list(normalizedMatrixA,normalizedMatrixA))
+}
 
 
 

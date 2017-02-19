@@ -1,13 +1,15 @@
-
+files <- NULL
 # setwd("R") is done by shiny since the server file is in here
 loadSource <- function(sourceName) {
   pattern <- paste("^", sourceName, "$", sep = "")
-  files <- list.files(pattern=pattern, recursive = FALSE)
+  print(pattern)
+  files <<- list.files(pattern=pattern, recursive = TRUE)
   for (file in files) {
     source(file)
   }
 }
 loadSource("BuildIGraph.R")
+
 
 
 usePackage <- function(p) {
@@ -24,6 +26,7 @@ data <- NULL
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
 graphFirst <- NULL
+graphSecond <- NULL
 
 #UI
 ui <- fluidPage(
@@ -62,16 +65,19 @@ ui <- fluidPage(
       #             selected = NULL, multiple = FALSE, selectize = TRUE),
       
       #first patient
-      selectInput(inputId = "comboFirstPatient",label = "Select 1st patient",
-                  choices = NULL, selected = NULL, multiple = FALSE, selectize = TRUE),
+      disabled(selectInput(inputId = "comboFirstPatient",label = "Select 1st patient",
+                  choices = NULL, selected = NULL, multiple = FALSE, selectize = TRUE)),
       
       #second patient
-      selectInput(inputId = "comboSecondPatient", label = "Select 2nd patient",
-                  choices = NULL, selected = NULL, multiple = FALSE, selectize = TRUE),
+      disabled(selectInput(inputId = "comboSecondPatient", label = "Select 2nd patient",
+                  choices = NULL, selected = NULL, multiple = FALSE, selectize = TRUE)),
       
-      # selectInput(inputId = "combo2",label = "",
-      #             list(`D` = c("Select VH-JH segment", "a", "b"),`DE` = c("WA", "OR", "CA")),
-      #             selected = NULL, multiple = FALSE, selectize = TRUE),
+      disabled(selectInput(inputId = "vjSegment",label = "VJ-Segment",
+                  choices = "each?",selected = "each?", multiple = FALSE, selectize = TRUE)),
+      
+      selectInput(inputId = "partOfSequence",label = "Part of Sequence",
+                  choices = c("whole sequence", "CDR3", "V sequence"),
+                  selected = "whole sequence", multiple = FALSE, selectize = TRUE),
       
       tags$hr(),
       
@@ -164,24 +170,49 @@ server <- function(input,output, session){
     
     
     data <<- csvToSubset(input$csvFile$datapath)
-    x <- names(data)
+    possiblePatients <- names(data)
+    possibleVjSegments <- NULL
     
     # Can use character(0) to remove all choices
-    if (is.null(x))
-      x <- character(0)
+    if (is.null(possiblePatients))
+      possiblePatients <- character(0)
     
     # Can also set the label and select items
     updateSelectInput(session, "comboFirstPatient",
-                      choices = x,
-                      selected = head(x, 1)
+                      choices = possiblePatients,
+                      selected = head(possiblePatients, 1)
     )
     updateSelectInput(session, "comboSecondPatient",
-                      choices = x,
-                      selected = head(x, 2)
+                      choices = possiblePatients,
+                      selected = head(possiblePatients, 2)
     )
+    
+    
+    
+    #loop over patients and update combobox with vj segment entries
+    for(i in 1:length(data)){
+      possibleVjSegments <- c(possibleVjSegments,data[[i]]$VJ.segment)
+    }
+    possibleVjSegments <- unique(possibleVjSegments)
+    
+    
+    updateSelectInput(session, "vjSegment",
+                      choices = c("each?",possibleVjSegments),
+                      selected = "each?"
+    )
+    
+    # enable buttons if csv file is loaded
+    shinyjs::enable("pn")
+    shinyjs::enable("pdd")
+    shinyjs::enable("pcsd")
+    shinyjs::enable("down")
+    shinyjs::enable("comboFirstPatient")
+    shinyjs::enable("comboSecondPatient")
+    shinyjs::enable("vjSegment")
   })
   
-#save selected patient into global var
+  
+  #save selected patient into global var
   observeEvent(input$comboFirstPatient, {
     selectFirstPatient <<- input$comboFirstPatient
   })
@@ -189,17 +220,7 @@ server <- function(input,output, session){
     selectSecondPatient <<- input$comboSecondPatient
   })
   
-  # enable buttons if csv file is loaded
-  observe({
-    if(is.null(input$csvFile$datapath)) return(NULL)
-    
-    shinyjs::enable("pn")
-    shinyjs::enable("pdd")
-    shinyjs::enable("pcsd")
-    shinyjs::enable("down")
-    # for pop up Windows
-   # shinyjs::enable("go")
-  })
+  
   
   #plot networt button action
   observeEvent(input$pn, {
@@ -209,16 +230,28 @@ server <- function(input,output, session){
     
     
     ########## create and plot graph of "negative" patient ###############
+    if(input$partOfSequence == "whole sequence"){
+      arrayFirst <- data[[selectFirstPatient]]$sequence
+      arraySecond <- data[[selectSecondPatient]]$sequence
+    }else if(input$partOfSequence == "CDR3"){
+      arrayFirst <- data[[selectFirstPatient]]$CDR3
+      arraySecond <- data[[selectSecondPatient]]$CDR3
+    }else{
+      arrayFirst <- data[[selectFirstPatient]]$V.sequence
+      arraySecond <- data[[selectSecondPatient]]$V.sequence
+    }
     
-    arrayFirst <- data[[selectFirstPatient]]$sequence
     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
-    graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 10, thresholdMin = 1)
-    print("graphfirst create")
-    
-    arraySecond <- data[[selectSecondPatient]]$sequence
     matrixSecond <- calculateDistances(arraySecond,arraySecond)
-    graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 10, thresholdMin = 1)
-    print("graphsecond created")
+
+    matrices <- normalizeMatrix(matrixFirst, matrixSecond)
+    
+    matrixSecond <- matrices[[1]]
+    matrixFirst <- matrices[[2]]
+    
+    graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = 0.0)
+    graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = 0.0)
+
     
     comAlgo <- all_communtiy_algorithms()[[input$select_community]]
     cat("community algorithm selected:", input$select_community, "\n")
