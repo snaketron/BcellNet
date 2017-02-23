@@ -22,6 +22,7 @@ usePackage("shiny")
 usePackage("shinyjs")
 #usePackage("shinyBS")
 
+
 data <- NULL
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
@@ -82,11 +83,12 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-      numericInput( inputId = "num2",label = " Egde definition",value =0.01,min = 0,max = 1, step = 0.01, width = "50%"),
-  
+      div(style="display:inline-block;vertical-align:top; width: 150px;",
+      numericInput( inputId = "num2",label = "Relative",value =0.03,min = 0,max = 1, step = 0.01)),
+      div(style="display:inline-block;vertical-align:top; width: 150px;",textInput(inputId = "textBox", label = " Absolute", width = "50%")),
       #Slider
-     sliderInput(inputId = "num", label = "Egde definition", 
-                  value = 0.3, min = 0, max = 1, step= 0.1),
+     # sliderInput(inputId = "num", label = "Egde definition", 
+     #              value = 0.3, min = 0, max = 1, step= 0.1),
       
       # comboBox
       selectInput(inputId = "select_community",label = "Community Selection",
@@ -98,25 +100,22 @@ ui <- fluidPage(
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       
       #Buttons
-      disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;")),
-      disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;")),
-      disabled(actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px; margin-bottom:15px;")),
+     div(style="display:inline-block;vertical-align:top; ",disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;"))),
+     div(style="display:inline-block;vertical-align:top; ",disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;"))),
+     div(style="display:inline-block;vertical-align:top; ", disabled(actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;")))
      # disabled(actionButton(inputId = "exportButton", label = " Export as...", style="margin-top:10px;")),
       
       
       # RadioButton
-      radioButtons(inputId = "saveAs", label = "Download as type:", choices = list("PNG","PDF"), inline = TRUE),
-      textInput(inputId = "downloadPlotFileName", label = h5("Enter file name for download")),
+    #  radioButtons(inputId = "saveAs", label = "Download as type:", choices = list("PNG","PDF"), inline = TRUE),
+    #  textInput(inputId = "downloadPlotFileName", label = h5("Enter file name for download")),
       
       # add Export as Button for Download
-     disabled(downloadButton(outputId = "down", label = "Download the plot")),
+    # disabled(downloadButton(outputId = "down", label = "Download the plot")),
 
       #popUp windows Test
-     disabled(actionButton("go", "PopUpWindows", style="margin-left:10px;"))
-     
+     #disabled(actionButton("go", "PopUpWindows", style="margin-left:10px;"))
 
-     #####################
-      
     ), # End of sidebarLayout
     
     
@@ -124,20 +123,20 @@ ui <- fluidPage(
     
     ###################def output function in mainPanel ###################################
     mainPanel(
+     
       
       # You must build the object in the server function
       tabsetPanel(
-        tabPanel("tab1", visNetworkOutput("firstPatient"),
+        tabPanel("Compare", visNetworkOutput("firstPatient"),
                  
                  visNetworkOutput("secondPatient")
                  #popupWindows
-               # bsModal("modalExample", "Your plot", "go", size = "large",visNetworkOutput("firstPatient"),downloadButton('downloadPlot', 'Download'))
-                
-                 ),
+                # bsModal("modalExample", "Your plot", "go", size = "large",visNetworkOutput("firstPatient"),downloadButton('downloadPlot', 'Download'))
+                 )
         
-        tabPanel("tab2"),
+      #  tabPanel("tab2"),
         
-        tabPanel("tab3")
+     #   tabPanel("tab3")
         
         # plotOutput("firstPatient"),
         # plotOutput("secondPatient"),
@@ -146,9 +145,10 @@ ui <- fluidPage(
       ),
       
       #show messages
-      tags$head(tags$script(src = "message-handler.js")),
+      tags$head(tags$script(src = "message-handler.js"))
+      
       # link for BcellNet in GitHub just for test href :)
-      tags$p(tags$a(href="https://github.com/snaketron/BcellNet","GitHub-BcellNet"))
+     #  tags$p(tags$a(href="https://github.com/snaketron/BcellNet","GitHub-BcellNet"))
       
     )#end of mainPanel
     
@@ -186,6 +186,7 @@ server <- function(input,output, session){
                       choices = possiblePatients,
                       selected = head(possiblePatients, 2)
     )
+   
     
     
     
@@ -205,10 +206,12 @@ server <- function(input,output, session){
     shinyjs::enable("pn")
     shinyjs::enable("pdd")
     shinyjs::enable("pcsd")
-    shinyjs::enable("down")
+   # shinyjs::enable("down")
     shinyjs::enable("comboFirstPatient")
     shinyjs::enable("comboSecondPatient")
     shinyjs::enable("vjSegment")
+    #shinyjs::enable("go")
+    
   })
   
   
@@ -219,6 +222,15 @@ server <- function(input,output, session){
   observeEvent(input$comboSecondPatient, {
     selectSecondPatient <<- input$comboSecondPatient
   })
+
+  #####################Update Inputnumeric#######################
+
+   observeEvent(input$num2,{
+     if(input$num2>1){
+                
+               updateNumericInput(session,"num2",value = 0.01, min=0, max = 1, step = 0.01)
+     }
+   })      
   
   
   
@@ -261,68 +273,67 @@ server <- function(input,output, session){
         
     
     ################ Plot Graphs #####################
-    
-    plota = function(){
+       ############ First Patient #############
+    output$firstPatient <- renderVisNetwork({
    
       title <- paste("Patient ", selectFirstPatient)
       
-      plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
-    } 
-    output$firstPatient <- renderVisNetwork({
-      plota()
-    })
-    
-
-  
+     patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+      visExport(patientOne, type = "pdf", name = "mynetwork",label = paste("Export as PDF"), style="background-color = #fff" )
+       } )
+   
+      
+   
+    ############ Second Patient #############
+   
     output$secondPatient <- renderVisNetwork({
+   
       title <- paste("Patient ", selectSecondPatient)
       
-      plot_graph(graphSecond, edge_threshold=input$num,label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
- 
+      patientTwo<-plot_graph(graphSecond, edge_threshold=input$num2,label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+      visExport(patientTwo, type = "pdf", name = "mynetwork",label = paste("Export as PDF"), style="background-color = #fff" )
+    
+    })
       # you can also use: main =input$titleInTextBox
       # isolate() makes an non-reactive object
       #you can use isolate for main = isolate({input$title}))
       
-    })
-    
-   
-    
+
     ############ Download as...#####################
-    #  Get the download file name.
-    downloadPlotFileName <- reactive({
-      input$downloadPlotFileName
-    })
-    
-    output$down<- downloadHandler(
-      #Specify the file name
-      filename = function(){
-        paste(downloadPlotFileName(), input$saveAs, sep = ".")
-        # paste("Plot", input$saveAs, sep = ".")
-        
-      },
-      
-      
-      # open the device (png() or pdf())
-      content = function(file){
-        if(input$saveAs == "PNG")
-          png(file)
-        else
-          pdf(file)
-        
-        # 2:create the plot 
-        
-        # here you can call (by Print or Func.) your Plot, which you want to print 
-        #print(hist(rnorm(100), main = " Patient 2"))
-      
-        # for GGPLOT
-        # print(ggplot(iris, aes(x=x(), y=y())) + geom_point(shape=1)) 
-       #plota()
-      # plotb() 
-       
-        # 3:close the device
-        dev.off()   
-      }
-    )
+    # #  Get the download file name.
+    # downloadPlotFileName <- reactive({
+    #   input$downloadPlotFileName
+    # })
+    # 
+    # output$down<- downloadHandler(
+    #   #Specify the file name
+    #   filename = function(){
+    #     paste(downloadPlotFileName(), input$saveAs, sep = ".")
+    #     # paste("Plot", input$saveAs, sep = ".")
+    #     
+    #   },
+    #   
+    #   
+    #   # open the device (png() or pdf())
+    #   content = function(file){
+    #     if(input$saveAs == "PNG")
+    #       png(file)
+    #     else
+    #       pdf(file)
+    #     
+    #     # 2:create the plot 
+    # 
+    #     # here you can call (by Print or Func.) your Plot, which you want to print 
+    #     #print(hist(rnorm(100), main = " Patient 2"))
+    #   
+    #     # for GGPLOT
+    #     # print(ggplot(iris, aes(x=x(), y=y())) + geom_point(shape=1)) 
+    #    
+    #     
+    #     # 3:close the device
+    #     dev.off()   
+    #   }
+    # )
     #################### End of Download as..###############
     
   
