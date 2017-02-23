@@ -82,7 +82,7 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-      numericInput( inputId = "num",label = " Edge definition",value =0.01,min = 0,max = 1, step = 0.01, width = "50%"),
+      numericInput( inputId = "num",label = " Edge definition",value =0.9,min = 0.0,max = 1, step = 0.01, width = "50%"),
      
       #Slider
      # sliderInput(inputId = "num", label = "Edge definition", 
