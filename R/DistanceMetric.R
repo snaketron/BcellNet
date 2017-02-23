@@ -120,7 +120,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
     }
   } 
 
-  return(list(normalizedMatrixA,normalizedMatrixA))
+  return(list(normalizedMatrixA,normalizedMatrixB))
 }
 
 

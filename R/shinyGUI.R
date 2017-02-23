@@ -33,6 +33,7 @@ graphSecond <- NULL
 ui <- fluidPage(
   # activate shinyjs which enables easy commands without JS knowledge
   shinyjs::useShinyjs(),
+  theme = "bcell.css",
   
   # p(style = "font-family:Times New Roman","See other apps in the"),
   # a("Shiny Showcase",href = "http://www.rstudio.com/products/shiny/shiny-user-showcase/"),
@@ -74,7 +75,7 @@ ui <- fluidPage(
                   choices = NULL, selected = NULL, multiple = FALSE, selectize = TRUE)),
       
       disabled(selectInput(inputId = "vjSegment",label = "VJ-Segment",
-                  choices = "each?",selected = "each?", multiple = FALSE, selectize = TRUE)),
+                  choices = "whole data",selected = "whole data", multiple = FALSE, selectize = TRUE)),
       
       selectInput(inputId = "partOfSequence",label = "Part of Sequence",
                   choices = c("whole sequence", "CDR3", "V sequence"),
@@ -83,12 +84,14 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
+
       div(style="display:inline-block;vertical-align:top; width: 150px;",
-      numericInput( inputId = "num2",label = "Relative",value =0.03,min = 0,max = 1, step = 0.01)),
+      numericInput( inputId = "num2",label = "Relative",value =0.9,min = 0,max = 1, step = 0.01)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",textInput(inputId = "textBox", label = " Absolute", width = "50%")),
       #Slider
      # sliderInput(inputId = "num", label = "Egde definition", 
      #              value = 0.3, min = 0, max = 1, step= 0.1),
+
       
       # comboBox
       selectInput(inputId = "select_community",label = "Community Selection",
@@ -127,8 +130,13 @@ ui <- fluidPage(
       
       # You must build the object in the server function
       tabsetPanel(
-        tabPanel("Compare", visNetworkOutput("firstPatient"),
-                 
+
+        tabPanel("tab1", 
+                 tags$label(textOutput("firstPatientLabel"), 'for'="firstPatient", 'style'="margin-top: 5px;"),
+                 visNetworkOutput("firstPatient"),
+
+                 tags$label(textOutput("secondPatientLabel"), 'for'="secondPatient"),
+
                  visNetworkOutput("secondPatient")
                  #popupWindows
                 # bsModal("modalExample", "Your plot", "go", size = "large",visNetworkOutput("firstPatient"),downloadButton('downloadPlot', 'Download'))
@@ -198,8 +206,8 @@ server <- function(input,output, session){
     
     
     updateSelectInput(session, "vjSegment",
-                      choices = c("each?",possibleVjSegments),
-                      selected = "each?"
+                      choices = c("whole data",possibleVjSegments),
+                      selected = "whole data"
     )
     
     # enable buttons if csv file is loaded
@@ -242,16 +250,24 @@ server <- function(input,output, session){
     
     
     ########## create and plot graph of "negative" patient ###############
+    dataFirst <- data[[selectFirstPatient]]
+    dataSecond <- data[[selectSecondPatient]]
+    
+    dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegment,]
+    dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegment,]
+    
     if(input$partOfSequence == "whole sequence"){
-      arrayFirst <- data[[selectFirstPatient]]$sequence
-      arraySecond <- data[[selectSecondPatient]]$sequence
+      arrayFirst <- dataFirst$sequence
+      arraySecond <- dataSecond$sequence
     }else if(input$partOfSequence == "CDR3"){
-      arrayFirst <- data[[selectFirstPatient]]$CDR3
-      arraySecond <- data[[selectSecondPatient]]$CDR3
+      arrayFirst <- dataFirst$CDR3
+      arraySecond <- dataSecond$CDR3
     }else{
-      arrayFirst <- data[[selectFirstPatient]]$V.sequence
-      arraySecond <- data[[selectSecondPatient]]$V.sequence
+      arrayFirst <- dataFirst$V.sequence
+      arraySecond <- dataSecond$V.sequence
     }
+    print(arrayFirst)
+    print(arraySecond)
     
     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
     matrixSecond <- calculateDistances(arraySecond,arraySecond)
@@ -273,31 +289,29 @@ server <- function(input,output, session){
         
     
     ################ Plot Graphs #####################
-       ############ First Patient #############
-    output$firstPatient <- renderVisNetwork({
-   
-      title <- paste("Patient ", selectFirstPatient)
-      
-     patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+
+    output$firstPatientLabel <- renderText(paste("Patient ", selectFirstPatient))
+    plota = function(){
+      patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
       visExport(patientOne, type = "pdf", name = "mynetwork",label = paste("Export as PDF"), style="background-color = #fff" )
-       } )
-   
-      
-   
-    ############ Second Patient #############
-   
-    output$secondPatient <- renderVisNetwork({
-   
-      title <- paste("Patient ", selectSecondPatient)
-      
-      patientTwo<-plot_graph(graphSecond, edge_threshold=input$num2,label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
-      visExport(patientTwo, type = "pdf", name = "mynetwork",label = paste("Export as PDF"), style="background-color = #fff" )
-    
+      } 
+    output$firstPatient <- renderVisNetwork({
+      plota()
     })
+    
+    output$secondPatientLabel <- renderText(paste("Patient ", selectSecondPatient))
+    output$secondPatient <- renderVisNetwork({
+      patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+      visExport(patientTwo, type = "pdf", name = "mynetwork",label = paste("Export as PDF"), style="background-color = #fff" )
+ 
+
       # you can also use: main =input$titleInTextBox
       # isolate() makes an non-reactive object
       #you can use isolate for main = isolate({input$title}))
       
+
+    })
+    
 
     ############ Download as...#####################
     # #  Get the download file name.
