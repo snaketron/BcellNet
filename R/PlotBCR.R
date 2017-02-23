@@ -106,6 +106,8 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   nData$nodes$borderWidth <- 1.5
   # colorize small communities grey
   nData$nodes$color <- community_colors
+  # for https://github.com/snaketron/BcellNet/issues/10 entry point
+  nData$nodes$size <- NULL
 
   # finally plot it
   visNetwork(nodes = nData$nodes, edges = nData$edges) %>%
