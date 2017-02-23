@@ -14,7 +14,6 @@ library(visNetwork)
 #' @param vertex_color Controls color of vertices.
 #' @param edge_width Controls width of edges.
 #' @param edge_color Controls color of edges.
-#' @param label title of the image directly plotted to the image.
 #' @param community_algorithm which algorithm is used to calculate the communities
 #' @param layout_algorithm which algorithm is used to calculate the layout of the graph
 #' @param dynamic Logical Type. Determines if the plot is rendered dynamically via JS or static as a SVG
@@ -49,17 +48,16 @@ library(visNetwork)
 #' @seealso \code{\link[igraph]{igraph}}
 #' @seealso \code{\link[visNetwork]{visNetwork}}
 #' @seealso \code{\link[igraph]{communities}}
-plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, vertex_size=10, vertex_color="grey", edge_width=1, edge_color="darkgrey", label="Patient X", community_algorithm=cluster_louvain, layout_algorithm="layout_nicely", dynamic=TRUE) {
+plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, vertex_size=10, vertex_color="grey", edge_width=1, edge_color="darkgrey", community_algorithm=cluster_louvain, layout_algorithm="layout_nicely", dynamic=TRUE) {
   # preconditions: input validation
   if (!any(class(weighted_graph) %in% "igraph")) {
     stop("weighted_graph must be an igraph object")
-  }
+  } 
   .validate_non_neg_input_numeric(edge_threshold)
   .validate_input_numeric(community_threshold)  
   .validate_input_numeric(vertex_size)  
   .validate_input_string(vertex_color)
   .validate_input_string(edge_color)
-  .validate_input_string(label)
   if (!is.function(community_algorithm)) {
     stop("community_algorithm must be a function but found '", class(community_algorithm), "'")
   }
@@ -107,7 +105,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   nData$nodes$color <- community_colors
 
   # finally plot it
-  visNetwork(nodes = nData$nodes, edges = nData$edges, main = label) %>%
+  visNetwork(nodes = nData$nodes, edges = nData$edges) %>%
     visInteraction(dragNodes = FALSE) %>%
     visIgraphLayout(layout = layout_algorithm, smooth = FALSE, physics = FALSE, type = "square", randomSeed = NULL, layoutMatrix = NULL) %>%
     visOptions(highlightNearest = list(enabled = T, hover = T))

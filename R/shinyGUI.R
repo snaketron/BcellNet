@@ -128,8 +128,11 @@ ui <- fluidPage(
       
       # You must build the object in the server function
       tabsetPanel(
-        tabPanel("tab1", visNetworkOutput("firstPatient"),
-                 
+        tabPanel("tab1", 
+                 tags$label(textOutput("firstPatientLabel"), 'for'="firstPatient", 'style'="margin-top: 5px;"),
+                 visNetworkOutput("firstPatient"),
+
+                 tags$label(textOutput("secondPatientLabel"), 'for'="secondPatient"),
                  visNetworkOutput("secondPatient")
                  #popupWindows
                # bsModal("modalExample", "Your plot", "go", size = "large",visNetworkOutput("firstPatient"),downloadButton('downloadPlot', 'Download'))
@@ -271,22 +274,17 @@ server <- function(input,output, session){
     
     ################ Plot Graphs #####################
     
+    output$firstPatientLabel <- renderText(paste("Patient ", selectFirstPatient))
     plota = function(){
-   
-      title <- paste("Patient ", selectFirstPatient)
-      
-      plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+      plot_graph(graphFirst, edge_threshold=input$num, community_algorithm = comAlgo, layout_algorithm = layout_algo)
     } 
     output$firstPatient <- renderVisNetwork({
       plota()
     })
     
-
-  
+    output$secondPatientLabel <- renderText(paste("Patient ", selectSecondPatient))
     output$secondPatient <- renderVisNetwork({
-      title <- paste("Patient ", selectSecondPatient)
-      
-      plot_graph(graphSecond, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+      plot_graph(graphSecond, edge_threshold=input$num, community_algorithm = comAlgo, layout_algorithm = layout_algo)
  
       # you can also use: main =input$titleInTextBox
       # isolate() makes an non-reactive object
