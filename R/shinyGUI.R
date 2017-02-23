@@ -164,7 +164,6 @@ ui <- fluidPage(
 server <- function(input,output, session){
   
   
-##########   update content of patient combobox #############
   observe({
     if(is.null(input$csvFile$datapath)) return(NULL)
     
@@ -177,6 +176,7 @@ server <- function(input,output, session){
     if (is.null(possiblePatients))
       possiblePatients <- character(0)
     
+    ##########   update content of patient combobox #############
     # Can also set the label and select items
     updateSelectInput(session, "comboFirstPatient",
                       choices = possiblePatients,
@@ -184,22 +184,31 @@ server <- function(input,output, session){
     )
     updateSelectInput(session, "comboSecondPatient",
                       choices = possiblePatients,
-                      selected = head(possiblePatients, 2)
+                      selected = tail(possiblePatients, 1)
     )
+    
+    
+    selectFirstPatient <<- head(possiblePatients, 1)
+    selectSecondPatient <<- tail(possiblePatients, 1)
+    
     
     
     
     #loop over patients and update combobox with vj segment entries
-    for(i in 1:length(data)){
-      possibleVjSegments <- c(possibleVjSegments,data[[i]]$VJ.segment)
-    }
-    possibleVjSegments <- unique(possibleVjSegments)
+    # for(i in 1:length(data)){
+    #   possibleVjSegments <- c(possibleVjSegments,data[[i]]$VJ.segment)
+    # }
+    # possibleVjSegments <- unique(possibleVjSegments)
+    # 
+    # 
+    # updateSelectInput(session, "vjSegment",
+    #                   choices = c("whole data",possibleVjSegments),
+    #                   selected = "whole data"
+    # )
     
+    # update combobox with vj segment entries
+    updateVJSegment()
     
-    updateSelectInput(session, "vjSegment",
-                      choices = c("whole data",possibleVjSegments),
-                      selected = "whole data"
-    )
     
     # enable buttons if csv file is loaded
     shinyjs::enable("pn")
@@ -215,9 +224,11 @@ server <- function(input,output, session){
   #save selected patient into global var
   observeEvent(input$comboFirstPatient, {
     selectFirstPatient <<- input$comboFirstPatient
+    updateVJSegment()
   })
   observeEvent(input$comboSecondPatient, {
     selectSecondPatient <<- input$comboSecondPatient
+    updateVJSegment()
   })
   
   
@@ -246,8 +257,6 @@ server <- function(input,output, session){
       arrayFirst <- dataFirst$V.sequence
       arraySecond <- dataSecond$V.sequence
     }
-    print(arrayFirst)
-    print(arraySecond)
     
     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
     matrixSecond <- calculateDistances(arraySecond,arraySecond)
@@ -333,17 +342,53 @@ server <- function(input,output, session){
     )
     #################### End of Download as..###############
     
-    
-    
-    
-    
-    
-    
-    
+   
   })
   
   
   
+  
+  #function to update vj segment combo list
+  updateVJSegment <- function(){
+
+    posSegmentsFirstPat <- NULL
+    posSegmentsSecPat <- NULL
+    posSegmentsBoth <- NULL
+    
+    
+    dataFirst <- data[[selectFirstPatient]]
+    dataSec <- data[[selectSecondPatient]]
+
+    #loop over first selected patient and store unique vj segments 
+    if(!is.null(dataFirst)){
+      for( i in 1:nrow(dataFirst)){
+        posSegmentsFirstPat <- c(posSegmentsFirstPat, dataFirst$VJ.segment[[i]])
+      }
+     posSegmentsFirstPat <- unique(posSegmentsFirstPat)
+    }
+
+    #loop over second selected patient and store unique vj segments 
+    if(!is.null(dataSec)){
+      for( i in 1:nrow(dataSec)){
+        newSegment <- dataSec$VJ.segment[[i]]
+        if(newSegment %in% posSegmentsFirstPat){
+          posSegmentsBoth <- c(posSegmentsBoth, newSegment)
+          posSegmentsFirstPat <- posSegmentsFirstPat[posSegmentsFirstPat != newSegment]
+        }else if(!newSegment %in% posSegmentsBoth){
+          posSegmentsSecPat <- c(posSegmentsSecPat, newSegment)
+        }
+      }
+    }
+    posSegmentsBoth <- unique(posSegmentsBoth)
+    posSegmentsSecPat <- unique(posSegmentsSecPat)
+
+    
+    #update combobox first with elements occurs in both
+    updateSelectInput(session, "vjSegment", choices = list('whole data' = c("whole data",""), 'Segments for both' = c(posSegmentsBoth,""), 
+                      'Segments for 1st patient' = c(posSegmentsFirstPat,""), 'Segments for 2nd patient' = c(posSegmentsSecPat,"")),
+                      selected = "whole data")
+  
+  }
  
   
   
