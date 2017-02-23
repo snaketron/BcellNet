@@ -95,6 +95,9 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   nData$edges$hidden <- if (!is.null(nData$edges$weight)) {
     nData$edges$weight < edge_threshold
   }
+  nData$edges$title <- paste0("Weight: ", nData$edges$weight)
+
+  nData$nodes$title <- paste0("sequence: ", nData$nodes$id)
   # hide label
   nData$nodes$label <- NA
   # apply communities onto vis graph groups
