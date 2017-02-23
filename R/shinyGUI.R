@@ -293,7 +293,7 @@ server <- function(input,output, session){
     output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
     plota = function(){
       patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
-      visExport(patientOne, type = "pdf", name = "Patient 1",label = paste("Export as PDF"), style="background-color = #fff" )
+      visExport(patientOne, type = "pdf", name = "Patient 1",label = paste("Export as PDF"), style="background-color = #fff")
       } 
     output$firstPatient <- renderVisNetwork({
       plota()
