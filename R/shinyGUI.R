@@ -32,6 +32,7 @@ graphSecond <- NULL
 ui <- fluidPage(
   # activate shinyjs which enables easy commands without JS knowledge
   shinyjs::useShinyjs(),
+  theme = "bcell.css",
   
   # p(style = "font-family:Times New Roman","See other apps in the"),
   # a("Shiny Showcase",href = "http://www.rstudio.com/products/shiny/shiny-user-showcase/"),
@@ -292,8 +293,6 @@ server <- function(input,output, session){
       #you can use isolate for main = isolate({input$title}))
       
     })
-    
-    
     
     ############ Download as...#####################
     #  Get the download file name.
