@@ -291,23 +291,21 @@ server <- function(input,output, session){
     ################ Plot Graphs #####################
 
     output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
-    plota = function(){
-      patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
-      visExport(patientOne, type = "pdf", name = "Patient 1",label = paste("Export as PDF"), style="background-color = #fff" )
-      } 
+    erste<-paste("Patient 1", selectFirstPatient)
     output$firstPatient <- renderVisNetwork({
-      plota()
-    })
+    patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+    visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff" )
+       
     
+      
+    })
+   
     output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
+    zweite<-paste("Patient 2", selectSecondPatient)
     output$secondPatient <- renderVisNetwork({
-      patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
-      visExport(patientTwo, type = "pdf", name = "mynetwork",label = paste("Export as PDF"), style="background-color = #fff" )
+    patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+    visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
  
-
-      # you can also use: main =input$titleInTextBox
-      # isolate() makes an non-reactive object
-      #you can use isolate for main = isolate({input$title}))
       
 
     })
