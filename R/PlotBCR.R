@@ -54,7 +54,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   if (!any(class(weighted_graph) %in% "igraph")) {
     stop("weighted_graph must be an igraph object")
   }
-  .validate_input_numeric(edge_threshold)
+  .validate_non_neg_input_numeric(edge_threshold)
   .validate_input_numeric(community_threshold)  
   .validate_input_numeric(vertex_size)  
   .validate_input_string(vertex_color)
@@ -121,6 +121,15 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 
 # Helper function to validate the inputs
 .validate_input_numeric <- function(numeric) {
+  if (!is.numeric(numeric)) {
+    stop("'", quote(numeric), "' must be a numeric but found '", class(numeric), "'")
+  }
+  if (numeric <= 0) {
+    stop("'", quote(numeric), "' must be positve")
+  }
+}
+
+.validate_non_neg_input_numeric <- function(numeric) {
   if (!is.numeric(numeric)) {
     stop("'", quote(numeric), "' must be a numeric but found '", class(numeric), "'")
   }
