@@ -124,7 +124,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   if (!is.numeric(numeric)) {
     stop("'", quote(numeric), "' must be a numeric but found '", class(numeric), "'")
   }
-  if (numeric <= 0) {
+  if (numeric < 0) {
     stop("'", quote(numeric), "' must be positve")
   }
 }
