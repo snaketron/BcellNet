@@ -73,7 +73,7 @@ ui <- fluidPage(
                   choices = NULL, selected = NULL, multiple = FALSE, selectize = TRUE)),
       
       disabled(selectInput(inputId = "vjSegment",label = "VJ-Segment",
-                  choices = "each?",selected = "each?", multiple = FALSE, selectize = TRUE)),
+                  choices = "whole data",selected = "whole data", multiple = FALSE, selectize = TRUE)),
       
       selectInput(inputId = "partOfSequence",label = "Part of Sequence",
                   choices = c("whole sequence", "CDR3", "V sequence"),
@@ -82,10 +82,10 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-      numericInput( inputId = "num",label = " Egde definition",value =0.01,min = 0,max = 1, step = 0.01, width = "50%"),
+      numericInput( inputId = "num",label = " Edge definition",value =0.01,min = 0,max = 1, step = 0.01, width = "50%"),
      
       #Slider
-     # sliderInput(inputId = "num", label = "Egde definition", 
+     # sliderInput(inputId = "num", label = "Edge definition", 
                   #value = 0.3, min = 0, max = 1, step= 0.1),
       
       # comboBox
@@ -197,8 +197,8 @@ server <- function(input,output, session){
     
     
     updateSelectInput(session, "vjSegment",
-                      choices = c("each?",possibleVjSegments),
-                      selected = "each?"
+                      choices = c("whole data",possibleVjSegments),
+                      selected = "whole data"
     )
     
     # enable buttons if csv file is loaded
@@ -230,16 +230,24 @@ server <- function(input,output, session){
     
     
     ########## create and plot graph of "negative" patient ###############
+    dataFirst <- data[[selectFirstPatient]]
+    dataSecond <- data[[selectSecondPatient]]
+    
+    dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegment,]
+    dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegment,]
+    
     if(input$partOfSequence == "whole sequence"){
-      arrayFirst <- data[[selectFirstPatient]]$sequence
-      arraySecond <- data[[selectSecondPatient]]$sequence
+      arrayFirst <- dataFirst$sequence
+      arraySecond <- dataSecond$sequence
     }else if(input$partOfSequence == "CDR3"){
-      arrayFirst <- data[[selectFirstPatient]]$CDR3
-      arraySecond <- data[[selectSecondPatient]]$CDR3
+      arrayFirst <- dataFirst$CDR3
+      arraySecond <- dataSecond$CDR3
     }else{
-      arrayFirst <- data[[selectFirstPatient]]$V.sequence
-      arraySecond <- data[[selectSecondPatient]]$V.sequence
+      arrayFirst <- dataFirst$V.sequence
+      arraySecond <- dataSecond$V.sequence
     }
+    print(arrayFirst)
+    print(arraySecond)
     
     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
     matrixSecond <- calculateDistances(arraySecond,arraySecond)
