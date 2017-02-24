@@ -38,7 +38,7 @@ loadSource("PlotBCR.R")
 
 calculateDistances <- function(arrayBcr1, arrayBcr2, distanceMetric = "LD"){
   
-  if(is.null(arrayBcr1) || is-null(arrayBcr2)) return(NULL)
+  if(is.null(arrayBcr1) || is.null(arrayBcr2) || identical(arrayBcr1,character(0)) || identical(arrayBcr2,character(0))) return(NULL)
   
   # calculate distance between all entries in subData
   matrix <- distanceArrayOfBcr(arrayBcr1, arrayBcr2)

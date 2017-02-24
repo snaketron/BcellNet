@@ -257,18 +257,34 @@ server <- function(input,output, session){
       arrayFirst <- dataFirst$V.sequence
       arraySecond <- dataSecond$V.sequence
     }
-    
+
+    #returns null when array is numeric(0)
     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
     matrixSecond <- calculateDistances(arraySecond,arraySecond)
-
-    matrices <- normalizeMatrix(matrixFirst, matrixSecond)
     
-    matrixSecond <- matrices[[1]]
-    matrixFirst <- matrices[[2]]
-    
-    graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = 0.0)
-    graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = 0.0)
 
+    #avoid numeric(0) excpetion
+    if(is.null(matrixFirst)){
+      matrices <- normalizeMatrix(matrixSecond, matrixSecond)
+      matrixSecond <- matrices[[1]]
+    }else if(is.null(matrixSecond)){
+      matrices <- normalizeMatrix(matrixFirst, matrixFirst)
+      matrixFirst <- matrices[[2]]
+    }else{
+      matrices <- normalizeMatrix(matrixFirst, matrixSecond)
+      matrixSecond <- matrices[[1]]
+      matrixFirst <- matrices[[2]]
+    }
+    
+
+    if(!is.null(matrixFirst)){
+      graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = 0.0)
+    }
+    
+    if(!is.null(matrixSecond)){
+      graphSecond <<- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = 0.0)
+    }
+  
     
     comAlgo <- all_communtiy_algorithms()[[input$select_community]]
     cat("community algorithm selected:", input$select_community, "\n")
@@ -283,7 +299,8 @@ server <- function(input,output, session){
    
       title <- paste("Patient ", selectFirstPatient)
       
-      plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+      if(!is.null(graphFirst))
+        plot_graph(graphFirst, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
     } 
     output$firstPatient <- renderVisNetwork({
       plota()
@@ -294,7 +311,8 @@ server <- function(input,output, session){
     output$secondPatient <- renderVisNetwork({
       title <- paste("Patient ", selectSecondPatient)
       
-      plot_graph(graphSecond, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+      if(!is.null(graphSecond))
+        plot_graph(graphSecond, edge_threshold=input$num, label=title, community_algorithm = comAlgo, layout_algorithm = layout_algo)
  
       # you can also use: main =input$titleInTextBox
       # isolate() makes an non-reactive object
