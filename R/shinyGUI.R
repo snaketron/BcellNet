@@ -84,10 +84,10 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-
       div(style="display:inline-block;vertical-align:top; width: 150px;",
       numericInput( inputId = "num2",label = "Relative",value =0.9,min = 0,max = 1, step = 0.01)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",textInput(inputId = "textBox", label = " Absolute", width = "50%")),
+
       #Slider
      # sliderInput(inputId = "num", label = "Egde definition", 
      #              value = 0.3, min = 0, max = 1, step= 0.1),
@@ -172,7 +172,6 @@ ui <- fluidPage(
 server <- function(input,output, session){
   
   
-##########   update content of patient combobox #############
   observe({
     if(is.null(input$csvFile$datapath)) return(NULL)
     
@@ -185,6 +184,7 @@ server <- function(input,output, session){
     if (is.null(possiblePatients))
       possiblePatients <- character(0)
     
+    ##########   update content of patient combobox #############
     # Can also set the label and select items
     updateSelectInput(session, "comboFirstPatient",
                       choices = possiblePatients,
@@ -192,23 +192,32 @@ server <- function(input,output, session){
     )
     updateSelectInput(session, "comboSecondPatient",
                       choices = possiblePatients,
-                      selected = head(possiblePatients, 2)
+                      selected = tail(possiblePatients, 1)
     )
    
     
     
+    selectFirstPatient <<- head(possiblePatients, 1)
+    selectSecondPatient <<- tail(possiblePatients, 1)
+    
+    
+    
     
     #loop over patients and update combobox with vj segment entries
-    for(i in 1:length(data)){
-      possibleVjSegments <- c(possibleVjSegments,data[[i]]$VJ.segment)
-    }
-    possibleVjSegments <- unique(possibleVjSegments)
+    # for(i in 1:length(data)){
+    #   possibleVjSegments <- c(possibleVjSegments,data[[i]]$VJ.segment)
+    # }
+    # possibleVjSegments <- unique(possibleVjSegments)
+    # 
+    # 
+    # updateSelectInput(session, "vjSegment",
+    #                   choices = c("whole data",possibleVjSegments),
+    #                   selected = "whole data"
+    # )
     
+    # update combobox with vj segment entries
+    updateVJSegment()
     
-    updateSelectInput(session, "vjSegment",
-                      choices = c("whole data",possibleVjSegments),
-                      selected = "whole data"
-    )
     
     # enable buttons if csv file is loaded
     shinyjs::enable("pn")
@@ -226,9 +235,11 @@ server <- function(input,output, session){
   #save selected patient into global var
   observeEvent(input$comboFirstPatient, {
     selectFirstPatient <<- input$comboFirstPatient
+    updateVJSegment()
   })
   observeEvent(input$comboSecondPatient, {
     selectSecondPatient <<- input$comboSecondPatient
+    updateVJSegment()
   })
 
   #####################Update Inputnumeric#######################
@@ -266,20 +277,34 @@ server <- function(input,output, session){
       arrayFirst <- dataFirst$V.sequence
       arraySecond <- dataSecond$V.sequence
     }
-    print(arrayFirst)
-    print(arraySecond)
-    
+
+    #returns null when array is numeric(0)
     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
     matrixSecond <- calculateDistances(arraySecond,arraySecond)
-
-    matrices <- normalizeMatrix(matrixFirst, matrixSecond)
     
-    matrixSecond <- matrices[[1]]
-    matrixFirst <- matrices[[2]]
-    
-    graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = 0.0)
-    graphSecond <- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = 0.0)
 
+    #avoid numeric(0) excpetion
+    if(is.null(matrixFirst)){
+      matrices <- normalizeMatrix(matrixSecond, matrixSecond)
+      matrixSecond <- matrices[[1]]
+    }else if(is.null(matrixSecond)){
+      matrices <- normalizeMatrix(matrixFirst, matrixFirst)
+      matrixFirst <- matrices[[2]]
+    }else{
+      matrices <- normalizeMatrix(matrixFirst, matrixSecond)
+      matrixSecond <- matrices[[1]]
+      matrixFirst <- matrices[[2]]
+    }
+    
+
+    if(!is.null(matrixFirst)){
+      graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = 0.0)
+    }
+    
+    if(!is.null(matrixSecond)){
+      graphSecond <<- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = 0.0)
+    }
+  
     
     comAlgo <- all_communtiy_algorithms()[[input$select_community]]
     cat("community algorithm selected:", input$select_community, "\n")
@@ -290,26 +315,23 @@ server <- function(input,output, session){
     
     ################ Plot Graphs #####################
 
-    output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
-    erste<-paste("Patient 1", selectFirstPatient)
-    output$firstPatient <- renderVisNetwork({
-    patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
-    visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
-       
+    if(!is.null(graphFirst)){
+      output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
+      erste<-paste("Patient 1", selectFirstPatient)
+      output$firstPatient <- renderVisNetwork({
+      patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+      visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
+      })
+     }
     
-      
-    })
-   
-    output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
-    zweite<-paste("Patient 2", selectSecondPatient)
-    output$secondPatient <- renderVisNetwork({
-    patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
-    visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
- 
-      
-
-    })
-    
+    if(!is.null(graphSecond)){
+      output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
+      zweite<-paste("Patient 2", selectSecondPatient)
+      output$secondPatient <- renderVisNetwork({
+      patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+      visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
+      })
+    }
 
     ############ Download as...#####################
     # #  Get the download file name.
@@ -348,17 +370,53 @@ server <- function(input,output, session){
     # )
     #################### End of Download as..###############
     
-  
-    
-    
-    
-    
-    
-    
+
   })
   
   
   
+  
+  #function to update vj segment combo list
+  updateVJSegment <- function(){
+
+    posSegmentsFirstPat <- NULL
+    posSegmentsSecPat <- NULL
+    posSegmentsBoth <- NULL
+    
+    
+    dataFirst <- data[[selectFirstPatient]]
+    dataSec <- data[[selectSecondPatient]]
+
+    #loop over first selected patient and store unique vj segments 
+    if(!is.null(dataFirst)){
+      for( i in 1:nrow(dataFirst)){
+        posSegmentsFirstPat <- c(posSegmentsFirstPat, dataFirst$VJ.segment[[i]])
+      }
+     posSegmentsFirstPat <- unique(posSegmentsFirstPat)
+    }
+
+    #loop over second selected patient and store unique vj segments 
+    if(!is.null(dataSec)){
+      for( i in 1:nrow(dataSec)){
+        newSegment <- dataSec$VJ.segment[[i]]
+        if(newSegment %in% posSegmentsFirstPat){
+          posSegmentsBoth <- c(posSegmentsBoth, newSegment)
+          posSegmentsFirstPat <- posSegmentsFirstPat[posSegmentsFirstPat != newSegment]
+        }else if(!newSegment %in% posSegmentsBoth){
+          posSegmentsSecPat <- c(posSegmentsSecPat, newSegment)
+        }
+      }
+    }
+    posSegmentsBoth <- unique(posSegmentsBoth)
+    posSegmentsSecPat <- unique(posSegmentsSecPat)
+
+    
+    #update combobox first with elements occurs in both
+    updateSelectInput(session, "vjSegment", choices = list('whole data' = c("whole data",""), 'Segments for both' = c(posSegmentsBoth,""), 
+                      'Segments for 1st patient' = c(posSegmentsFirstPat,""), 'Segments for 2nd patient' = c(posSegmentsSecPat,"")),
+                      selected = "whole data")
+  
+  }
  
   
   
