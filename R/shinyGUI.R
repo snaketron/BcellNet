@@ -202,19 +202,6 @@ server <- function(input,output, session){
     
     
     
-    
-    #loop over patients and update combobox with vj segment entries
-    # for(i in 1:length(data)){
-    #   possibleVjSegments <- c(possibleVjSegments,data[[i]]$VJ.segment)
-    # }
-    # possibleVjSegments <- unique(possibleVjSegments)
-    # 
-    # 
-    # updateSelectInput(session, "vjSegment",
-    #                   choices = c("whole data",possibleVjSegments),
-    #                   selected = "whole data"
-    # )
-    
     # update combobox with vj segment entries
     updateVJSegment()
     
@@ -264,8 +251,10 @@ server <- function(input,output, session){
     dataFirst <- data[[selectFirstPatient]]
     dataSecond <- data[[selectSecondPatient]]
     
-    dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegment,]
-    dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegment,]
+    if(!input$vjSegment == "whole data"){
+      dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegment,]
+      dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegment,]
+    }
     
     if(input$partOfSequence == "whole sequence"){
       arrayFirst <- dataFirst$sequence
