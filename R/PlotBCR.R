@@ -99,7 +99,11 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
     nData$edges$hidden <- if (!is.null(nData$edges$weight)) {
       nData$edges$weight < edge_threshold
     }
+<<<<<<< HEAD
   
+=======
+    
+>>>>>>> 25284f9ee3bd5a32e8017ff5524ea89aba03030d
     # normalize the weight
     if (!is.null(nData$edges$weight)) {
       nData$edges$weight <- 0
@@ -107,7 +111,11 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
     
     nData$edges$title <- paste0("Weight: ", nData$edges$weight)
   }
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> 25284f9ee3bd5a32e8017ff5524ea89aba03030d
   nData$nodes$title <- paste0("sequence: ", nData$nodes$id)
   # hide label
   nData$nodes$label <- NA
@@ -119,7 +127,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   nData$nodes$color <- community_colors
   # for https://github.com/snaketron/BcellNet/issues/10 entry point
   nData$nodes$size <- NULL
-
+  
   # finally plot it
   visNetwork(nodes = nData$nodes, edges = nData$edges) %>%
     visInteraction(dragNodes = FALSE) %>%
@@ -204,7 +212,7 @@ all_communtiy_algorithms <- function() {
     # "Spinglass" = cluster_spinglass, # spin # needs connected graphs
     "Walktrap" = cluster_walktrap # random
   )
-
+  
   return(algos)
 }
 
