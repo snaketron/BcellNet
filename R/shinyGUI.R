@@ -90,8 +90,8 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 150px;",
-      numericInput( inputId = "num2",label = "Relative",value =0.9,min = 0,max = 1, step = 0.01)),
+      div(style="display:inline-block;vertical-align:top; width: 100px;",
+      numericInput( inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",textInput(inputId = "textBox", label = " Absolute", width = "50%")),
 
       #Slider
@@ -243,17 +243,20 @@ server <- function(input,output, session){
 
   #####################Update Inputnumeric#######################
    observeEvent(input$num2,{
-     #x<-is.null(input$num2)
      if(!is.numeric(input$num2)){
        
-       updateNumericInput(session,"num2", min=0, max = 1, step = 0.01)
+       updateNumericInput(session,"num2", min=0, max = 100, step = 1)
        
-     }else if(input$num2>1){
-
-               updateNumericInput(session,"num2",value = 0.9, min=0, max = 1, step = 0.01)
+     }else if(input$num2>0){
+       
+               x<-(input$num2)
+               updateNumericInput(session,"num2",value = x, min=0, max = 100, step = 1)
+               y<-x/100
+               updateTextInput(session,"textBox",value =y )
+               
 
      }
-     
+
      
      
    })
