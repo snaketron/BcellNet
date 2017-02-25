@@ -52,7 +52,10 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # preconditions: input validation
   if (!any(class(weighted_graph) %in% "igraph")) {
     stop("weighted_graph must be an igraph object")
-  } 
+  }
+  
+  edge_threshold <- .normalize_numeric_inpuc(edge_threshold, 0)
+  
   .validate_non_neg_input_numeric(edge_threshold)
   .validate_input_numeric(community_threshold)  
   .validate_input_numeric(vertex_size)  
@@ -91,11 +94,20 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   
   # convert igraph to visgraph and prepare visual data
   nData <- toVisNetworkData(weighted_graph, FALSE)
-  # need to check if node might not have an edge and thus no weight
-  nData$edges$hidden <- if (!is.null(nData$edges$weight)) {
-    nData$edges$weight < edge_threshold
+  if (!is.null(nData$edges) && length(as.matrix(nData$edges)) != 0) {
+    # need to check if node might not have an edge and thus no weight
+    nData$edges$hidden <- if (!is.null(nData$edges$weight)) {
+      nData$edges$weight < edge_threshold
+    }
+
+
+    # normalize the weight
+    if (!is.null(nData$edges$weight)) {
+      nData$edges$weight <- 0
+    }
+    
+    nData$edges$title <- paste0("Weight: ", nData$edges$weight)
   }
-  nData$edges$title <- paste0("Weight: ", nData$edges$weight)
 
   nData$nodes$title <- paste0("sequence: ", nData$nodes$id)
   # hide label
@@ -108,7 +120,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   nData$nodes$color <- community_colors
   # for https://github.com/snaketron/BcellNet/issues/10 entry point
   nData$nodes$size <- NULL
-
+  
   # finally plot it
   visNetwork(nodes = nData$nodes, edges = nData$edges) %>%
     visInteraction(dragNodes = FALSE) %>%
@@ -122,31 +134,41 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 #      vertex.label=NA, edge.color=edge_color,layout=network_layout, col=community_colors,
 #      main=label, edge.label=NA) 
 
+.normalize_numeric_inpuc <- function(numeric, default) {
+  if (!is.numeric(numeric)) {
+    print(paste0("'", numeric, "' must be a numeric but found '", class(numeric), "'. Auto-converting to default value '", default, "'"))
+    
+    return (default)
+  }
+  
+  return (numeric)
+}
+
 # Helper function to validate the inputs
 .validate_input_numeric <- function(numeric) {
   if (!is.numeric(numeric)) {
-    stop("'", quote(numeric), "' must be a numeric but found '", class(numeric), "'")
+    stop("'", numeric, "' must be a numeric but found '", class(numeric), "'")
   }
   if (numeric <= 0) {
-    stop("'", quote(numeric), "' must be positve")
+    stop("'", numeric, "' must be positve")
   }
 }
 
 .validate_non_neg_input_numeric <- function(numeric) {
   if (!is.numeric(numeric)) {
-    stop("'", quote(numeric), "' must be a numeric but found '", class(numeric), "'")
+    stop("'", numeric, "' must be a numeric but found '", class(numeric), "'")
   }
   if (numeric < 0) {
-    stop("'", quote(numeric), "' must be positve")
+    stop("'", numeric, "' must be positve")
   }
 }
 
 .validate_input_string <- function(string) {
   if (!is.character(string)) {
-    stop("'", quote(string), "' must be a string but found '", class(string), "'")
+    stop("'", string, "' must be a string but found '", class(string), "'")
   }
   if (nchar(string) <= 0) {
-    stop("'", quote(string), "' must be a non-empty string")
+    stop("'", string, "' must be a non-empty string")
   }
 }
 
@@ -183,7 +205,7 @@ all_communtiy_algorithms <- function() {
     # "Spinglass" = cluster_spinglass, # spin # needs connected graphs
     "Walktrap" = cluster_walktrap # random
   )
-
+  
   return(algos)
 }
 
