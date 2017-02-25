@@ -132,25 +132,31 @@ ui <- fluidPage(
     
     ###################def output function in mainPanel ###################################
     mainPanel(
-     
+      
       
       # You must build the object in the server function
       tabsetPanel(
-
-        tabPanel("tab1", 
+        tabPanel("Network", 
                  tags$label(textOutput("firstPatientLabel"), 'for'="firstPatient", 'style'="margin-top: 5px;"),
                  visNetworkOutput("firstPatient"),
-
+                 
                  tags$label(textOutput("secondPatientLabel"), 'for'="secondPatient"),
-
+                 
                  visNetworkOutput("secondPatient")
                  #popupWindows
-                # bsModal("modalExample", "Your plot", "go", size = "large",visNetworkOutput("firstPatient"),downloadButton('downloadPlot', 'Download'))
-                 )
+                 # bsModal("modalExample", "Your plot", "go", size = "large",visNetworkOutput("firstPatient"),downloadButton('downloadPlot', 'Download'))
+        )
+        ,
+
+        tabPanel("Degree Distribution",
+                 tags$label(textOutput("firstPatientDegreeDistributionLabel"), 'for'="firstPatientDegreeDistribution", 'style'="margin-top: 5px;"),
+                 plotOutput("firstPatientDegreeDistribution"),
+
+                 tags$label(textOutput("secondPatientDegreeDistributionLabel"), 'for'="secondPatientDegreeDistribution"),
+                 plotOutput("secondPatientDegreeDistribution")
+        )
         
-      #  tabPanel("tab2"),
-        
-     #   tabPanel("tab3")
+        #   tabPanel("tab3")
         
         # plotOutput("firstPatient"),
         # plotOutput("secondPatient"),
@@ -162,7 +168,7 @@ ui <- fluidPage(
       tags$head(tags$script(src = "message-handler.js"))
       
       # link for BcellNet in GitHub just for test href :)
-     #  tags$p(tags$a(href="https://github.com/snaketron/BcellNet","GitHub-BcellNet"))
+      #  tags$p(tags$a(href="https://github.com/snaketron/BcellNet","GitHub-BcellNet"))
       
     )#end of mainPanel
     
@@ -295,11 +301,17 @@ server <- function(input,output, session){
     if(!is.null(matrixFirst)){
       graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = 0.0)
     }
+    else {
+      graphFirst <<- NULL
+    }
+    
     
     if(!is.null(matrixSecond)){
       graphSecond <<- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = 0.0)
     }
-    print("did it")
+    else {
+      graphSecond <<- NULL      
+    }
     
     comAlgo <- all_communtiy_algorithms()[[input$select_community]]
     cat("community algorithm selected:", input$select_community, "\n")
@@ -317,7 +329,11 @@ server <- function(input,output, session){
       patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
       visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
-     }
+    }
+    else {
+      output$firstPatientLabel <- renderText("")
+      output$firstPatient <- renderVisNetwork({})
+    }
     
     if(!is.null(graphSecond)){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
@@ -326,6 +342,10 @@ server <- function(input,output, session){
       patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
       visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
+    }
+    else {
+      output$secondPatientLabel <- renderText("")
+      output$secondPatient <- renderVisNetwork({})
     }
 
     ############ Download as...#####################
