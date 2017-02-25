@@ -128,11 +128,8 @@ ui <- fluidPage(
     ), # End of sidebarLayout
     
     
-    
-    
     ###################def output function in mainPanel ###################################
     mainPanel(
-      
       
       # You must build the object in the server function
       tabsetPanel(
@@ -145,20 +142,17 @@ ui <- fluidPage(
                  visNetworkOutput("secondPatient")
                  #popupWindows
                  # bsModal("modalExample", "Your plot", "go", size = "large",visNetworkOutput("firstPatient"),downloadButton('downloadPlot', 'Download'))
-        )
-        ,
+        ),
         
         tabPanel("Degree Distribution",
                  plotOutput("firstPatientDegreeDistribution"),
                  plotOutput("secondPatientDegreeDistribution")
+        ),
+        
+        tabPanel("Community Size Distribution",
+                 plotOutput("firstPatientCommunitySizeDistribution"),
+                 plotOutput("secondPatientCommunitySizeDistribution")
         )
-        
-        #   tabPanel("tab3")
-        
-        # plotOutput("firstPatient"),
-        # plotOutput("secondPatient"),
-        #fluidRow(column(7,plotOutput("firstPatient"), 
-        # plotOutput("secondPatient")),offset=5),
       ),
       
       #show messages
@@ -179,11 +173,9 @@ ui <- fluidPage(
 #' @import shiny
 #' @importFrom shinyjs enable
 server <- function(input,output, session){
-  
-  
+
   observe({
     if(is.null(input$csvFile$datapath)) return(NULL)
-    
     
     data <<- csvToSubset(input$csvFile$datapath)
     possiblePatients <- names(data)
@@ -204,16 +196,11 @@ server <- function(input,output, session){
                       selected = tail(possiblePatients, 1)
     )
     
-    
-    
     selectFirstPatient <<- head(possiblePatients, 1)
     selectSecondPatient <<- tail(possiblePatients, 1)
     
-    
-    
     # update combobox with vj segment entries
     updateVJSegment()
-    
     
     # enable buttons if csv file is loaded
     shinyjs::enable("pn")
@@ -224,7 +211,6 @@ server <- function(input,output, session){
     shinyjs::enable("comboSecondPatient")
     shinyjs::enable("vjSegment")
     #shinyjs::enable("go")
-    
   })
   
   
@@ -233,35 +219,30 @@ server <- function(input,output, session){
     selectFirstPatient <<- input$comboFirstPatient
     updateVJSegment()
   })
+  
+  
   observeEvent(input$comboSecondPatient, {
     selectSecondPatient <<- input$comboSecondPatient
     updateVJSegment()
   })
   
+  
   #####################Update Inputnumeric#######################
   observeEvent(input$num2,{
     #x<-is.null(input$num2)
     if(!is.numeric(input$num2)){
-      
       updateNumericInput(session,"num2", min=0, max = 1, step = 0.01)
-      
     }else if(input$num2>1){
-      
       updateNumericInput(session,"num2",value = 0.9, min=0, max = 1, step = 0.01)
-      
     }
-    
-    
-    
   })
-  
-  
+
+    
   #plot networt button action
   observeEvent(input$pn, {
     prepareGraphs()  
     
     ################ Plot Graphs #####################
-    
     if(!is.null(graphFirst)){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
@@ -309,6 +290,28 @@ server <- function(input,output, session){
     }
     else {
       output$secondPatientDegreeDistribution <- renderPlot({})
+    }
+  })
+  
+  observeEvent(input$pcsd, {
+    prepareGraphs()
+    
+    if(!is.null(graphFirst)){
+      output$firstPatientCommunitySizeDistribution <- renderPlot({
+        hist(sizes(comAlgo(graphFirst)))
+      })
+    }
+    else {
+      output$firstPatientCommunitySizeDistribution <- renderPlot({})
+    }
+    
+    if(!is.null(graphSecond)){
+      output$secondPatientCommunitySizeDistribution <- renderPlot(
+        hist(sizes(comAlgo(graphSecond)))
+      )
+    }
+    else {
+      output$secondPatientCommunitySizeDistribution <- renderPlot({})
     }
   })
   
