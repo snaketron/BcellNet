@@ -236,13 +236,22 @@ server <- function(input,output, session){
   })
 
   #####################Update Inputnumeric#######################
-
    observeEvent(input$num2,{
-     if(input$num2>1){
-                
-               updateNumericInput(session,"num2",value = 0.01, min=0, max = 1, step = 0.01)
+     #x<-is.null(input$num2)
+     if(!is.numeric(input$num2)){
+       
+       updateNumericInput(session,"num2", min=0, max = 1, step = 0.01)
+       
+     }else if(input$num2>1){
+
+               updateNumericInput(session,"num2",value = 0.9, min=0, max = 1, step = 0.01)
+
      }
-   })      
+     
+     
+     
+   })
+
   
   
   
