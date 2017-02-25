@@ -259,7 +259,7 @@ server <- function(input,output, session){
                                                 message = 'Select data first')
     
     
-    ########## create and plot graph of "negative" patient ###############
+    ########## create and plot graph of patients ###############
     dataFirst <- data[[selectFirstPatient]]
     dataSecond <- data[[selectSecondPatient]]
     
@@ -279,9 +279,16 @@ server <- function(input,output, session){
       arraySecond <- dataSecond$V.sequence
     }
 
+    arrayFirst <- unique(arrayFirst)
+    arraySecond <- unique(arraySecond)
+    
+    #map of bcr and its numver of occurrence
+    mulityCounterFirst <- getMapOfBcrs(arrayFirst)
+    mulityCounterSecond <- getMapOfBcrs(arraySecond)
+    
     #returns null when array is numeric(0)
-    matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
-    matrixSecond <- calculateDistances(arraySecond,arraySecond)
+    matrixFirst <- calculateDistances(arrayFirst)
+    matrixSecond <- calculateDistances(arraySecond)
     
 
     #avoid numeric(0) excpetion
@@ -299,7 +306,7 @@ server <- function(input,output, session){
     
 
     if(!is.null(matrixFirst)){
-      graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = 0.0)
+      graphFirst <<- buildIGraph(arrayFirst, matrixFirst, mulityCounterFirst, thresholdMax = 1.0, thresholdMin = 0.0)
     }
     else {
       graphFirst <<- NULL
@@ -307,7 +314,7 @@ server <- function(input,output, session){
     
     
     if(!is.null(matrixSecond)){
-      graphSecond <<- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = 0.0)
+      graphSecond <<- buildIGraph(arraySecond, matrixSecond, mulityCounterSecond, thresholdMax = 1.0, thresholdMin = 0.0)
     }
     else {
       graphSecond <<- NULL      

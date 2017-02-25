@@ -12,14 +12,14 @@ loadSource("DistanceMetric.R")
 loadSource("PlotBCR.R")
 
 
-#' @title calculate distance between given bcr arrays
+
+#' @title calculate distances between given bcr arrays
 #' 
 #' @description \code{calculateDistances} returns the distance of the given arrays.
 #' 
 #' @details More Information here.
 #' 
-#' @param arrayBcr1 First array of bcrs
-#' @param arrayBcr2 Second array of bcrs
+#' @param arrayBcr Array of bcrs, should contain only unique values
 #' @param distanceMetric Possilble distance metrics ("LD" - Levenshtein Damerau (default), etc.)
 #' 
 #' 
@@ -36,15 +36,102 @@ loadSource("PlotBCR.R")
 #'
 #' @export 
 
-calculateDistances <- function(arrayBcr1, arrayBcr2, distanceMetric = "LD"){
+calculateDistances <- function(arrayBcr, distanceMetric = "LD"){
   
-  if(is.null(arrayBcr1) || is.null(arrayBcr2) || identical(arrayBcr1,character(0)) || identical(arrayBcr2,character(0))) return(NULL)
+  if(is.null(arrayBcr)  || identical(arrayBcr,character(0)) ) return(NULL)
   
   # calculate distance between all entries in subData
-  matrix <- distanceArrayOfBcr(arrayBcr1, arrayBcr2)
+  matrix <- distanceArrayOfBcr(arrayBcr, arrayBcr)
   
   return (matrix)
 }
+
+
+
+
+
+#' @importFrom igraph graph.empty
+#' @importFrom igraph vertex
+#' @importFrom igraph edge
+#' @importFrom igraph as.undirected
+buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax = 5, thresholdMin = 1){
+  
+  graph <- graph.empty()
+  #fill graph
+  #add bcrs as verticies 
+  for(i in 1:length(arrayBcr)){
+    
+    graph <- graph + vertex(name = arrayBcr[i], multiplyCounter = multiplyCounter[[arrayBcr[i]]]) 
+    
+  }
+
+  # Connect them with their distance (add edges) 
+  for(i in 1:length(arrayBcr)){
+    
+    #for(bcr2 in arrayBcr2){ 
+    for(j in i:length(arrayBcr)){ 
+      weight <- distanceMatrix[i,j]
+      if(weight >= thresholdMin && weight <= thresholdMax){
+        graph <- graph + edge(arrayBcr[i],arrayBcr[j], weight = weight)
+      }
+    }
+    
+  }
+  
+  graph <- as.undirected(graph)
+  
+  return(graph)
+}
+
+
+
+
+
+plotGraph <- function(iGraphData, label = "Patient X"){
+  
+  # plot graph
+  plot_graph(weighted_graph = iGraphData, edge_threshold=1, community_threshold=1, label = label)
+}
+
+
+
+
+
+####################### helper calsses #######################
+
+
+#' returns the maximum value of given matrix
+getMaxWeight <- function(matrix){
+  
+  maxWeight <- which(matrix == max(matrix), arr.ind = TRUE)
+  
+  return(maxWeight)
+}
+
+
+
+#' returns an environments contain the bcrs and its number of occurrence
+getMapOfBcrs <- function(arrayBcr){
+  
+  envMultiplyCounter <- new.env()
+  
+  for(i in 1:length(arrayBcr)){
+    
+    curBcr <- arrayBcr[i]
+    
+    if(is.null(envMultiplyCounter[[curBcr]])){
+      envMultiplyCounter[[curBcr]] <- 1
+    }else{
+      count <- envMultiplyCounter[[curBcr]]
+      envMultiplyCounter[[curBcr]] <- (count + 1)
+    }
+    
+  }
+  
+  return(envMultiplyCounter)
+}
+
+
 
 
 #' @import utils
@@ -56,6 +143,7 @@ csvToSubset <- function(path, header = TRUE, sep = ";"){
   
   return(partsOfData)
 }
+
 
 
 
@@ -78,38 +166,10 @@ csvToDistanceMatrices <- function(path, header = TRUE, sep = ";", distanceMetric
   return(distances)
 }
 
-#' @importFrom igraph graph.empty
-#' @importFrom igraph vertex
-#' @importFrom igraph edge
-#' @importFrom igraph as.undirected
-buildIGraph <- function(arrayBcr, distanceMatrix, thresholdMax = 5, thresholdMin = 1){
-  
-  graph <- graph.empty()
-  #fill graph
-  #add bcrs as verticies 
-  for(i in 1:length(arrayBcr)){
-    
-    graph <- graph + vertex(name = arrayBcr[i]) 
-    
-  }
 
-  # Connect them with their distance (add edges) 
-  for(i in 1:length(arrayBcr)){
-    
-    #for(bcr2 in arrayBcr2){ 
-    for(j in i:length(arrayBcr)){ 
-      weight <- distanceMatrix[i,j]
-      if(weight >= thresholdMin && weight <= thresholdMax){
-        graph <- graph + edge(arrayBcr[i],arrayBcr[j], weight = weight)
-      }
-    }
-    
-  }
-  
-  graph <- as.undirected(graph)
-  
-  return(graph)
-}
+
+
+
 
 #' @importFrom igraph vcount
 #' @importFrom igraph ecount
@@ -124,18 +184,4 @@ printInformation <- function(iGraphData){
 }
 
 
-plotGraph <- function(iGraphData, label = "Patient X"){
-  
-  # plot graph
-  plot_graph(weighted_graph = iGraphData, edge_threshold=1, community_threshold=1, label = label)
-}
-
-
-
-getMaxWeight <- function(matrix){
-  
-  maxWeight <- which(matrix == max(matrix), arr.ind = TRUE)
-  
-  return(maxWeight)
-}
 
