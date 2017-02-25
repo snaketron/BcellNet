@@ -242,7 +242,6 @@ server <- function(input,output, session){
   })
 
   #####################Update Inputnumeric#######################
-
    observeEvent(input$num2,{
      if(input$num2>1){
                 
@@ -278,12 +277,12 @@ server <- function(input,output, session){
       arrayFirst <- dataFirst$V.sequence
       arraySecond <- dataSecond$V.sequence
     }
-
+    
     #returns null when array is numeric(0)
     matrixFirst <- calculateDistances(arrayFirst,arrayFirst)
     matrixSecond <- calculateDistances(arraySecond,arraySecond)
     
-
+    
     #avoid numeric(0) excpetion
     if(is.null(matrixFirst)){
       matrices <- normalizeMatrix(matrixSecond, matrixSecond)
@@ -297,7 +296,7 @@ server <- function(input,output, session){
       matrixFirst <- matrices[[1]]
     }
     
-
+    
     if(!is.null(matrixFirst)){
       graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = 0.0)
     }
@@ -318,78 +317,49 @@ server <- function(input,output, session){
     
     layout_algo <- all_layout_algorithms()[[input$select_layout]]
     cat("layout algorithm selected:", input$select_layout, "\n")
-        
+    
     
     ################ Plot Graphs #####################
-
+    
     if(!is.null(graphFirst)){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
-      patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
-      visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
+        patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+        visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
+      
+      output$firstPatientDegreeDistribution <- renderPlot(
+        hist(degree(graphFirst))
+      )
     }
     else {
       output$firstPatientLabel <- renderText("")
       output$firstPatient <- renderVisNetwork({})
+      output$firstPatientDegreeDistributionLabel <- renderText("")
+      output$firstPatientDegreeDistribution <- renderPlot({})
     }
     
     if(!is.null(graphSecond)){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
       zweite<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
-      patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
-      visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
+        patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+        visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
+      
+      output$secondPatientDegreeDistribution <- renderPlot(
+        hist(degree(graphSecond))
+      )
     }
     else {
       output$secondPatientLabel <- renderText("")
       output$secondPatient <- renderVisNetwork({})
+      output$secondPatientDegreeDistributionLabel <- renderText("")
+      output$secondPatientDegreeDistribution <- renderPlot({})
     }
-
-    ############ Download as...#####################
-    # #  Get the download file name.
-    # downloadPlotFileName <- reactive({
-    #   input$downloadPlotFileName
-    # })
-    # 
-    # output$down<- downloadHandler(
-    #   #Specify the file name
-    #   filename = function(){
-    #     paste(downloadPlotFileName(), input$saveAs, sep = ".")
-    #     # paste("Plot", input$saveAs, sep = ".")
-    #     
-    #   },
-    #   
-    #   
-    #   # open the device (png() or pdf())
-    #   content = function(file){
-    #     if(input$saveAs == "PNG")
-    #       png(file)
-    #     else
-    #       pdf(file)
-    #     
-    #     # 2:create the plot 
-    # 
-    #     # here you can call (by Print or Func.) your Plot, which you want to print 
-    #     #print(hist(rnorm(100), main = " Patient 2"))
-    #   
-    #     # for GGPLOT
-    #     # print(ggplot(iris, aes(x=x(), y=y())) + geom_point(shape=1)) 
-    #    
-    #     
-    #     # 3:close the device
-    #     dev.off()   
-    #   }
-    # )
-    #################### End of Download as..###############
-    
-
   })
-  
-  
-  
+
   
   #function to update vj segment combo list
   updateVJSegment <- function(){
