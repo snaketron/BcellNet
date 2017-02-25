@@ -149,10 +149,7 @@ ui <- fluidPage(
         ,
 
         tabPanel("Degree Distribution",
-                 tags$label(textOutput("firstPatientDegreeDistributionLabel"), 'for'="firstPatientDegreeDistribution", 'style'="margin-top: 5px;"),
                  plotOutput("firstPatientDegreeDistribution"),
-
-                 tags$label(textOutput("secondPatientDegreeDistributionLabel"), 'for'="secondPatientDegreeDistribution"),
                  plotOutput("secondPatientDegreeDistribution")
         )
         
@@ -308,7 +305,7 @@ server <- function(input,output, session){
     
     
     if(!is.null(matrixFirst)){
-      graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = 0.0)
+      graphFirst <<- buildIGraph(arrayFirst, matrixFirst, thresholdMax = 1.0, thresholdMin = input$num2)
     }
     else {
       graphFirst <<- NULL
@@ -316,7 +313,7 @@ server <- function(input,output, session){
     
     
     if(!is.null(matrixSecond)){
-      graphSecond <<- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = 0.0)
+      graphSecond <<- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = input$num2)
     }
     else {
       graphSecond <<- NULL      
@@ -346,7 +343,6 @@ server <- function(input,output, session){
     else {
       output$firstPatientLabel <- renderText("")
       output$firstPatient <- renderVisNetwork({})
-      output$firstPatientDegreeDistributionLabel <- renderText("")
       output$firstPatientDegreeDistribution <- renderPlot({})
     }
     
@@ -365,7 +361,6 @@ server <- function(input,output, session){
     else {
       output$secondPatientLabel <- renderText("")
       output$secondPatient <- renderVisNetwork({})
-      output$secondPatientDegreeDistributionLabel <- renderText("")
       output$secondPatientDegreeDistribution <- renderPlot({})
     }
   })
