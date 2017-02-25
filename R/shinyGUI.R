@@ -38,9 +38,15 @@ ui <- fluidPage(
   # p(style = "font-family:Times New Roman","See other apps in the"),
   # a("Shiny Showcase",href = "http://www.rstudio.com/products/shiny/shiny-user-showcase/"),
   #html code with tags, you can also write h1("test")
-  tags$img(height=80, width=80, src="logo.png"),
-  tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
-  tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;"),
+  fluidRow(
+    column(1, 
+      tags$img(height=70, width=70, src="logo.png", style="margin-top: 20px; ")
+    ),
+    column(11, 
+      tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
+      tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;")
+    )
+  ),
   
   # tags$br(), line break 
   tags$hr(),
