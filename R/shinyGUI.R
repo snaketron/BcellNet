@@ -90,10 +90,10 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 100px;",
-      numericInput( inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
-
-      div(style="display:inline-block;vertical-align:top; width: 150px;",textInput(inputId = "textBox", label = " Absolute", width = "50%")),
+      div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput(inputId = "maxNode", "Max:", 100)),
+      div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput( inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
+      
+      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "myabsolute", "Absolute:", 0)),
       
       #Slider
       # sliderInput(inputId = "num", label = "Egde definition", 
@@ -234,19 +234,32 @@ server <- function(input,output, session){
        updateNumericInput(session,"num2", min=0, max = 100, step = 1)
        
      }else if(input$num2>0){
-       
-               x<-(input$num2)
-               updateNumericInput(session,"num2",value = x, min=0, max = 100, step = 1)
-               y<-x/100
-               updateTextInput(session,"textBox",value =y )
+              maxValueOfNodes<-input$maxNode;
+               userInput<-(input$num2)
+               updateNumericInput(session,"num2",value = userInput, min=0, max = 100, step = 1)
+               procentValue<-(userInput/100)*maxValueOfNodes
+               updateNumericInput(session,"myabsolute",value =procentValue)
                
 
      }
-
-     
-     
    })
-
+     
+     
+     #####################Update TextInput#######################
+#      observeEvent(input$myabsolute,{
+# 
+#          if ( input$myabsolute>1){
+# 
+#          absolutevalue<-(input$myabsolute)
+# 
+#          updateTextInput(session,"myabsolute",value =absolutevalue )
+# 
+#          relativeValue<-absolutevalue/100
+#          updateNumericInput(session,"num2",value =relativeValue , min=0, max = 100, step = 1)
+# 
+# }
+# 
+#      })
   
   #plot networt button action
   observeEvent(input$pn, {
