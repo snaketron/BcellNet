@@ -52,7 +52,10 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # preconditions: input validation
   if (!any(class(weighted_graph) %in% "igraph")) {
     stop("weighted_graph must be an igraph object")
-  } 
+  }
+  
+  edge_threshold <- .normalize_numeric_inpuc(edge_threshold, 0)
+  
   .validate_non_neg_input_numeric(edge_threshold)
   .validate_input_numeric(community_threshold)  
   .validate_input_numeric(vertex_size)  
@@ -122,31 +125,41 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 #      vertex.label=NA, edge.color=edge_color,layout=network_layout, col=community_colors,
 #      main=label, edge.label=NA) 
 
+.normalize_numeric_inpuc <- function(numeric, default) {
+  if (!is.numeric(numeric)) {
+    print(paste0("'", numeric, "' must be a numeric but found '", class(numeric), "'. Auto-converting to default value '", default, "'"))
+    
+    return (default)
+  }
+  
+  return (numeric)
+}
+
 # Helper function to validate the inputs
 .validate_input_numeric <- function(numeric) {
   if (!is.numeric(numeric)) {
-    stop("'", quote(numeric), "' must be a numeric but found '", class(numeric), "'")
+    stop("'", numeric, "' must be a numeric but found '", class(numeric), "'")
   }
   if (numeric <= 0) {
-    stop("'", quote(numeric), "' must be positve")
+    stop("'", numeric, "' must be positve")
   }
 }
 
 .validate_non_neg_input_numeric <- function(numeric) {
   if (!is.numeric(numeric)) {
-    stop("'", quote(numeric), "' must be a numeric but found '", class(numeric), "'")
+    stop("'", numeric, "' must be a numeric but found '", class(numeric), "'")
   }
   if (numeric < 0) {
-    stop("'", quote(numeric), "' must be positve")
+    stop("'", numeric, "' must be positve")
   }
 }
 
 .validate_input_string <- function(string) {
   if (!is.character(string)) {
-    stop("'", quote(string), "' must be a string but found '", class(string), "'")
+    stop("'", string, "' must be a string but found '", class(string), "'")
   }
   if (nchar(string) <= 0) {
-    stop("'", quote(string), "' must be a non-empty string")
+    stop("'", string, "' must be a non-empty string")
   }
 }
 
