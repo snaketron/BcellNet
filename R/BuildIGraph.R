@@ -92,8 +92,7 @@ buildIGraph <- function(arrayBcr, distanceMatrix, thresholdMax = 5, thresholdMin
     graph <- graph + vertex(name = arrayBcr[i]) 
     
   }
-  
-  
+
   # Connect them with their distance (add edges) 
   for(i in 1:length(arrayBcr)){
     
@@ -106,7 +105,6 @@ buildIGraph <- function(arrayBcr, distanceMatrix, thresholdMax = 5, thresholdMin
     }
     
   }
-  
   
   graph <- as.undirected(graph)
   

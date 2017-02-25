@@ -281,8 +281,8 @@ server <- function(input,output, session){
       matrixFirst <- matrices[[2]]
     }else{
       matrices <- normalizeMatrix(matrixFirst, matrixSecond)
-      matrixSecond <- matrices[[1]]
-      matrixFirst <- matrices[[2]]
+      matrixSecond <- matrices[[2]]
+      matrixFirst <- matrices[[1]]
     }
     
 
@@ -293,7 +293,7 @@ server <- function(input,output, session){
     if(!is.null(matrixSecond)){
       graphSecond <<- buildIGraph(arraySecond, matrixSecond, thresholdMax = 1.0, thresholdMin = 0.0)
     }
-  
+    print("did it")
     
     comAlgo <- all_communtiy_algorithms()[[input$select_community]]
     cat("community algorithm selected:", input$select_community, "\n")
