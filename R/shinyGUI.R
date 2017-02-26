@@ -24,6 +24,7 @@ usePackage("shinyjs")
 
 
 data <- NULL
+maxAbsolutValue <- 100
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
 graphFirst <- NULL
@@ -91,8 +92,7 @@ ui <- fluidPage(
       
       #numericInput
       div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput(inputId = "maxNode", "Max:", 100)),
-      div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput( inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
-      
+      div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput(inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "myabsolute", "Absolute:", 0)),
       
       #Slider
@@ -376,16 +376,18 @@ server <- function(input,output, session){
     matrixFirst <- calculateDistances(arrayFirst)
     matrixSecond <- calculateDistances(arraySecond)
     
+    maxAbsolutValue <<- max(matrixFirst, matrixSecond)
+    
     
     #avoid numeric(0) excpetion
     if(is.null(matrixFirst)){
-      matrices <- normalizeMatrix(matrixSecond, matrixSecond)
+      matrices <- normalizeMatrix(matrixSecond, matrixSecond, groundZero = FALSE)
       matrixSecond <- matrices[[1]]
     }else if(is.null(matrixSecond)){
-      matrices <- normalizeMatrix(matrixFirst, matrixFirst)
+      matrices <- normalizeMatrix(matrixFirst, matrixFirst, groundZero = FALSE)
       matrixFirst <- matrices[[2]]
     }else{
-      matrices <- normalizeMatrix(matrixFirst, matrixSecond)
+      matrices <- normalizeMatrix(matrixFirst, matrixSecond, groundZero = FALSE)
       matrixSecond <- matrices[[2]]
       matrixFirst <- matrices[[1]]
     }
