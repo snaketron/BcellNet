@@ -2,7 +2,6 @@ files <- NULL
 # setwd("R") is done by shiny since the server file is in here
 loadSource <- function(sourceName) {
   pattern <- paste("^", sourceName, "$", sep = "")
-  print(pattern)
   files <<- list.files(pattern=pattern, recursive = TRUE)
   for (file in files) {
     source(file)
