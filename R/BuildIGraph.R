@@ -100,16 +100,6 @@ plotGraph <- function(iGraphData, label = "Patient X"){
 ####################### helper calsses #######################
 
 
-#' returns the maximum value of given matrix
-getMaxWeight <- function(matrix){
-  
-  maxWeight <- which(matrix == max(matrix), arr.ind = TRUE)
-  
-  return(maxWeight)
-}
-
-
-
 #' returns an environments contain the bcrs and its number of occurrence
 getMapOfBcrs <- function(arrayBcr){
 
