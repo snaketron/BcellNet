@@ -61,9 +61,6 @@ distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2){
 # otherwise the minimum will be 0 and the maximum 1
 normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
   
-  maxWeight <- which(matrix == max(matrix), arr.ind = TRUE)
-  
-  
   normalizedMatrixA <- matrix(nrow =nrow(matrixA), ncol = ncol(matrixA), 2)
   normalizedMatrixB <- matrix(nrow =nrow(matrixB), ncol = ncol(matrixB), 2)
   
