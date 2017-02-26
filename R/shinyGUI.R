@@ -2,7 +2,6 @@ files <- NULL
 # setwd("R") is done by shiny since the server file is in here
 loadSource <- function(sourceName) {
   pattern <- paste("^", sourceName, "$", sep = "")
-  print(pattern)
   files <<- list.files(pattern=pattern, recursive = TRUE)
   for (file in files) {
     source(file)
@@ -24,7 +23,7 @@ usePackage("shinyjs")
 
 
 data <- NULL
-maxAbsolutValue <- 100
+maxAbsolutValue <- 100 
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
 graphFirst <- NULL
@@ -96,9 +95,9 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput(inputId = "maxNode", "Max:", 100)),
-      div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput(inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "myabsolute", "Absolute:", 0)),
+     # div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput(inputId = "maxNode", "Max:", 100)),
+      div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput( inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
+      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "myabsolute", label = "Absolute (100):", 0)),
       
       #Slider
       # sliderInput(inputId = "num", label = "Egde definition", 
@@ -251,24 +250,10 @@ server <- function(input,output, session){
     vjSegmentSelected <<- TRUE
   })
   
-  #####################Update Inputnumeric#######################
-   observeEvent(input$num2,{
-     if(!is.numeric(input$num2)){
-       
-       updateNumericInput(session,"num2", min=0, max = 100, step = 1)
-       
-     }else if(input$num2>0){
-              maxValueOfNodes<-input$maxNode;
-               userInput<-(input$num2)
-               updateNumericInput(session,"num2",value = userInput, min=0, max = 100, step = 1)
-               procentValue<-(userInput/100)*maxValueOfNodes
-               updateNumericInput(session,"myabsolute",value =procentValue)
-               
+ 
 
-     }
-   })
-     
-     
+  
+  
      #####################Update TextInput#######################
 #      observeEvent(input$myabsolute,{
 # 
@@ -288,6 +273,11 @@ server <- function(input,output, session){
   #plot networt button action
   observeEvent(input$pn, {
     prepareGraphs()  
+    ######## match max of absolute after uploaded a graph ######
+    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    updateNumericInput(session,"myabsolute",label=maxLabel)
+    procentValue<-(input$num2/100)*maxAbsolutValue
+    updateNumericInput(session,"myabsolute",label=maxLabel,value =procentValue)
     
     ################ Plot Graphs #####################
     if(!is.null(graphFirst)){
@@ -316,6 +306,10 @@ server <- function(input,output, session){
       output$secondPatient <- renderVisNetwork({})
     }
   })
+
+  
+  
+  
   
   # for plotting the degree distribution
   observeEvent(input$pdd, {
@@ -400,13 +394,12 @@ server <- function(input,output, session){
     #returns null when array is numeric(0)
     matrixFirst <- calculateDistances(arrayFirst)
     matrixSecond <- calculateDistances(arraySecond)
-    
     maxAbsolutValue <<- max(matrixFirst, matrixSecond)
-    
+    #print(maxAbsolutValue)
     
     #avoid numeric(0) exception
     if(is.null(matrixFirst)){
-      matrices <- normalizeMatrix(matrixSecond, matrixSecond, groundZero = FALSE)
+      matrices <- normalizeMatrix(matrixSecond, matrixSecond,groundZero = FALSE)
       matrixSecond <- matrices[[1]]
     }else if(is.null(matrixSecond)){
       matrices <- normalizeMatrix(matrixFirst, matrixFirst, groundZero = FALSE)
@@ -473,6 +466,28 @@ server <- function(input,output, session){
     
   }
   
+  #####################Update Inputnumeric#######################
+  observeEvent(input$num2,{
+    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    
+    if(!is.numeric(input$num2)){
+      
+      updateNumericInput(session,"num2", min=0, max = 100, step = 1)
+      
+    }else if(input$num2>0 && input$num2<=100){
+      
+      userInput<-(input$num2)
+      updateNumericInput(session,"num2",value = userInput, min=0, max = 100, step = 1)
+      
+      procentValue<-(userInput/100)*maxAbsolutValue
+      updateNumericInput(session,"myabsolute",label=maxLabel,value =procentValue)
+      
+      
+    }else if(input$num2>100){
+      updateNumericInput(session,"num2",value = 100, min=0, max = 100, step = 1)
+      
+    }
+  }) 
   
   
 }
