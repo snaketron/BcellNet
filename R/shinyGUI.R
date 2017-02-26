@@ -29,6 +29,8 @@ selectFirstPatient <- NULL
 selectSecondPatient <- NULL
 graphFirst <- NULL
 graphSecond <- NULL
+vjSegmentSelected <- FALSE
+choicesOfSecondPatient <- NULL
 
 #UI
 ui <- fluidPage(
@@ -181,6 +183,10 @@ server <- function(input,output, session){
   observe({
     if(is.null(input$csvFile$datapath)) return(NULL)
     
+    #reset some vars
+    vjSegmentSelected <<- FALSE
+    choicesOfSecondPatient <<- NULL
+    
     data <<- csvToSubset(input$csvFile$datapath)
     possiblePatients <- names(data)
     possibleVjSegments <- NULL
@@ -231,6 +237,20 @@ server <- function(input,output, session){
     updateVJSegment()
   })
 
+  
+  # when selecting an element in first patient list, this element will be selected in combolist for
+  # second patient too, if no element for second patient would selected before.
+  observeEvent(input$vjSegmentFirst,{
+    selectedItem <- input$vjSegmentFirst
+    if(!vjSegmentSelected && (selectedItem %in% choicesOfSecondPatient)){
+      updateSelectInput(session, "vjSegmentSecond", selected = selectedItem)
+    }
+  })
+
+  observeEvent(input$vjSegmentSecond, {
+    vjSegmentSelected <<- TRUE
+  })
+  
   #####################Update Inputnumeric#######################
    observeEvent(input$num2,{
      if(!is.numeric(input$num2)){
@@ -447,27 +467,8 @@ server <- function(input,output, session){
       }
       posSegmentsSecPat <- unique(posSegmentsSecPat)
     }
-    
-    # if(!is.null(dataSec)){
-    #   for( i in 1:nrow(dataSec)){
-    #     newSegment <- dataSec$VJ.segment[[i]]
-    #     if(newSegment %in% posSegmentsFirstPat){
-    #       posSegmentsBoth <- c(posSegmentsBoth, newSegment)
-    #       posSegmentsFirstPat <- posSegmentsFirstPat[posSegmentsFirstPat != newSegment]
-    #     }else if(!newSegment %in% posSegmentsBoth){
-    #       posSegmentsSecPat <- c(posSegmentsSecPat, newSegment)
-    #     }
-    #   }
-    # }
-    # posSegmentsBoth <- unique(posSegmentsBoth)
-    # posSegmentsSecPat <- unique(posSegmentsSecPat)
-    
-    
-    #update combobox first with elements occurs in both
-    # updateSelectInput(session, "vjSegment", choices = list('whole data' = c("whole data",""), 'Segments for both' = c(posSegmentsBoth,""),
-    #                                                        'Segments for 1st patient' = c(posSegmentsFirstPat,""), 'Segments for 2nd patient' = c(posSegmentsSecPat,"")),
-    #                   selected = "whole data")
-    
+
+    choicesOfSecondPatient <<- posSegmentsSecPat
     
     updateSelectInput(session, "vjSegmentFirst", choices = c('whole data', posSegmentsFirstPat), selected = "whole data")
     updateSelectInput(session, "vjSegmentSecond", choices = c('whole data', posSegmentsSecPat), selected = "whole data")
