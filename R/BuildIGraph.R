@@ -112,6 +112,8 @@ getMaxWeight <- function(matrix){
 
 #' returns an environments contain the bcrs and its number of occurrence
 getMapOfBcrs <- function(arrayBcr){
+
+  if(is.null(arrayBcr) || identical(arrayBcr,character(0))) return(NULL)
   
   envMultiplyCounter <- new.env()
   
