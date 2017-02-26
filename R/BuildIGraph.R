@@ -167,7 +167,6 @@ csvToDistanceMatrices <- function(path, header = TRUE, sep = ";", distanceMetric
 #' @importFrom igraph ecount
 printInformation <- function(iGraphData){
   
-  
   #print number of verticesd
   cat("vertices:", vcount(iGraphData),"\n")
   #print number of edges
