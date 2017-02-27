@@ -37,7 +37,7 @@ distanceb2b <- function(bcr1, bcr2){
   return (weight)
 } 
 
-# bcr1 and bcr2 should be of same length
+# bcr1 and bcr2 have to be of same length
 distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2){
   
   #stringdistmatrix()
@@ -48,7 +48,7 @@ distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2){
     for(j in 1:i){
       
       dist <- distanceb2b(arrayBcr1[i], arrayBcr2[j])
-      
+
       matrix[i,j] <- dist
       matrix[j,i] <- dist
     }
@@ -67,6 +67,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
   minVal <- min(matrixA,matrixB) 
   maxVal <- max(matrixA,matrixB) 
 
+  if(maxVal == 0) return(list(matrixA,matrixB))
   
   if(groundZero == TRUE){
     for(i in 1:nrow(matrixA)){

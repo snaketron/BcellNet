@@ -2,7 +2,6 @@ files <- NULL
 # setwd("R") is done by shiny since the server file is in here
 loadSource <- function(sourceName) {
   pattern <- paste("^", sourceName, "$", sep = "")
-  print(pattern)
   files <<- list.files(pattern=pattern, recursive = TRUE)
   for (file in files) {
     source(file)
@@ -394,14 +393,13 @@ server <- function(input,output, session){
       arrayFirst <- dataFirst$V.sequence
       arraySecond <- dataSecond$V.sequence
     }
-
-    arrayFirst <- unique(arrayFirst)
-    arraySecond <- unique(arraySecond)
     
-    #map of bcr and its numver of occurrence
+    #map of bcr and its number of occurrence
     mulityCounterFirst <- getMapOfBcrs(arrayFirst)
     mulityCounterSecond <- getMapOfBcrs(arraySecond)
 
+    arrayFirst <- unique(arrayFirst)
+    arraySecond <- unique(arraySecond)
     
     #returns null when array is numeric(0)
     matrixFirst <- calculateDistances(arrayFirst)
@@ -409,13 +407,13 @@ server <- function(input,output, session){
     maxAbsolutValue <<- max(matrixFirst, matrixSecond)
     #print(maxAbsolutValue)
     
-    #avoid numeric(0) excpetion
+    #avoid numeric(0) exception
     if(is.null(matrixFirst)){
       matrices <- normalizeMatrix(matrixSecond, matrixSecond,groundZero = FALSE)
       matrixSecond <- matrices[[1]]
     }else if(is.null(matrixSecond)){
       matrices <- normalizeMatrix(matrixFirst, matrixFirst, groundZero = FALSE)
-      matrixFirst <- matrices[[2]]
+      matrixFirst <- matrices[[1]]
     }else{
       matrices <- normalizeMatrix(matrixFirst, matrixSecond, groundZero = FALSE)
       matrixSecond <- matrices[[2]]
@@ -429,15 +427,14 @@ server <- function(input,output, session){
     else {
       graphFirst <<- NULL
     }
-    
-    
+
     if(!is.null(matrixSecond)){
       graphSecond <<- buildIGraph(arraySecond, matrixSecond, mulityCounterSecond, thresholdMax = 1.0, thresholdMin = input$num2)
     }
     else {
       graphSecond <<- NULL      
     }
-    
+
     comAlgo <<- all_communtiy_algorithms()[[input$select_community]]
     cat("community algorithm selected:", input$select_community, "\n")
     

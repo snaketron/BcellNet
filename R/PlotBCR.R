@@ -100,7 +100,6 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
       nData$edges$weight < edge_threshold
     }
 
-
     # normalize the weight
     if (!is.null(nData$edges$weight)) {
       nData$edges$weight <- 0
@@ -119,7 +118,12 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # colorize small communities grey
   nData$nodes$color <- community_colors
   # for https://github.com/snaketron/BcellNet/issues/10 entry point
-  nData$nodes$size <- NULL
+  # default size of vis network is 25 so min is set to that size and the others are sized relative to that
+  # maxMult <- max(nData$nodes$multiplyCounter)
+  minMult <- min(nData$nodes$multiplyCounter)
+  # cat("min mult: ", minMult, ", max mult: ", maxMult, "\n")
+  print(nData$nodes$multiplyCounter)
+  nData$nodes$size <- nData$nodes$multiplyCounter / minMult * 25
   
   # finally plot it
   visNetwork(nodes = nData$nodes, edges = nData$edges) %>%
