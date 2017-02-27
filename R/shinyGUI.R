@@ -26,8 +26,11 @@ data <- NULL
 maxAbsolutValue <- 100
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
-vjSegmentSelected <- FALSE
+graphFirst <- NULL
+graphSecond <- NULL
+vjSegmentLinked <- TRUE
 choicesOfSecondPatient <- NULL
+choicesOfFirstPatient <- NULL
 
 #UI
 ui <- fluidPage(
@@ -86,6 +89,8 @@ ui <- fluidPage(
       disabled(selectInput(inputId = "vjSegmentSecond",label = "Select VJ-Segment for 2nd patient",
                            choices = "whole data",selected = "whole data", multiple = FALSE, selectize = TRUE)),
       
+      checkboxInput("linkVJSegments", "Link VJ-Segments", TRUE),
+      
       selectInput(inputId = "partOfSequence",label = "Select Part of Sequence",
                   choices = c("whole sequence", "CDR3", "V sequence"),
                   selected = "whole sequence", multiple = FALSE, selectize = TRUE),
@@ -94,8 +99,8 @@ ui <- fluidPage(
       
       #numericInput
       #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "num2",label = "Relative %",value =95,min = 0,max = 100, step = 0.01)),
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute (100):", 0)),
+      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "num2",label = "Relative distance in %",value =5,min = 0,max = 100, step = 1.00)),
+      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute distance (100):", 0)),
       
       #Slider
       # sliderInput(inputId = "num", label = "Egde definition", 
@@ -184,8 +189,8 @@ server <- function(input,output, session){
     if(is.null(input$csvFile$datapath)) return(NULL)
     
     #reset some vars
-    vjSegmentSelected <<- FALSE
     choicesOfSecondPatient <<- NULL
+    choicesOfFirstPatient <<- NULL
     
     data <<- csvToSubset(input$csvFile$datapath)
     print("data ready!")
@@ -239,18 +244,24 @@ server <- function(input,output, session){
     updateVJSegment()
   })
 
+  observeEvent(input$linkVJSegments,{
+    vjSegmentLinked <<- input$linkVJSegments
+  })
   
   # when selecting an element in first patient list, this element will be selected in combolist for
-  # second patient too, if no element for second patient would selected before.
+  # second patient too. 
   observeEvent(input$vjSegmentFirst,{
     selectedItem <- input$vjSegmentFirst
-    if(!vjSegmentSelected && (selectedItem %in% choicesOfSecondPatient)){
+    if(vjSegmentLinked && (selectedItem %in% choicesOfSecondPatient)){
       updateSelectInput(session, "vjSegmentSecond", selected = selectedItem)
     }
   })
 
-  observeEvent(input$vjSegmentSecond, {
-    vjSegmentSelected <<- TRUE
+  observeEvent(input$vjSegmentSecond,{
+    selectedItem <- input$vjSegmentSecond
+    if(vjSegmentLinked && (selectedItem %in% choicesOfFirstPatient)){
+      updateSelectInput(session, "vjSegmentFirst", selected = selectedItem)
+    }
   })
 
   #plot networt button action
@@ -275,7 +286,8 @@ server <- function(input,output, session){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
-        patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
+        edge_threshold <- 1 - (input$num2 / 100.0)
+        patientOne<- plot_graph(graphFirst, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
     }
@@ -289,7 +301,8 @@ server <- function(input,output, session){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
       zweite<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
-        patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
+        edge_threshold <- 1 - (input$num2 / 100.0)
+        patientTwo<- plot_graph(graphSecond, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
     }
@@ -394,7 +407,8 @@ server <- function(input,output, session){
       posSegmentsSecPat <- unique(posSegmentsSecPat)
     }
 
-    choicesOfSecondPatient <<- posSegmentsSecPat
+    choicesOfSecondPatient <<- c('whole data', posSegmentsSecPat)
+    choicesOfFirstPatient <<- c('whole data', posSegmentsFirstPat)
     
     updateSelectInput(session, "vjSegmentFirst", choices = c('whole data', posSegmentsFirstPat), selected = "whole data")
     updateSelectInput(session, "vjSegmentSecond", choices = c('whole data', posSegmentsSecPat), selected = "whole data")
