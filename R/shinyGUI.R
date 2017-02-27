@@ -26,8 +26,6 @@ data <- NULL
 maxAbsolutValue <- 100
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
-graphFirst <- NULL
-graphSecond <- NULL
 vjSegmentLinked <- TRUE
 choicesOfSecondPatient <- NULL
 choicesOfFirstPatient <- NULL
@@ -327,19 +325,22 @@ server <- function(input,output, session){
       updateSelectInput(session, "vjSegmentFirst", selected = selectedItem)
     }
   })
-
+  
+  recalculate_edge_weight_filter <- function() {
+    print("recalculating absolute edge weight filter")
+    maxAbsolutValue <<- extract_max_edge_weight()
+    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
+    procentValue <- ((input$relative_edge_weight_filter/100)*maxAbsolutValue)
+    absoluteValue<-as.integer(procentValue+0.5)
+    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
+  }
+  
   #plot networt button action
   observeEvent(input$pn, {
     community_algorithm <- extract_community_algorithm()
     layout_algorithm <- extract_layout_algorithm()
-
-    ######## match max of absolute after uploaded a graph ######
-    maxAbsolutValue <<- extract_max_edge_weight()
-    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
-    procentValue <-(input$relative_edge_weight_filter/100)*maxAbsolutValue
-    absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
+    recalculate_edge_weight_filter()
     
     ################ Plot Graphs #####################
     graphFirst <- extract_first_graph()
@@ -377,13 +378,7 @@ server <- function(input,output, session){
   
   # for plotting the degree distribution
   observeEvent(input$pdd, {
-    maxAbsolutValue <<- extract_max_edge_weight()
-    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
-    procentValue <-(input$relative_edge_weight_filter/100)*maxAbsolutValue
-    absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
-
+    recalculate_edge_weight_filter()
     graphFirst <- extract_first_graph()
     if(!is.null(graphFirst)){
       output$firstPatientDegreeDistribution <- renderPlot(
@@ -406,13 +401,7 @@ server <- function(input,output, session){
   })
   
   observeEvent(input$pcsd, {
-    maxAbsolutValue <<- extract_max_edge_weight()
-    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
-    procentValue <-(input$relative_edge_weight_filter/100)*maxAbsolutValue
-    absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
-
+    recalculate_edge_weight_filter()
     community_algorithm <- extract_community_algorithm()
     graphFirst <- extract_first_graph()
     if(!is.null(graphFirst)){
