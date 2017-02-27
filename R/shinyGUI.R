@@ -632,15 +632,13 @@ server <- function(input,output, session){
     print("recalculating second matrix")
     second_array <- extract_second_array()
     
-<<<<<<< HEAD
-    second_matrix <- calculateDistances(second_array, currentMetric, metricPara)
-=======
+
     withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating matrix"), value = 0, {
-      second_matrix <- calculateDistances(second_array)
+      second_matrix <- calculateDistances(second_array, currentMetric, metricPara)
       
       incProgress(1)
     })
->>>>>>> 36589d35422da26dcc613303b62f0bf2b9eb6209
+
     
     return (second_matrix)
   })
