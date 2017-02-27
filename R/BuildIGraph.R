@@ -54,7 +54,7 @@ calculateDistances <- function(arrayBcr, distanceMetric = "LD"){
 #' @importFrom igraph vertex
 #' @importFrom igraph edge
 #' @importFrom igraph as.undirected
-buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax = 5, thresholdMin = 1){
+buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax, thresholdMin){
   
   graph <- graph.empty()
   #fill graph
@@ -67,7 +67,7 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax 
 
   # Connect them with their distance (add edges) 
   for(i in 1:length(arrayBcr)){
-    
+    cat("build igraph: ", i, " of ", length(arrayBcr), "\n" )
     #for(bcr2 in arrayBcr2){ 
     for(j in i:length(arrayBcr)){ 
       weight <- distanceMatrix[i,j]
@@ -75,7 +75,6 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax 
         graph <- graph + edge(arrayBcr[i],arrayBcr[j], weight = weight)
       }
     }
-    
   }
   
   graph <- as.undirected(graph)
@@ -127,7 +126,26 @@ getMapOfBcrs <- function(arrayBcr){
 
 
 #' @import utils
-csvToSubset <- function(path, header = TRUE, sep = ";"){
+csvToSubset <- function(path, header = TRUE, sep = "def"){
+  
+  
+  if(sep == "def"){
+    #detect separator (";", "," , "TAB")
+    line <- readLines(path, n=1)
+    if(grepl(";",line)){
+      sep <- ";"
+    }else if(grepl(",",line)){
+      sep <- ","
+    } else if(grepl("\t",line)){
+      sep <- "\t"
+    }else{
+      sep <- ","
+    }
+
+  }
+
+
+  
   data <- read.csv(path, header = header, sep = sep,stringsAsFactors=FALSE)
   
   #split data into subset determine by patients
