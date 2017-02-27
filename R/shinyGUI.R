@@ -114,7 +114,7 @@ ui <- fluidPage(
       
       #numericInput
       #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "num2",label = "Relative distance in %",value =5,min = 0,max = 100, step = 1.00)),
+      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "relative_edge_weight_filter",label = "Relative distance in %",value =5,min = 0,max = 100, step = 1.00)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute distance (100):", 0)),
       
       #Slider
@@ -339,7 +339,7 @@ server <- function(input,output, session){
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     updateNumericInput(session,"absolute",label=maxLabel)
-    procentValue <-(input$num2/100)*maxAbsolutValue
+    procentValue <-(input$relative_edge_weight_filter/100)*maxAbsolutValue
     absoluteValue<-as.integer(procentValue+0.5)
     updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
     
@@ -350,7 +350,7 @@ server <- function(input,output, session){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
-        edge_threshold <- 1 - (input$num2 / 100.0)
+        edge_threshold <- 1 - (input$relative_edge_weight_filter / 100.0)
         patientOne<- plot_graph(graphFirst, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
@@ -365,7 +365,7 @@ server <- function(input,output, session){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
       zweite<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
-        edge_threshold <- 1 - (input$num2 / 100.0)
+        edge_threshold <- 1 - (input$relative_edge_weight_filter / 100.0)
         patientTwo<- plot_graph(graphSecond, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
@@ -383,7 +383,7 @@ server <- function(input,output, session){
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     updateNumericInput(session,"absolute",label=maxLabel)
-    procentValue <-(input$num2/100)*maxAbsolutValue
+    procentValue <-(input$relative_edge_weight_filter/100)*maxAbsolutValue
     absoluteValue<-as.integer(procentValue+0.5)
     updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
 
@@ -413,7 +413,7 @@ server <- function(input,output, session){
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     updateNumericInput(session,"absolute",label=maxLabel)
-    procentValue <-(input$num2/100)*maxAbsolutValue
+    procentValue <-(input$relative_edge_weight_filter/100)*maxAbsolutValue
     absoluteValue<-as.integer(procentValue+0.5)
     updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
 
@@ -491,31 +491,31 @@ server <- function(input,output, session){
       maxAbsolutValue <<- extract_max_edge_weight()
       calProcentValue<-(neuAbsoluteValue*100)/maxAbsolutValue
       neuProcentValue<-format.default(calProcentValue,digits = 5)
-      updateNumericInput(session,"num2",value = neuProcentValue, min=0, max = 100)
+      updateNumericInput(session,"relative_edge_weight_filter",value = neuProcentValue, min=0, max = 100)
     }
   })
   
   
   ############ change relative value %, which it changes absolute value ##########
-  observeEvent(input$num2,{
+  observeEvent(input$relative_edge_weight_filter,{
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     
-    if(!is.numeric(input$num2)){
+    if(!is.numeric(input$relative_edge_weight_filter)){
       
-      updateNumericInput(session,"num2", min=0, max = 100)
+      updateNumericInput(session,"relative_edge_weight_filter", min=0, max = 100)
       
-    }else if(input$num2>0 && input$num2<=100){
+    }else if(input$relative_edge_weight_filter>0 && input$relative_edge_weight_filter<=100){
       
-      userInput<-(input$num2)
-      updateNumericInput(session,"num2",value = userInput, min=0, max = 100)
+      userInput<-(input$relative_edge_weight_filter)
+      updateNumericInput(session,"relative_edge_weight_filter",value = userInput, min=0, max = 100)
       procentValue<-(userInput/100)*maxAbsolutValue
       absoluteValue<-as.integer(procentValue+0.5)
 
       updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
       
-    }else if(input$num2>100){
-      updateNumericInput(session,"num2",value = 100, min=0, max = 100)
+    }else if(input$relative_edge_weight_filter>100){
+      updateNumericInput(session,"relative_edge_weight_filter",value = 100, min=0, max = 100)
       
     }
   })
@@ -550,7 +550,7 @@ server <- function(input,output, session){
   }, {
     print("recalculating first array")
     
-    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating sequences"), value = 0, {
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": filtering sequences"), value = 0, {
       dataFirst <- data[[selectFirstPatient]]
       if(!input$vjSegmentFirst == "whole data"){
         dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegmentFirst,]
@@ -580,7 +580,7 @@ server <- function(input,output, session){
   }, {
     print("recalculating second array")
     
-    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating sequences"), value = 0, {
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": filtering sequences"), value = 0, {
       dataSecond <- data[[selectSecondPatient]]
       
       if(!input$vjSegmentSecond == "whole data"){
