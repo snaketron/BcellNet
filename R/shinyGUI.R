@@ -95,7 +95,7 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-     # div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput(inputId = "maxNode", "Max:", 100)),
+      # div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput(inputId = "maxNode", "Max:", 100)),
       div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput( inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "myabsolute", label = "Absolute (100):", 0)),
       
@@ -178,7 +178,7 @@ ui <- fluidPage(
 #' @import shiny
 #' @importFrom shinyjs enable
 server <- function(input,output, session){
-
+  
   observe({
     if(is.null(input$csvFile$datapath)) return(NULL)
     
@@ -235,7 +235,7 @@ server <- function(input,output, session){
     selectSecondPatient <<- input$comboSecondPatient
     updateVJSegment()
   })
-
+  
   
   # when selecting an element in first patient list, this element will be selected in combolist for
   # second patient too, if no element for second patient would selected before.
@@ -245,34 +245,38 @@ server <- function(input,output, session){
       updateSelectInput(session, "vjSegmentSecond", selected = selectedItem)
     }
   })
-
+  
   observeEvent(input$vjSegmentSecond, {
     vjSegmentSelected <<- TRUE
   })
   
- 
-
   
   
-     #####################Update TextInput#######################
-#      observeEvent(input$myabsolute,{
-# 
-#          if ( input$myabsolute>1){
-# 
-#          absolutevalue<-(input$myabsolute)
-# 
-#          updateTextInput(session,"myabsolute",value =absolutevalue )
-# 
-#          relativeValue<-absolutevalue/100
-#          updateNumericInput(session,"num2",value =relativeValue , min=0, max = 100, step = 1)
-# 
-# }
-# 
-#      })
+  
+  
+  #####################Update TextInput#######################
+  #      observeEvent(input$myabsolute,{
+  # 
+  #          if ( input$myabsolute>1){
+  # 
+  #          absolutevalue<-(input$myabsolute)
+  # 
+  #          updateTextInput(session,"myabsolute",value =absolutevalue )
+  # 
+  #          relativeValue<-absolutevalue/100
+  #          updateNumericInput(session,"num2",value =relativeValue , min=0, max = 100, step = 1)
+  # 
+  # }
+  # 
+  #      })
   
   #plot networt button action
   observeEvent(input$pn, {
-    prepareGraphs()  
+    prepareGraphs()
+    
+    community_algorithm <- extract_community_algorithm()
+    layout_algorithm <- extract_layout_algorithm()
+    
     ######## match max of absolute after uploaded a graph ######
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     updateNumericInput(session,"myabsolute",label=maxLabel)
@@ -284,7 +288,7 @@ server <- function(input,output, session){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
-        patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+        patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
     }
@@ -297,7 +301,7 @@ server <- function(input,output, session){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
       zweite<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
-        patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = comAlgo, layout_algorithm = layout_algo)
+        patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
     }
@@ -306,7 +310,7 @@ server <- function(input,output, session){
       output$secondPatient <- renderVisNetwork({})
     }
   })
-
+  
   
   
   
@@ -337,9 +341,11 @@ server <- function(input,output, session){
   observeEvent(input$pcsd, {
     prepareGraphs()
     
+    community_algorithm <- extract_community_algorithm()
+    
     if(!is.null(graphFirst)){
       output$firstPatientCommunitySizeDistribution <- renderPlot({
-        hist(sizes(comAlgo(graphFirst)))
+        hist(sizes(community_algorithm(graphFirst)))
       })
     }
     else {
@@ -348,7 +354,7 @@ server <- function(input,output, session){
     
     if(!is.null(graphSecond)){
       output$secondPatientCommunitySizeDistribution <- renderPlot(
-        hist(sizes(comAlgo(graphSecond)))
+        hist(sizes(community_algorithm(graphSecond)))
       )
     }
     else {
@@ -360,9 +366,9 @@ server <- function(input,output, session){
     if(is.null(data)) session$sendCustomMessage(type = 'testmessage',
                                                 message = 'Select data first')
     
-
+    
     ########## create and plot graph of patients ###############
-
+    
     dataFirst <- data[[selectFirstPatient]]
     dataSecond <- data[[selectSecondPatient]]
     
@@ -387,7 +393,7 @@ server <- function(input,output, session){
     #map of bcr and its number of occurrence
     mulityCounterFirst <- getMapOfBcrs(arrayFirst)
     mulityCounterSecond <- getMapOfBcrs(arraySecond)
-
+    
     arrayFirst <- unique(arrayFirst)
     arraySecond <- unique(arraySecond)
     
@@ -417,19 +423,13 @@ server <- function(input,output, session){
     else {
       graphFirst <<- NULL
     }
-
+    
     if(!is.null(matrixSecond)){
       graphSecond <<- buildIGraph(arraySecond, matrixSecond, mulityCounterSecond, thresholdMax = 1.0, thresholdMin = input$num2)
     }
     else {
       graphSecond <<- NULL      
     }
-
-    comAlgo <<- all_communtiy_algorithms()[[input$select_community]]
-    cat("community algorithm selected:", input$select_community, "\n")
-    
-    layout_algo <<- all_layout_algorithms()[[input$select_layout]]
-    cat("layout algorithm selected:", input$select_layout, "\n")
   }
   
   #function to update vj segment combo list
@@ -458,7 +458,7 @@ server <- function(input,output, session){
       }
       posSegmentsSecPat <- unique(posSegmentsSecPat)
     }
-
+    
     choicesOfSecondPatient <<- posSegmentsSecPat
     
     updateSelectInput(session, "vjSegmentFirst", choices = c('whole data', posSegmentsFirstPat), selected = "whole data")
@@ -487,8 +487,29 @@ server <- function(input,output, session){
       updateNumericInput(session,"num2",value = 100, min=0, max = 100, step = 1)
       
     }
-  }) 
+  })
+
+  # this wraps the community algorithm into a wrapper where its content is only
+  # updated if the reactive event was triggered else the returned value will be
+  # the same this is useful for heavy calculation where the plots are based on
+  # the same caluclation thus there is no need to recalculate it
+  extract_community_algorithm <- eventReactive(input$select_community, {
+    cat("community algorithm selected:", input$select_community, "\n")
+    selected_community_algorithm <- all_communtiy_algorithms()[[input$select_community]]
+    
+    return (selected_community_algorithm)
+  })
   
+  # this wraps the layout algorithm into a wrapper where its content is only
+  # updated if the reactive event was triggered else the returned value will be
+  # the same this is useful for heavy calculation where the plots are based on
+  # the same caluclation thus there is no need to recalculate it
+  extract_layout_algorithm <- eventReactive(input$select_layout, {
+    cat("layout algorithm selected:", input$select_layout, "\n")
+    selected_layout_algorithm <- all_layout_algorithms()[[input$select_layout]]
+    
+    return (selected_layout_algorithm)
+  })
   
 }
 
