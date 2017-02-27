@@ -252,22 +252,6 @@ server <- function(input,output, session){
     vjSegmentSelected <<- TRUE
   })
 
-  #####################Update TextInput#######################
-  #      observeEvent(input$myabsolute,{
-  #
-  #          if ( input$myabsolute>1){
-  #
-  #          absolutevalue<-(input$myabsolute)
-  #
-  #          updateTextInput(session,"myabsolute",value =absolutevalue )
-  #
-  #          relativeValue<-absolutevalue/100
-  #          updateNumericInput(session,"num2",value =relativeValue , min=0, max = 100, step = 1)
-  #
-  # }
-  #
-  #      })
-  
   #plot networt button action
   observeEvent(input$pn, {
     prepareGraphs()
@@ -374,37 +358,26 @@ server <- function(input,output, session){
     
 
     ########## create and plot graph of patients ###############
-
+    
     dataFirst <- data[[selectFirstPatient]]
     dataSecond <- data[[selectSecondPatient]]
-    
-    if(!input$vjSegmentFirst == "whole data"){
-      dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegmentFirst,]
-    }
+
     if(!input$vjSegmentSecond == "whole data"){
       dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegmentSecond,]
     }
     
     if(input$partOfSequence == "whole sequence"){
-      arrayFirst <- dataFirst$sequence
       arraySecond <- dataSecond$sequence
     }else if(input$partOfSequence == "CDR3"){
-      arrayFirst <- dataFirst$CDR3
       arraySecond <- dataSecond$CDR3
     }else{
-      arrayFirst <- dataFirst$V.sequence
       arraySecond <- dataSecond$V.sequence
     }
     
-    #map of bcr and its number of occurrence
-    mulityCounterFirst <- getMapOfBcrs(arrayFirst)
-    mulityCounterSecond <- getMapOfBcrs(arraySecond)
-
-    arrayFirst <- unique(arrayFirst)
     arraySecond <- unique(arraySecond)
     
     #returns null when array is numeric(0)
-    matrixFirst <- calculateDistances(arrayFirst)
+    matrixFirst <- extract_first_matrix()
     matrixSecond <- calculateDistances(arraySecond)
     maxAbsolutValue <<- max(matrixFirst, matrixSecond)
     #print(maxAbsolutValue)
@@ -422,8 +395,10 @@ server <- function(input,output, session){
       matrixFirst <- matrices[[1]]
     }
     
-    
     if(!is.null(matrixFirst)){
+      #map of bcr and its number of occurrence
+      arrayFirst <- extract_first_array()
+      mulityCounterFirst <- getMapOfBcrs(arrayFirst)
       graphFirst <<- buildIGraph(arrayFirst, matrixFirst, mulityCounterFirst, thresholdMax = 1.0, thresholdMin = 0)
     }
     else {
@@ -431,6 +406,8 @@ server <- function(input,output, session){
     }
 
     if(!is.null(matrixSecond)){
+      #map of bcr and its number of occurrence
+      mulityCounterSecond <- getMapOfBcrs(arraySecond)
       graphSecond <<- buildIGraph(arraySecond, matrixSecond, mulityCounterSecond, thresholdMax = 1.0, thresholdMin = 0)
     }
     else {
@@ -531,6 +508,62 @@ server <- function(input,output, session){
     selected_layout_algorithm <- all_layout_algorithms()[[input$select_layout]]
 
     return (selected_layout_algorithm)
+  })
+  
+  extract_first_array <- eventReactive({
+    input$comboFirstPatient
+    input$vjSegmentFirst
+    input$partOfSequencet
+    input$csvFile
+  }, {
+    dataFirst <- data[[selectFirstPatient]]
+    
+    print("recalculating first matrix")
+    if(!input$vjSegmentFirst == "whole data"){
+      dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegmentFirst,]
+    }
+    
+    if(input$partOfSequence == "whole sequence"){
+      arrayFirst <- dataFirst$sequence
+    }else if(input$partOfSequence == "CDR3"){
+      arrayFirst <- dataFirst$CDR3
+    }else{
+      arrayFirst <- dataFirst$V.sequence
+    }
+    
+    arrayFirst <- unique(arrayFirst)
+    
+    return (arrayFirst)
+  })
+  
+  extract_first_matrix <- eventReactive({
+    input$comboFirstPatient
+    input$vjSegmentFirst
+    input$partOfSequencet
+    input$csvFile
+  },{
+    first_array <- extract_first_array()
+    
+    matrixFirst <- calculateDistances(first_array)
+    
+    return (matrixFirst)
+  })
+  
+  extract_first_graph <- eventReactive({
+    input$comboFirstPatient
+    input$vjSegmentFirst
+    input$partOfSequence
+    input$absolute
+  },
+  {
+    if(!is.null(matrixFirst)){
+      arrayFirst <- extract_first_array()
+      
+      return (buildIGraph(arrayFirst, matrixFirst, mulityCounterFirst, thresholdMax = 1.0, thresholdMin = 0))
+    }
+    else {
+      return (NULL)
+    }
   })
 
 }
