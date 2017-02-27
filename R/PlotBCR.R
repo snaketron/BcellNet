@@ -120,16 +120,24 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   # for https://github.com/snaketron/BcellNet/issues/10 entry point
   # default size of vis network is 25 so min is set to that size and the others are sized relative to that
   # maxMult <- max(nData$nodes$multiplyCounter)
+  if (is.null(nData$nodes$multiplyCounter)) {
+    nData$nodes$multiplyCounter <- 1
+  }
   minMult <- min(nData$nodes$multiplyCounter)
   # cat("min mult: ", minMult, ", max mult: ", maxMult, "\n")
-  print(nData$nodes$multiplyCounter)
+  # print(nData$nodes$multiplyCounter)
   nData$nodes$size <- nData$nodes$multiplyCounter / minMult * 25
   
   # finally plot it
-  visNetwork(nodes = nData$nodes, edges = nData$edges) %>%
+  vn <- visNetwork(nodes = nData$nodes, edges = nData$edges) %>%
     visInteraction(dragNodes = FALSE) %>%
-    visIgraphLayout(layout = layout_algorithm, smooth = FALSE, physics = FALSE, type = "square", randomSeed = NULL, layoutMatrix = NULL) %>%
     visOptions(highlightNearest = list(enabled = T, hover = T))
+  
+  if (!is.null(nData$edges) && length(as.matrix(nData$edges)) != 0) {
+    vn <- visIgraphLayout(vn, layout = layout_algorithm, smooth = FALSE, physics = FALSE, type = "square", randomSeed = NULL, layoutMatrix = NULL)
+  }
+  
+  return (vn)
 }
 
 # igraph will colorize communities provided by the col=X statement
