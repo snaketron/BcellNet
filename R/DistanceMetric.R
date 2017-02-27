@@ -73,7 +73,7 @@ distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2, metric = "dl", parameter = 
 
 # normalize values between 0 - 1; set groundzero to false you will get relatively values, 
 # otherwise the minimum will be 0 and the maximum 1
-normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
+normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE, update_progress = NULL){
   
   normalizedMatrixA <- matrix(nrow =nrow(matrixA), ncol = ncol(matrixA), 2)
   normalizedMatrixB <- matrix(nrow =nrow(matrixB), ncol = ncol(matrixB), 2)
@@ -84,41 +84,51 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
   if(maxVal == 0) return(list(matrixA,matrixB))
   
   if(groundZero == TRUE){
-    for(i in 1:nrow(matrixA)){
-      cat("normalized: ", i , " of ", nrow(matrixA), "\n")
+    matrix_a_nrow <- nrow(matrixA)
+    for(i in 1:matrix_a_nrow){
+      if (is.function(update_progress)) {
+        update_progress(value = i/matrix_a_nrow, detail=paste0("normalize matrix: ", i, " of ", matrix_a_nrow))
+      }
+      
       for(j in 1:i){
-
         normalizedMatrixA[i,j] <- (matrixA[i,j] - minVal) / maxVal
         normalizedMatrixA[j,i] <- normalizedMatrixA[i,j]
-        
       }
     }
-    for(i in 1:nrow(matrixB)){
-      cat("normalized: ", i , " of ", nrow(matrixB), "\n")
+    
+    matrix_b_nrow <- nrow(matrixB)
+    for(i in 1:matrix_b_nrow){
+      if (is.function(update_progress)) {
+        update_progress(value = i/matrix_b_nrow, detail=paste0("normalize matrix: ", i, " of ", matrix_b_nrow))
+      }
+      
       for(j in 1:i){
-        
         normalizedMatrixB[i,j] <- (matrixB[i,j] - minVal) / maxVal
         normalizedMatrixB[j,i] <- normalizedMatrixB[i,j]
-        
       }
     }
   } else {
-    for(i in 1:nrow(matrixA)){
-      cat("normalized: ", i , " of ", nrow(matrixA), "\n")
+    matrix_a_nrow <- nrow(matrixA)
+    for(i in 1:matrix_a_nrow){
+      if (is.function(update_progress)) {
+        update_progress(value = i/matrix_a_nrow, detail=paste0("normalize matrix: ", i, " of ", matrix_a_nrow))
+      }
+      
       for(j in 1:i){
-        
         normalizedMatrixA[i,j] <- matrixA[i,j] / maxVal
         normalizedMatrixA[j,i] <- normalizedMatrixA[i,j]
-        
       }
     }
-    for(i in 1:nrow(matrixB)){
-      cat("normalized: ", i , " of ", nrow(matrixB), "\n")
+    
+    matrix_b_nrow <- nrow(matrixB)
+    for(i in 1:matrix_b_nrow){
+      if (is.function(update_progress)) {
+        update_progress(value = i/matrix_b_nrow, detail=paste0("normalize matrix: ", i, " of ", matrix_b_nrow))
+      }
+      
       for(j in 1:i){
-        
         normalizedMatrixB[i,j] <- matrixB[i,j] / maxVal
         normalizedMatrixB[j,i] <- normalizedMatrixB[i,j]
-        
       }
     }
   } 

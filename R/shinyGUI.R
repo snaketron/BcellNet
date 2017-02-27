@@ -343,14 +343,14 @@ server <- function(input,output, session){
     recalculate_edge_weight_filter()
     
     ################ Plot Graphs #####################
-    graphFirst <- extract_first_graph()
+    first_graph <- extract_first_graph()
     
-    if(!is.null(graphFirst)){
+    if(!is.null(first_graph)){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
         edge_threshold <- 1 - (input$relative_edge_weight_filter / 100.0)
-        patientOne<- plot_graph(graphFirst, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
+        patientOne<- plot_graph(first_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
     }
@@ -359,13 +359,13 @@ server <- function(input,output, session){
       output$firstPatient <- renderVisNetwork({})
     }
     
-    graphSecond <- extract_second_graph()
-    if(!is.null(graphSecond)){
+    second_graph <- extract_second_graph()
+    if(!is.null(second_graph)){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
       zweite<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
         edge_threshold <- 1 - (input$relative_edge_weight_filter / 100.0)
-        patientTwo<- plot_graph(graphSecond, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
+        patientTwo<- plot_graph(second_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
     }
@@ -379,19 +379,19 @@ server <- function(input,output, session){
   # for plotting the degree distribution
   observeEvent(input$pdd, {
     recalculate_edge_weight_filter()
-    graphFirst <- extract_first_graph()
-    if(!is.null(graphFirst)){
+    first_graph <- extract_first_graph()
+    if(!is.null(first_graph)){
       output$firstPatientDegreeDistribution <- renderPlot(
-        hist(degree(graphFirst))
+        hist(degree(first_graph))
       )
     }
     else {
       output$firstPatientDegreeDistribution <- renderPlot({})
     }
     
-    graphSecond <- extract_second_graph()
-    if(!is.null(graphSecond)){
-      output$secondPatientDegreeDistribution <- renderPlot(
+    second_graph <- extract_second_graph()
+    if(!is.null(second_graph)){
+      output$second_graph <- renderPlot(
         hist(degree(graphSecond))
       )
     }
@@ -402,21 +402,21 @@ server <- function(input,output, session){
   
   observeEvent(input$pcsd, {
     recalculate_edge_weight_filter()
-    community_algorithm <- extract_community_algorithm()
-    graphFirst <- extract_first_graph()
-    if(!is.null(graphFirst)){
+    community_algorithm <- isolate(extract_community_algorithm())
+    first_graph <- isolate(extract_first_graph())
+    if(!is.null(first_graph)){
       output$firstPatientCommunitySizeDistribution <- renderPlot({
-        hist(sizes(community_algorithm(graphFirst)))
+        hist(sizes(community_algorithm(first_graph)))
       })
     }
     else {
       output$firstPatientCommunitySizeDistribution <- renderPlot({})
     }
     
-    graphSecond <- extract_second_graph()
-    if(!is.null(graphSecond)){
+    second_graph <- extract_second_graph()
+    if(!is.null(second_graph)){
       output$secondPatientCommunitySizeDistribution <- renderPlot(
-        hist(sizes(community_algorithm(graphSecond)))
+        hist(sizes(community_algorithm(second_graph)))
       )
     }
     else {
@@ -531,7 +531,7 @@ server <- function(input,output, session){
   }, {
     print("recalculating first array")
     
-    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": filtering sequences"), value = 0, {
+    withProgress(message = paste0("Patient ", input$comboFirstPatient, ": filtering sequences"), value = 0, {
       dataFirst <- data[[selectFirstPatient]]
       if(!input$vjSegmentFirst == "whole data"){
         dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegmentFirst,]
@@ -631,25 +631,38 @@ server <- function(input,output, session){
     input$partOfSequence
     input$csvFile
   }, {
+    print("Normalizing first matrix")
+    
     first_matrix <- extract_first_matrix()
     second_matrix <- extract_second_matrix()
     
-    withProgress(message = paste0("Patient ", input$comboFirstPatient, ": normalizing matrix"), value = 0, {
-      #avoid numeric(0) exception
-      if(is.null(first_matrix)){
-        matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE)
-        second_matrix <- matrices[[1]]
-      }else if(is.null(second_matrix)){
-        matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE)
-        first_matrix <- matrices[[1]]
-      }else{
-        matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE)
-        second_matrix <- matrices[[2]]
-        first_matrix <- matrices[[1]]
-      }
-      
-      incProgress(1)
-    })
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+    progress$set(message = paste0("Patient ", input$comboFirstPatient, ": "), value = 0)
+    # Close the progress when this reactive exits (even if there's an error)
+    on.exit(progress$close())
+    
+    # Create a callback function to update progress.
+    # Each time this is called:
+    # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+    #   distance. If non-NULL, it will set the progress to that value.
+    # - It also accepts optional detail text.
+    update_progress <- function(value = NULL, detail = NULL) {
+      progress$set(value = value, detail = detail)
+    }
+    
+    #avoid numeric(0) exception
+    if(is.null(first_matrix)){
+      matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE, update_progress = update_progress)
+      second_matrix <- matrices[[1]]
+    }else if(is.null(second_matrix)){
+      matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE, update_progress = update_progress)
+      first_matrix <- matrices[[1]]
+    }else{
+      matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE, update_progress = update_progress)
+      second_matrix <- matrices[[2]]
+      first_matrix <- matrices[[1]]
+    }
     
     return (first_matrix)
   })
@@ -661,26 +674,39 @@ server <- function(input,output, session){
     input$partOfSequence
     input$csvFile
   }, {
+    print("Normalizing second matrix")
+    
     first_matrix <- extract_first_matrix()
     second_matrix <- extract_second_matrix()
     
-    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": normalizing matrix"), value = 0, {
-      #avoid numeric(0) exception
-      if(is.null(first_matrix)){
-        matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE)
-        second_matrix <- matrices[[1]]
-      }else if(is.null(second_matrix)){
-        matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE)
-        first_matrix <- matrices[[1]]
-      }else{
-        matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE)
-        second_matrix <- matrices[[2]]
-        first_matrix <- matrices[[1]]
-      }
-      
-      incProgress(1)
-    })
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+    progress$set(message = paste0("Patient ", input$comboSecondPatient, ": "), value = 0)
+    # Close the progress when this reactive exits (even if there's an error)
+    on.exit(progress$close())
     
+    # Create a callback function to update progress.
+    # Each time this is called:
+    # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+    #   distance. If non-NULL, it will set the progress to that value.
+    # - It also accepts optional detail text.
+    update_progress <- function(value = NULL, detail = NULL) {
+      progress$set(value = value, detail = detail)
+    }
+    
+    #avoid numeric(0) exception
+    if(is.null(first_matrix)){
+      matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE, update_progress = update_progress)
+      second_matrix <- matrices[[1]]
+    }else if(is.null(second_matrix)){
+      matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE, update_progress = update_progress)
+      first_matrix <- matrices[[1]]
+    }else{
+      matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE, update_progress = update_progress)
+      second_matrix <- matrices[[2]]
+      first_matrix <- matrices[[1]]
+    }
+      
     return (second_matrix)
   }) 
   
@@ -744,7 +770,7 @@ server <- function(input,output, session){
       
       # Create a Progress object
       progress <- shiny::Progress$new()
-      progress$set(message = "Computing data", value = 0)
+      progress$set(message = paste0("Patient ", input$comboFirstPatient, ": "), value = 0)
       # Close the progress when this reactive exits (even if there's an error)
       on.exit(progress$close())
       
@@ -781,7 +807,7 @@ server <- function(input,output, session){
       
       # Create a Progress object
       progress <- shiny::Progress$new()
-      progress$set(message = "Computing data", value = 0)
+      progress$set(message = paste0("Patient ", input$comboSecondPatient, ": "), value = 0)
       # Close the progress when this reactive exits (even if there's an error)
       on.exit(progress$close())
       

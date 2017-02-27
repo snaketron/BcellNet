@@ -69,7 +69,7 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax,
   array_length <- length(arrayBcr)
   for(i in 1:array_length){
     if (is.function(update_progress)) {
-      update_progress(value = i/array_length, detail=paste0("build igraph: ", i, " of ", array_length))
+      update_progress(value = i/array_length, detail=paste0("construct graph: ", i, " of ", array_length))
     }
     #for(bcr2 in arrayBcr2){ 
     for(j in i:length(arrayBcr)){ 
