@@ -37,22 +37,35 @@ distanceb2b <- function(bcr1, bcr2){
   return (weight)
 } 
 
+
+
 # bcr1 and bcr2 have to be of same length
 distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2){
   
-  #stringdistmatrix()
+  time <- as.numeric(Sys.time())*1000
+  
+  
   
   matrix <- matrix(nrow = length(arrayBcr1), ncol = length(arrayBcr2))
   
-  for(i in 1:length(arrayBcr1)){
-    for(j in 1:i){
-      
-      dist <- distanceb2b(arrayBcr1[i], arrayBcr2[j])
-
-      matrix[i,j] <- dist
-      matrix[j,i] <- dist
-    }
-  }
+  
+  matrix <- stringdistmatrix(arrayBcr1, arrayBcr2, method = "dl")
+  
+  
+  # for(i in 1:length(arrayBcr1)){
+  #   cat(i, " of " ,length(arrayBcr1),"\n")
+  #   for(j in 1:i){
+  #     
+  #     dist <- stringdist(arrayBcr1[i], arrayBcr2[j], method="dl")
+  # 
+  #     matrix[i,j] <- dist
+  #     matrix[j,i] <- dist
+  #   }
+  # }
+  
+  
+  
+  print(as.numeric(Sys.time())*1000 - time)
   
   return(matrix)
 }
@@ -71,6 +84,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
   
   if(groundZero == TRUE){
     for(i in 1:nrow(matrixA)){
+      cat("normalied: ", i , " of ", nrow(matrixA), "\n")
       for(j in 1:i){
 
         normalizedMatrixA[i,j] <- (matrixA[i,j] - minVal) / maxVal
@@ -79,6 +93,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
       }
     }
     for(i in 1:nrow(matrixB)){
+      cat("normalized: ", i , " of ", nrow(matrixB), "\n")
       for(j in 1:i){
         
         normalizedMatrixB[i,j] <- (matrixB[i,j] - minVal) / maxVal
@@ -88,6 +103,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
     }
   } else {
     for(i in 1:nrow(matrixA)){
+      cat("normalied: ", i , " of ", nrow(matrixA), "\n")
       for(j in 1:i){
         
         normalizedMatrixA[i,j] <- matrixA[i,j] / maxVal
@@ -96,6 +112,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
       }
     }
     for(i in 1:nrow(matrixB)){
+      cat("normalied: ", i , " of ", nrow(matrixB), "\n")
       for(j in 1:i){
         
         normalizedMatrixB[i,j] <- matrixB[i,j] / maxVal

@@ -67,7 +67,7 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax,
 
   # Connect them with their distance (add edges) 
   for(i in 1:length(arrayBcr)){
-    
+    cat("build igraph: ", i, " of ", length(arrayBcr), "\n" )
     #for(bcr2 in arrayBcr2){ 
     for(j in i:length(arrayBcr)){ 
       weight <- distanceMatrix[i,j]
@@ -75,7 +75,6 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax,
         graph <- graph + edge(arrayBcr[i],arrayBcr[j], weight = weight)
       }
     }
-    
   }
   
   graph <- as.undirected(graph)
