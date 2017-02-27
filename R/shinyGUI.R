@@ -19,7 +19,8 @@ usePackage <- function(p) {
 
 usePackage("shiny")
 usePackage("shinyjs")
-#usePackage("shinyBS")
+usePackage("shinyBS")
+
 
 
 data <- NULL
@@ -61,10 +62,13 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel (
       #select File
-      fileInput('csvFile', 'Choose CSV File',
+      fileInput('csvFile', 'Choose CSV File', 
                 accept=c('text/csv', 
                          'text/comma-separated-values,text/plain', 
                          '.csv')),
+      
+      
+      
       #ende fileInput
       
       #checkBOx
@@ -98,23 +102,54 @@ ui <- fluidPage(
       #numericInput
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "num2",label = "Relative %",value =95,min = 0,max = 100, step = 0.01)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute (100):", 0)),
+      tags$br(),
       
-      #Slider
-      # sliderInput(inputId = "num", label = "Egde definition", 
-      #              value = 0.3, min = 0, max = 1, step= 0.1),
-      
-      
+    
       # comboBox
-      selectInput(inputId = "select_community",label = "Community Selection",
+     
+      tags$span(labels("Community Selection",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
+;font-size: 20px;"),
+                popify(bsButton("q1", label = "", icon = icon("question"), style="info", size = "extra-small"),'Help for cluster ', content = paste0("More details for community structures:<br> ", 
+                                                                                                                                                     a("Fast Greedy", 
+                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_fast_greedy.html",
+                                                                                                                                                       target="_blank"),", ",
+                                                                                                                                                     a("Label Prop", 
+                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_label_prop.html",
+                                                                                                                                                       target="_blank"),", ",
+                                                                                                                                                     a("Leading Eigen", 
+                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_leading_eigen.html",
+                                                                                                                                                       target="_blank"),", ",
+                                                                                                                                                     a("Louvain", 
+                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_louvain.html",
+                                                                                                                                                       target="_blank"),", ",
+                                                                                                                                                     a("Optimal", 
+                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_optimal.html",
+                                                                                                                                                       target="_blank"),", ",
+                                                                                                                                                     a("Walktrap", 
+                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_walktrap.html",
+                                                                                                                                                       target="_blank")
+                ), trigger = "focus" ) ),
+      selectInput(inputId = "select_community",
+                  label = NULL,
                   choices = names(all_communtiy_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       
+     # tags$span(label = "Community Selection",'for'="firstPatient", 'style'="margin-top: 5px;"),
+   
+    
+        
+ 
       selectInput(inputId = "select_layout",label = "Layout Generator",
                   choices = names(all_layout_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       
       #Buttons
-      div(style="display:inline-block;vertical-align:top; ",disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;"))),
+   
+     # div(style="display:inline-block;vertical-align:top; ",
+          tags$span(
+            popify(
+             disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;display:inline-block;vertical-align:top; ")),'Plot Network',"1. show plot Network<br> 2. you can see the Graphs."))
+              ,
       div(style="display:inline-block;vertical-align:top; ",disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;"))),
       div(style="display:inline-block;vertical-align:top; ", disabled(actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;")))
       # disabled(actionButton(inputId = "exportButton", label = " Export as...", style="margin-top:10px;")),
