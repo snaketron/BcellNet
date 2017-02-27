@@ -95,6 +95,7 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
+      #numericInput
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "num2",label = "Relative %",value =95,min = 0,max = 100, step = 0.01)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute (100):", 0)),
       
