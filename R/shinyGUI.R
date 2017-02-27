@@ -99,7 +99,7 @@ ui <- fluidPage(
       
       #numericInput
       #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "num2",label = "Relative distance in %",value =95,min = 0,max = 100, step = 1.00)),
+      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "num2",label = "Relative distance in %",value =5,min = 0,max = 100, step = 1.00)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute distance (100):", 0)),
       
       #Slider
