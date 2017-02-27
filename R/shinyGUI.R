@@ -96,9 +96,8 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-     # div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput(inputId = "maxNode", "Max:", 100)),
       div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput( inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "myabsolute", label = "Absolute (100):", 0)),
+      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute (100):", 0)),
       
       #Slider
       # sliderInput(inputId = "num", label = "Egde definition", 
@@ -276,9 +275,10 @@ server <- function(input,output, session){
     prepareGraphs()  
     ######## match max of absolute after uploaded a graph ######
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"myabsolute",label=maxLabel)
-    procentValue<-(input$num2/100)*maxAbsolutValue
-    updateNumericInput(session,"myabsolute",label=maxLabel,value =procentValue)
+    updateNumericInput(session,"absolute",label=maxLabel)
+    procentValue <-(input$num2/100)*maxAbsolutValue
+    absoluteValue<-as.integer(procentValue+0.5)
+    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
     
     ################ Plot Graphs #####################
     if(!is.null(graphFirst)){
@@ -315,6 +315,11 @@ server <- function(input,output, session){
   # for plotting the degree distribution
   observeEvent(input$pdd, {
     prepareGraphs()
+    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    updateNumericInput(session,"absolute",label=maxLabel)
+    procentValue <-(input$num2/100)*maxAbsolutValue
+    absoluteValue<-as.integer(procentValue+0.5)
+    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
     
     if(!is.null(graphFirst)){
       output$firstPatientDegreeDistribution <- renderPlot(
@@ -337,6 +342,11 @@ server <- function(input,output, session){
   
   observeEvent(input$pcsd, {
     prepareGraphs()
+    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    updateNumericInput(session,"absolute",label=maxLabel)
+    procentValue <-(input$num2/100)*maxAbsolutValue
+    absoluteValue<-as.integer(procentValue+0.5)
+    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
     
     if(!is.null(graphFirst)){
       output$firstPatientCommunitySizeDistribution <- renderPlot({
@@ -362,7 +372,7 @@ server <- function(input,output, session){
                                                 message = 'Select data first')
     
 
-    ########## create and plot graph of patients ###############
+    ########## create plot graph of patients ###############
 
     dataFirst <- data[[selectFirstPatient]]
     dataSecond <- data[[selectSecondPatient]]
@@ -470,6 +480,22 @@ server <- function(input,output, session){
   }
   
   #####################Update Inputnumeric#######################
+
+  
+  ############ change absolute value, which it changes relative value ##########
+  
+  observeEvent(input$absolute,{
+        neuAbsoluteValue<-input$absolute
+       # print(neuAbsoluteValue)
+    if(!is.null(neuAbsoluteValue)){
+      neuProcentValue<-(neuAbsoluteValue*100)/maxAbsolutValue
+      procentInInteger<-as.integer(neuProcentValue+0.5)
+      updateNumericInput(session,"num2",value = procentInInteger, min=0, max = 100, step = 1)
+      
+      
+    }
+  }) 
+  ############ change relative value %, which it changes absolute value ##########
   observeEvent(input$num2,{
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     
@@ -481,18 +507,21 @@ server <- function(input,output, session){
       
       userInput<-(input$num2)
       updateNumericInput(session,"num2",value = userInput, min=0, max = 100, step = 1)
-      
       procentValue<-(userInput/100)*maxAbsolutValue
-      updateNumericInput(session,"myabsolute",label=maxLabel,value =procentValue)
+      absoluteValue<-as.integer(procentValue+0.5)
+
+      updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
       
-      
+
     }else if(input$num2>100){
       updateNumericInput(session,"num2",value = 100, min=0, max = 100, step = 1)
       
     }
-  }) 
+  })
+
+    
   
-  
+
 }
 
 
