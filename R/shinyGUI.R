@@ -178,6 +178,9 @@ ui <- fluidPage(
 #' @importFrom shinyjs enable
 server <- function(input,output, session){
 
+  #set maximum upload file to 1 gb
+  options(shiny.maxRequestSize=1024*1024^2)
+  
   observe({
     if(is.null(input$csvFile$datapath)) return(NULL)
     
