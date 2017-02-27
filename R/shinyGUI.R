@@ -95,9 +95,8 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-      # div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput(inputId = "maxNode", "Max:", 100)),
       div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput( inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "myabsolute", label = "Absolute (100):", 0)),
+      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute (100):", 0)),
       
       #Slider
       # sliderInput(inputId = "num", label = "Egde definition", 
@@ -178,7 +177,7 @@ ui <- fluidPage(
 #' @import shiny
 #' @importFrom shinyjs enable
 server <- function(input,output, session){
-  
+
   observe({
     if(is.null(input$csvFile$datapath)) return(NULL)
     
@@ -235,7 +234,7 @@ server <- function(input,output, session){
     selectSecondPatient <<- input$comboSecondPatient
     updateVJSegment()
   })
-  
+
   
   # when selecting an element in first patient list, this element will be selected in combolist for
   # second patient too, if no element for second patient would selected before.
@@ -245,43 +244,40 @@ server <- function(input,output, session){
       updateSelectInput(session, "vjSegmentSecond", selected = selectedItem)
     }
   })
-  
+
   observeEvent(input$vjSegmentSecond, {
     vjSegmentSelected <<- TRUE
   })
-  
-  
-  
-  
-  
+
   #####################Update TextInput#######################
   #      observeEvent(input$myabsolute,{
-  # 
+  #
   #          if ( input$myabsolute>1){
-  # 
+  #
   #          absolutevalue<-(input$myabsolute)
-  # 
+  #
   #          updateTextInput(session,"myabsolute",value =absolutevalue )
-  # 
+  #
   #          relativeValue<-absolutevalue/100
   #          updateNumericInput(session,"num2",value =relativeValue , min=0, max = 100, step = 1)
-  # 
+  #
   # }
-  # 
+  #
   #      })
   
   #plot networt button action
   observeEvent(input$pn, {
     prepareGraphs()
-    
+
     community_algorithm <- extract_community_algorithm()
     layout_algorithm <- extract_layout_algorithm()
-    
+
     ######## match max of absolute after uploaded a graph ######
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"myabsolute",label=maxLabel)
-    procentValue<-(input$num2/100)*maxAbsolutValue
-    updateNumericInput(session,"myabsolute",label=maxLabel,value =procentValue)
+    updateNumericInput(session,"absolute",label=maxLabel)
+    procentValue <-(input$num2/100)*maxAbsolutValue
+    absoluteValue<-as.integer(procentValue+0.5)
+    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
     
     ################ Plot Graphs #####################
     if(!is.null(graphFirst)){
@@ -310,15 +306,17 @@ server <- function(input,output, session){
       output$secondPatient <- renderVisNetwork({})
     }
   })
-  
-  
-  
-  
+
   
   # for plotting the degree distribution
   observeEvent(input$pdd, {
     prepareGraphs()
-    
+    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    updateNumericInput(session,"absolute",label=maxLabel)
+    procentValue <-(input$num2/100)*maxAbsolutValue
+    absoluteValue<-as.integer(procentValue+0.5)
+    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
+
     if(!is.null(graphFirst)){
       output$firstPatientDegreeDistribution <- renderPlot(
         hist(degree(graphFirst))
@@ -340,9 +338,14 @@ server <- function(input,output, session){
   
   observeEvent(input$pcsd, {
     prepareGraphs()
-    
+    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    updateNumericInput(session,"absolute",label=maxLabel)
+    procentValue <-(input$num2/100)*maxAbsolutValue
+    absoluteValue<-as.integer(procentValue+0.5)
+    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
+
     community_algorithm <- extract_community_algorithm()
-    
+
     if(!is.null(graphFirst)){
       output$firstPatientCommunitySizeDistribution <- renderPlot({
         hist(sizes(community_algorithm(graphFirst)))
@@ -366,9 +369,9 @@ server <- function(input,output, session){
     if(is.null(data)) session$sendCustomMessage(type = 'testmessage',
                                                 message = 'Select data first')
     
-    
+
     ########## create and plot graph of patients ###############
-    
+
     dataFirst <- data[[selectFirstPatient]]
     dataSecond <- data[[selectSecondPatient]]
     
@@ -393,7 +396,7 @@ server <- function(input,output, session){
     #map of bcr and its number of occurrence
     mulityCounterFirst <- getMapOfBcrs(arrayFirst)
     mulityCounterSecond <- getMapOfBcrs(arraySecond)
-    
+
     arrayFirst <- unique(arrayFirst)
     arraySecond <- unique(arraySecond)
     
@@ -423,7 +426,7 @@ server <- function(input,output, session){
     else {
       graphFirst <<- NULL
     }
-    
+
     if(!is.null(matrixSecond)){
       graphSecond <<- buildIGraph(arraySecond, matrixSecond, mulityCounterSecond, thresholdMax = 1.0, thresholdMin = input$num2)
     }
@@ -458,7 +461,7 @@ server <- function(input,output, session){
       }
       posSegmentsSecPat <- unique(posSegmentsSecPat)
     }
-    
+
     choicesOfSecondPatient <<- posSegmentsSecPat
     
     updateSelectInput(session, "vjSegmentFirst", choices = c('whole data', posSegmentsFirstPat), selected = "whole data")
@@ -467,6 +470,22 @@ server <- function(input,output, session){
   }
   
   #####################Update Inputnumeric#######################
+
+
+  ############ change absolute value, which it changes relative value ##########
+
+  observeEvent(input$absolute,{
+        neuAbsoluteValue<-input$absolute
+       # print(neuAbsoluteValue)
+    if(!is.null(neuAbsoluteValue)){
+      neuProcentValue<-(neuAbsoluteValue*100)/maxAbsolutValue
+      procentInInteger<-as.integer(neuProcentValue+0.5)
+      updateNumericInput(session,"num2",value = procentInInteger, min=0, max = 100, step = 1)
+
+
+    }
+  })
+  ############ change relative value %, which it changes absolute value ##########
   observeEvent(input$num2,{
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     
@@ -478,10 +497,10 @@ server <- function(input,output, session){
       
       userInput<-(input$num2)
       updateNumericInput(session,"num2",value = userInput, min=0, max = 100, step = 1)
-      
       procentValue<-(userInput/100)*maxAbsolutValue
-      updateNumericInput(session,"myabsolute",label=maxLabel,value =procentValue)
-      
+      absoluteValue<-as.integer(procentValue+0.5)
+
+      updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
       
     }else if(input$num2>100){
       updateNumericInput(session,"num2",value = 100, min=0, max = 100, step = 1)
@@ -496,10 +515,10 @@ server <- function(input,output, session){
   extract_community_algorithm <- eventReactive(input$select_community, {
     cat("community algorithm selected:", input$select_community, "\n")
     selected_community_algorithm <- all_communtiy_algorithms()[[input$select_community]]
-    
+
     return (selected_community_algorithm)
   })
-  
+
   # this wraps the layout algorithm into a wrapper where its content is only
   # updated if the reactive event was triggered else the returned value will be
   # the same this is useful for heavy calculation where the plots are based on
@@ -507,10 +526,10 @@ server <- function(input,output, session){
   extract_layout_algorithm <- eventReactive(input$select_layout, {
     cat("layout algorithm selected:", input$select_layout, "\n")
     selected_layout_algorithm <- all_layout_algorithms()[[input$select_layout]]
-    
+
     return (selected_layout_algorithm)
   })
-  
+
 }
 
 
