@@ -612,16 +612,13 @@ server <- function(input,output, session){
     print("recalculating first matrix")
     first_array <- extract_first_array()
     
-<<<<<<< HEAD
-    matrixFirst <- calculateDistances(first_array, currentMetric, metricPara, nthread = nthread)
-=======
+
     withProgress(message = paste0("Patient ", input$comboFirstPatient, ": calculating matrix"), value = 0, {
-      matrixFirst <- calculateDistances(first_array)
+      matrixFirst <- calculateDistances(first_array, currentMetric, metricPara, nthread = nthread)
       
       incProgress(1)
     })
->>>>>>> 36589d35422da26dcc613303b62f0bf2b9eb6209
-    
+
     return (matrixFirst)
   })
   
