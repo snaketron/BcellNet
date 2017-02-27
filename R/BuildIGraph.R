@@ -145,11 +145,14 @@ csvToSubset <- function(path, header = TRUE, sep = "def"){
   }
 
 
-  
+  print("read data. . . ")  
   data <- read.csv(path, header = header, sep = sep,stringsAsFactors=FALSE)
+  print("data read!")
   
+  print("split data. . . ")
   #split data into subset determine by patients
   partsOfData <- split(data, f = data$patient)
+  print("data splitted!")
   
   return(partsOfData)
 }

@@ -188,7 +188,9 @@ server <- function(input,output, session){
     choicesOfSecondPatient <<- NULL
     
     data <<- csvToSubset(input$csvFile$datapath)
+    print("data ready!")
     possiblePatients <- names(data)
+    print(possiblePatients)
     possibleVjSegments <- NULL
     
     # Can use character(0) to remove all choices
