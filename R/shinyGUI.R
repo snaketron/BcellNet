@@ -330,8 +330,6 @@ server <- function(input,output, session){
 
   #plot networt button action
   observeEvent(input$pn, {
-    prepareGraphs()
-
     community_algorithm <- extract_community_algorithm()
     layout_algorithm <- extract_layout_algorithm()
 
@@ -379,7 +377,6 @@ server <- function(input,output, session){
   
   # for plotting the degree distribution
   observeEvent(input$pdd, {
-    prepareGraphs()
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
@@ -409,7 +406,6 @@ server <- function(input,output, session){
   })
   
   observeEvent(input$pcsd, {
-    prepareGraphs()
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
@@ -439,10 +435,6 @@ server <- function(input,output, session){
     }
   })
   
-  prepareGraphs <- function() {
-    if(is.null(data)) session$sendCustomMessage(type = 'testmessage',
-                                                message = 'Select data first')
-  }
   
   #function to update vj segment combo list
   updateVJSegment <- function(){
