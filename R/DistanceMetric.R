@@ -84,7 +84,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
   
   if(groundZero == TRUE){
     for(i in 1:nrow(matrixA)){
-      cat("normalied: ", i , " of ", nrow(matrixA), "\n")
+      cat("normalized: ", i , " of ", nrow(matrixA), "\n")
       for(j in 1:i){
 
         normalizedMatrixA[i,j] <- (matrixA[i,j] - minVal) / maxVal
@@ -103,7 +103,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
     }
   } else {
     for(i in 1:nrow(matrixA)){
-      cat("normalied: ", i , " of ", nrow(matrixA), "\n")
+      cat("normalized: ", i , " of ", nrow(matrixA), "\n")
       for(j in 1:i){
         
         normalizedMatrixA[i,j] <- matrixA[i,j] / maxVal
@@ -112,7 +112,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
       }
     }
     for(i in 1:nrow(matrixB)){
-      cat("normalied: ", i , " of ", nrow(matrixB), "\n")
+      cat("normalized: ", i , " of ", nrow(matrixB), "\n")
       for(j in 1:i){
         
         normalizedMatrixB[i,j] <- matrixB[i,j] / maxVal
