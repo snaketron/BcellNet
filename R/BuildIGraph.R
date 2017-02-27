@@ -126,7 +126,26 @@ getMapOfBcrs <- function(arrayBcr){
 
 
 #' @import utils
-csvToSubset <- function(path, header = TRUE, sep = ";"){
+csvToSubset <- function(path, header = TRUE, sep = "def"){
+  
+  
+  if(sep == "def"){
+    #detect separator (";", "," , "TAB")
+    line <- readLines(path, n=1)
+    if(grepl(";",line)){
+      sep <- ";"
+    }else if(grepl(",",line)){
+      sep <- ","
+    } else if(grepl("\t",line)){
+      sep <- "\t"
+    }else{
+      sep <- ","
+    }
+
+  }
+
+
+  
   data <- read.csv(path, header = header, sep = sep,stringsAsFactors=FALSE)
   
   #split data into subset determine by patients

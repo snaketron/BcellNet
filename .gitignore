@@ -22,3 +22,4 @@
 # CI related files
 !.travis.yml
 !appveyor.yml
+.Rproj.user
