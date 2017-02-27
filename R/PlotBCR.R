@@ -101,7 +101,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
     }
 
     # normalize the weight
-    if (!is.null(nData$edges$weight)) {
+    if (is.null(nData$edges$weight)) {
       nData$edges$weight <- 0
     }
     
