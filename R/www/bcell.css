@@ -17,18 +17,15 @@
   text-shadow: none;
   letter-spacing: normal;
   word-spacing: normal;
-  margin: 0;
   font: inherit;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
   -webkit-align-items: flex-start;
-  margin-top: 10px;
+  margin: 10px 0 0;
   color: #333;
-  background-color: #fff;
   display: inline-block;
   padding: 6px 12px;
-  margin-bottom: 0;
   font-size: 14px;
   font-weight: 400;
   line-height: 1.42857143;
@@ -39,13 +36,11 @@
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  background-image: none;
+  background: #fff none;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-family: inherit;
   -webkit-appearance: button;
   -moz-appearance: button;
-  -ms-appearance: button;
   text-transform: none;
   overflow: visible;
 }
