@@ -95,7 +95,8 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 100px;",numericInput( inputId = "num2",label = "Relative %",value =1,min = 0,max = 100, step = 1)),
+      #numericInput
+      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "num2",label = "Relative %",value =95,min = 0,max = 100, step = 0.01)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute (100):", 0)),
       
       #Slider
@@ -283,6 +284,17 @@ server <- function(input,output, session){
     procentValue <-(input$num2/100)*maxAbsolutValue
     absoluteValue<-as.integer(procentValue+0.5)
     updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
+    ##################### Progress bar for Plot Network   ############################
+    # progress <- Progress$new(session, min=1, max=10)
+    # on.exit(progress$close())
+    # 
+    # progress$set(message = 'Calculation in progress',
+    #              detail = 'This may take a while...')
+    # 
+    # for (i in 1:10) {
+    #   progress$set(value = i)
+    #   Sys.sleep(0.2)
+    # }
     
     ################ Plot Graphs #####################
     if(!is.null(graphFirst)){
@@ -483,10 +495,11 @@ server <- function(input,output, session){
         neuAbsoluteValue<-input$absolute
        # print(neuAbsoluteValue)
     if(!is.null(neuAbsoluteValue)){
-      neuProcentValue<-(neuAbsoluteValue*100)/maxAbsolutValue
-      procentInInteger<-as.integer(neuProcentValue+0.5)
-      updateNumericInput(session,"num2",value = procentInInteger, min=0, max = 100, step = 1)
-
+      calProcentValue<-(neuAbsoluteValue*100)/maxAbsolutValue
+      neuProcentValue<-format.default(calProcentValue,digits = 5)
+      updateNumericInput(session,"num2",value = neuProcentValue, min=0, max = 100)
+      
+      
 
     }
   })
@@ -496,19 +509,19 @@ server <- function(input,output, session){
     
     if(!is.numeric(input$num2)){
       
-      updateNumericInput(session,"num2", min=0, max = 100, step = 1)
+      updateNumericInput(session,"num2", min=0, max = 100)
       
     }else if(input$num2>0 && input$num2<=100){
       
       userInput<-(input$num2)
-      updateNumericInput(session,"num2",value = userInput, min=0, max = 100, step = 1)
+      updateNumericInput(session,"num2",value = userInput, min=0, max = 100)
       procentValue<-(userInput/100)*maxAbsolutValue
       absoluteValue<-as.integer(procentValue+0.5)
 
       updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
       
     }else if(input$num2>100){
-      updateNumericInput(session,"num2",value = 100, min=0, max = 100, step = 1)
+      updateNumericInput(session,"num2",value = 100, min=0, max = 100)
       
     }
   })
