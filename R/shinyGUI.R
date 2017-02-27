@@ -368,29 +368,10 @@ server <- function(input,output, session){
     if(is.null(data)) session$sendCustomMessage(type = 'testmessage',
                                                 message = 'Select data first')
     
-
     ########## create and plot graph of patients ###############
-    
-    dataFirst <- data[[selectFirstPatient]]
-    dataSecond <- data[[selectSecondPatient]]
-
-    if(!input$vjSegmentSecond == "whole data"){
-      dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegmentSecond,]
-    }
-    
-    if(input$partOfSequence == "whole sequence"){
-      arraySecond <- dataSecond$sequence
-    }else if(input$partOfSequence == "CDR3"){
-      arraySecond <- dataSecond$CDR3
-    }else{
-      arraySecond <- dataSecond$V.sequence
-    }
-    
-    arraySecond <- unique(arraySecond)
-    
     #returns null when array is numeric(0)
     matrixFirst <- extract_first_matrix()
-    matrixSecond <- calculateDistances(arraySecond)
+    matrixSecond <- extract_second_matrix()
     maxAbsolutValue <<- max(matrixFirst, matrixSecond)
     #print(maxAbsolutValue)
     
@@ -418,6 +399,7 @@ server <- function(input,output, session){
     }
 
     if(!is.null(matrixSecond)){
+      arraySecond <- extract_second_array()
       #map of bcr and its number of occurrence
       mulityCounterSecond <- getMapOfBcrs(arraySecond)
       graphSecond <<- buildIGraph(arraySecond, matrixSecond, mulityCounterSecond, thresholdMax = 1.0, thresholdMin = 0)
@@ -473,11 +455,10 @@ server <- function(input,output, session){
       calProcentValue<-(neuAbsoluteValue*100)/maxAbsolutValue
       neuProcentValue<-format.default(calProcentValue,digits = 5)
       updateNumericInput(session,"num2",value = neuProcentValue, min=0, max = 100)
-      
-      
-
     }
   })
+  
+  
   ############ change relative value %, which it changes absolute value ##########
   observeEvent(input$num2,{
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
@@ -526,12 +507,12 @@ server <- function(input,output, session){
   extract_first_array <- eventReactive({
     input$comboFirstPatient
     input$vjSegmentFirst
-    input$partOfSequencet
+    input$partOfSequence
     input$csvFile
   }, {
-    dataFirst <- data[[selectFirstPatient]]
+    print("recalculating first array")
     
-    print("recalculating first matrix")
+    dataFirst <- data[[selectFirstPatient]]
     if(!input$vjSegmentFirst == "whole data"){
       dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegmentFirst,]
     }
@@ -549,17 +530,59 @@ server <- function(input,output, session){
     return (arrayFirst)
   })
   
+  extract_second_array <- eventReactive({
+    input$comboSecondPatient
+    input$vjSegmentSecond
+    input$partOfSequence
+    input$csvFile
+  }, {
+    print("recalculating second array")
+    
+    dataSecond <- data[[selectSecondPatient]]
+    
+    if(!input$vjSegmentSecond == "whole data"){
+      dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegmentSecond,]
+    }
+    
+    if(input$partOfSequence == "whole sequence"){
+      arraySecond <- dataSecond$sequence
+    }else if(input$partOfSequence == "CDR3"){
+      arraySecond <- dataSecond$CDR3
+    }else{
+      arraySecond <- dataSecond$V.sequence
+    }
+    
+    arraySecond <- unique(arraySecond)
+    
+    return (arraySecond)
+  })
+  
   extract_first_matrix <- eventReactive({
     input$comboFirstPatient
     input$vjSegmentFirst
-    input$partOfSequencet
+    input$partOfSequence
     input$csvFile
   },{
+    print("recalculating first matrix")
     first_array <- extract_first_array()
     
     matrixFirst <- calculateDistances(first_array)
     
     return (matrixFirst)
+  })
+  
+  extract_second_matrix <- eventReactive({
+    input$comboSecondPatient
+    input$vjSegmentSecond
+    input$partOfSequence
+    input$csvFile
+  }, {
+    print("recalculating second matrix")
+    second_array <- extract_second_array()
+    
+    second_matrix <- calculateDistances(second_array)
+    
+    return (second_matrix)
   })
   
   extract_first_graph <- eventReactive({
@@ -569,6 +592,7 @@ server <- function(input,output, session){
     input$absolute
   },
   {
+    print("recalculating first graph")
     if(!is.null(matrixFirst)){
       arrayFirst <- extract_first_array()
       
