@@ -421,14 +421,14 @@ server <- function(input,output, session){
     
     
     if(!is.null(matrixFirst)){
-      graphFirst <<- buildIGraph(arrayFirst, matrixFirst, mulityCounterFirst, thresholdMax = 1.0, thresholdMin = input$num2)
+      graphFirst <<- buildIGraph(arrayFirst, matrixFirst, mulityCounterFirst, thresholdMax = 1.0, thresholdMin = 0)
     }
     else {
       graphFirst <<- NULL
     }
 
     if(!is.null(matrixSecond)){
-      graphSecond <<- buildIGraph(arraySecond, matrixSecond, mulityCounterSecond, thresholdMax = 1.0, thresholdMin = input$num2)
+      graphSecond <<- buildIGraph(arraySecond, matrixSecond, mulityCounterSecond, thresholdMax = 1.0, thresholdMin = 0)
     }
     else {
       graphSecond <<- NULL      
