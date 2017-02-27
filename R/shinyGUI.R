@@ -115,7 +115,7 @@ ui <- fluidPage(
       #numericInput
       #numericInput
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "relative_edge_weight_filter",label = "Relative distance in %",value =5,min = 0,max = 100, step = 1.00)),
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute distance (100):", 0)),
+      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute_edge_weight_filter", label = "Absolute distance (100):", 0)),
       
       #Slider
       # sliderInput(inputId = "num", label = "Egde definition", 
@@ -338,10 +338,10 @@ server <- function(input,output, session){
     ######## match max of absolute after uploaded a graph ######
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute",label=maxLabel)
+    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
     procentValue <-(input$relative_edge_weight_filter/100)*maxAbsolutValue
     absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
+    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
     
     ################ Plot Graphs #####################
     graphFirst <- extract_first_graph()
@@ -382,10 +382,10 @@ server <- function(input,output, session){
     prepareGraphs()
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute",label=maxLabel)
+    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
     procentValue <-(input$relative_edge_weight_filter/100)*maxAbsolutValue
     absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
+    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
 
     graphFirst <- extract_first_graph()
     if(!is.null(graphFirst)){
@@ -412,10 +412,10 @@ server <- function(input,output, session){
     prepareGraphs()
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute",label=maxLabel)
+    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
     procentValue <-(input$relative_edge_weight_filter/100)*maxAbsolutValue
     absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
+    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
 
     community_algorithm <- extract_community_algorithm()
     graphFirst <- extract_first_graph()
@@ -484,8 +484,8 @@ server <- function(input,output, session){
 
   ############ change absolute value, which it changes relative value ##########
 
-  observeEvent(input$absolute,{
-        neuAbsoluteValue<-input$absolute
+  observeEvent(input$absolute_edge_weight_filter,{
+        neuAbsoluteValue<-input$absolute_edge_weight_filter
        # print(neuAbsoluteValue)
     if(!is.null(neuAbsoluteValue)){
       maxAbsolutValue <<- extract_max_edge_weight()
@@ -512,7 +512,7 @@ server <- function(input,output, session){
       procentValue<-(userInput/100)*maxAbsolutValue
       absoluteValue<-as.integer(procentValue+0.5)
 
-      updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
+      updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
       
     }else if(input$relative_edge_weight_filter>100){
       updateNumericInput(session,"relative_edge_weight_filter",value = 100, min=0, max = 100)
@@ -751,7 +751,7 @@ server <- function(input,output, session){
     input$comboFirstPatient
     input$vjSegmentFirst
     input$partOfSequence
-    input$absolute
+    input$absolute_edge_weight_filter
   },
   {
     print("recalculating first graph")
@@ -788,7 +788,7 @@ server <- function(input,output, session){
     input$comboSecondPatient
     input$vjSegmentSecond
     input$partOfSequence
-    input$absolute
+    input$absolute_edge_weight_filter
   },
   {
     print("recalculating second graph")
