@@ -40,31 +40,32 @@ distanceb2b <- function(bcr1, bcr2){
 
 
 # bcr1 and bcr2 have to be of same length
-distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2){
+distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2, metric = "dl", parameter = -1, nthread = -1){
   
   time <- as.numeric(Sys.time())*1000
   
+  q <- 1
+  p <- 0
   
+  if(parameter > -1){
+    if(metric == "jw"){
+      p <- parameter
+    }else{
+      q <- parameter
+    }
+  }
+
+  cat(q, " ", p, " ", metric)
   
   matrix <- matrix(nrow = length(arrayBcr1), ncol = length(arrayBcr2))
   
+  if(nthread > 0){
+    matrix <- stringdistmatrix(arrayBcr1, arrayBcr2, method = metric, q = q, p = p, nthread = nthread)
+  }else{
+    matrix <- stringdistmatrix(arrayBcr1, arrayBcr2, method = metric, q = q, p = p)
+  }
   
-  matrix <- stringdistmatrix(arrayBcr1, arrayBcr2, method = "dl")
-  
-  
-  # for(i in 1:length(arrayBcr1)){
-  #   cat(i, " of " ,length(arrayBcr1),"\n")
-  #   for(j in 1:i){
-  #     
-  #     dist <- stringdist(arrayBcr1[i], arrayBcr2[j], method="dl")
-  # 
-  #     matrix[i,j] <- dist
-  #     matrix[j,i] <- dist
-  #   }
-  # }
-  
-  
-  
+
   print(as.numeric(Sys.time())*1000 - time)
   
   return(matrix)

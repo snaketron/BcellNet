@@ -36,12 +36,12 @@ loadSource("PlotBCR.R")
 #'
 #' @export 
 
-calculateDistances <- function(arrayBcr, distanceMetric = "LD"){
-  
+calculateDistances <- function(arrayBcr, distanceMetric = "LD", parameter = -1, nthread = -1){
+
   if(is.null(arrayBcr)  || identical(arrayBcr,character(0)) ) return(NULL)
   
   # calculate distance between all entries in subData
-  matrix <- distanceArrayOfBcr(arrayBcr, arrayBcr)
+  matrix <- distanceArrayOfBcr(arrayBcr, arrayBcr, distanceMetric, parameter, nthread = nthread)
   
   return (matrix)
 }

@@ -31,6 +31,13 @@ graphSecond <- NULL
 vjSegmentLinked <- TRUE
 choicesOfSecondPatient <- NULL
 choicesOfFirstPatient <- NULL
+currentMetric <- "Damerau-Levenshtein"
+metricPara <- -1
+oldMetricPara <- -1
+
+# change this var if you know what you are doing
+# -1 means, the number of threads are setting by system
+nthread <- -1
 
 #UI
 ui <- fluidPage(
@@ -94,6 +101,14 @@ ui <- fluidPage(
       selectInput(inputId = "partOfSequence",label = "Select Part of Sequence",
                   choices = c("whole sequence", "CDR3", "V sequence"),
                   selected = "whole sequence", multiple = FALSE, selectize = TRUE),
+      
+      selectInput(inputId = "metric",label = "Select metric",
+                  choices = c("Levensthein", "Optimal string aligment", "Damerau-Levenshtein",
+                              "Longest common substring","Q-gram","Cosine of q-gram","Jaccard of q-gram","Jaro-Winker"),
+                  selected = "Damerau-Levenshtein", multiple = FALSE, selectize = TRUE),
+      
+      disabled(numericInput( inputId = "metricParameter",label = "Parameter",value = 1,min = 0)),
+      
       
       tags$hr(),
       
@@ -246,6 +261,55 @@ server <- function(input,output, session){
 
   observeEvent(input$linkVJSegments,{
     vjSegmentLinked <<- input$linkVJSegments
+  })
+  
+  observeEvent(input$metricPara,{
+    metricPara <<- input$metricPara
+    oldMetricPar <<- metricPara
+  })
+  
+  observeEvent(input$metric,{
+    
+    distanceMetric <- input$metric
+    
+    # Map distances to shortform
+    if(distanceMetric == "Levensthein"){
+      distanceMetric <- "lv"
+      shinyjs::disable("metricParameter")
+      metricPara <<- -1
+    }else if(distanceMetric == "Optimal string aligment"){
+      distanceMetric <- "osa"
+      shinyjs::disable("metricParameter")
+      metricPara <<- -1
+    }else if(distanceMetric == "Damerau-Levenshtein"){
+      distanceMetric <- "dl"
+      shinyjs::disable("metricParameter")
+      metricPara <<- -1
+    }else if(distanceMetric == "Longest common substring"){
+      distanceMetric <- "kcs"
+      shinyjs::disable("metricParameter")
+      metricPara <<- -1
+    }else if(distanceMetric == "Q-gram"){
+      distanceMetric <- "qgram"
+      shinyjs::enable("metricParameter")
+      metricPara <<- oldMetricPara
+    }else if(distanceMetric == "Cosine of q-gram"){
+      distanceMetric <- "cosine"
+      shinyjs::enable("metricParameter")
+      metricPara <<- oldMetricPara
+    }else if(distanceMetric == "Jaccard of q-gram"){
+      distanceMetric <- "jaccard"
+      shinyjs::enable("metricParameter")
+      metricPara <<- oldMetricPara
+    }else if(distanceMetric == "Jaro-Winker"){
+      distanceMetric <- "jw"
+      shinyjs::enable("metricParameter")
+      metricPara <<- oldMetricPara
+    }else{
+      print("ERROR")
+    }
+    
+    currentMetric <<- distanceMetric
   })
   
   # when selecting an element in first patient list, this element will be selected in combolist for
@@ -540,7 +604,7 @@ server <- function(input,output, session){
     print("recalculating first matrix")
     first_array <- extract_first_array()
     
-    matrixFirst <- calculateDistances(first_array)
+    matrixFirst <- calculateDistances(first_array, currentMetric, metricPara, nthread = nthread)
     
     return (matrixFirst)
   })
@@ -555,7 +619,7 @@ server <- function(input,output, session){
     print("recalculating second matrix")
     second_array <- extract_second_array()
     
-    second_matrix <- calculateDistances(second_array)
+    second_matrix <- calculateDistances(second_array, currentMetric, metricPara)
     
     return (second_matrix)
   })
