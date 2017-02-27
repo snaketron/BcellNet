@@ -54,7 +54,7 @@ calculateDistances <- function(arrayBcr, distanceMetric = "LD", parameter = -1, 
 #' @importFrom igraph vertex
 #' @importFrom igraph edge
 #' @importFrom igraph as.undirected
-buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax, thresholdMin){
+buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax, thresholdMin, update_progress = NULL){
   
   graph <- graph.empty()
   #fill graph
@@ -66,8 +66,11 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax,
   }
 
   # Connect them with their distance (add edges) 
-  for(i in 1:length(arrayBcr)){
-    cat("build igraph: ", i, " of ", length(arrayBcr), "\n" )
+  array_length <- length(arrayBcr)
+  for(i in 1:array_length){
+    if (is.function(update_progress)) {
+      update_progress(value = i/array_length, detail=paste0("build igraph: ", i, " of ", array_length))
+    }
     #for(bcr2 in arrayBcr2){ 
     for(j in i:length(arrayBcr)){ 
       weight <- distanceMatrix[i,j]
