@@ -516,8 +516,8 @@ server <- function(input,output, session){
   # updated if the reactive event was triggered else the returned value will be
   # the same this is useful for heavy calculation where the plots are based on
   # the same caluclation thus there is no need to recalculate it
-  extract_community_algorithm <- eventReactive(input$select_community, {
-    cat("community algorithm selected:", input$select_community, "\n")
+  extract_community_algorithm <- reactive({
+    print(paste("community algorithm selected:", input$select_community))
     selected_community_algorithm <- all_communtiy_algorithms()[[input$select_community]]
 
     return (selected_community_algorithm)
@@ -527,8 +527,8 @@ server <- function(input,output, session){
   # updated if the reactive event was triggered else the returned value will be
   # the same this is useful for heavy calculation where the plots are based on
   # the same caluclation thus there is no need to recalculate it
-  extract_layout_algorithm <- eventReactive(input$select_layout, {
-    cat("layout algorithm selected:", input$select_layout, "\n")
+  extract_layout_algorithm <- reactive({
+    print(paste("layout algorithm selected:", input$select_layout))
     selected_layout_algorithm <- all_layout_algorithms()[[input$select_layout]]
 
     return (selected_layout_algorithm)
