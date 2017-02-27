@@ -472,20 +472,24 @@ server <- function(input,output, session){
   }, {
     print("recalculating first array")
     
-    dataFirst <- data[[selectFirstPatient]]
-    if(!input$vjSegmentFirst == "whole data"){
-      dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegmentFirst,]
-    }
-    
-    if(input$partOfSequence == "whole sequence"){
-      arrayFirst <- dataFirst$sequence
-    }else if(input$partOfSequence == "CDR3"){
-      arrayFirst <- dataFirst$CDR3
-    }else{
-      arrayFirst <- dataFirst$V.sequence
-    }
-    
-    arrayFirst <- unique(arrayFirst)
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating sequences"), value = 0, {
+      dataFirst <- data[[selectFirstPatient]]
+      if(!input$vjSegmentFirst == "whole data"){
+        dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegmentFirst,]
+      }
+      
+      if(input$partOfSequence == "whole sequence"){
+        arrayFirst <- dataFirst$sequence
+      }else if(input$partOfSequence == "CDR3"){
+        arrayFirst <- dataFirst$CDR3
+      }else{
+        arrayFirst <- dataFirst$V.sequence
+      }
+      
+      arrayFirst <- unique(arrayFirst)
+      
+      incProgress(1)
+    })
     
     return (arrayFirst)
   })
@@ -498,21 +502,25 @@ server <- function(input,output, session){
   }, {
     print("recalculating second array")
     
-    dataSecond <- data[[selectSecondPatient]]
-    
-    if(!input$vjSegmentSecond == "whole data"){
-      dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegmentSecond,]
-    }
-    
-    if(input$partOfSequence == "whole sequence"){
-      arraySecond <- dataSecond$sequence
-    }else if(input$partOfSequence == "CDR3"){
-      arraySecond <- dataSecond$CDR3
-    }else{
-      arraySecond <- dataSecond$V.sequence
-    }
-    
-    arraySecond <- unique(arraySecond)
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating sequences"), value = 0, {
+      dataSecond <- data[[selectSecondPatient]]
+      
+      if(!input$vjSegmentSecond == "whole data"){
+        dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegmentSecond,]
+      }
+      
+      if(input$partOfSequence == "whole sequence"){
+        arraySecond <- dataSecond$sequence
+      }else if(input$partOfSequence == "CDR3"){
+        arraySecond <- dataSecond$CDR3
+      }else{
+        arraySecond <- dataSecond$V.sequence
+      }
+      
+      arraySecond <- unique(arraySecond)
+      
+      incProgress(1)
+    })
     
     return (arraySecond)
   })
@@ -526,7 +534,11 @@ server <- function(input,output, session){
     print("recalculating first matrix")
     first_array <- extract_first_array()
     
-    matrixFirst <- calculateDistances(first_array)
+    withProgress(message = paste0("Patient ", input$comboFirstPatient, ": calculating matrix"), value = 0, {
+      matrixFirst <- calculateDistances(first_array)
+      
+      incProgress(1)
+    })
     
     return (matrixFirst)
   })
@@ -541,7 +553,11 @@ server <- function(input,output, session){
     print("recalculating second matrix")
     second_array <- extract_second_array()
     
-    second_matrix <- calculateDistances(second_array)
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating matrix"), value = 0, {
+      second_matrix <- calculateDistances(second_array)
+      
+      incProgress(1)
+    })
     
     return (second_matrix)
   })
@@ -556,18 +572,22 @@ server <- function(input,output, session){
     first_matrix <- extract_first_matrix()
     second_matrix <- extract_second_matrix()
     
-    #avoid numeric(0) exception
-    if(is.null(first_matrix)){
-      matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE)
-      second_matrix <- matrices[[1]]
-    }else if(is.null(second_matrix)){
-      matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE)
-      first_matrix <- matrices[[1]]
-    }else{
-      matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE)
-      second_matrix <- matrices[[2]]
-      first_matrix <- matrices[[1]]
-    }
+    withProgress(message = paste0("Patient ", input$comboFirstPatient, ": normalizing matrix"), value = 0, {
+      #avoid numeric(0) exception
+      if(is.null(first_matrix)){
+        matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE)
+        second_matrix <- matrices[[1]]
+      }else if(is.null(second_matrix)){
+        matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE)
+        first_matrix <- matrices[[1]]
+      }else{
+        matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE)
+        second_matrix <- matrices[[2]]
+        first_matrix <- matrices[[1]]
+      }
+      
+      incProgress(1)
+    })
     
     return (first_matrix)
   })
@@ -582,18 +602,22 @@ server <- function(input,output, session){
     first_matrix <- extract_first_matrix()
     second_matrix <- extract_second_matrix()
     
-    #avoid numeric(0) exception
-    if(is.null(first_matrix)){
-      matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE)
-      second_matrix <- matrices[[1]]
-    }else if(is.null(second_matrix)){
-      matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE)
-      first_matrix <- matrices[[1]]
-    }else{
-      matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE)
-      second_matrix <- matrices[[2]]
-      first_matrix <- matrices[[1]]
-    }
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": normalizing matrix"), value = 0, {
+      #avoid numeric(0) exception
+      if(is.null(first_matrix)){
+        matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE)
+        second_matrix <- matrices[[1]]
+      }else if(is.null(second_matrix)){
+        matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE)
+        first_matrix <- matrices[[1]]
+      }else{
+        matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE)
+        second_matrix <- matrices[[2]]
+        first_matrix <- matrices[[1]]
+      }
+      
+      incProgress(1)
+    })
     
     return (second_matrix)
   }) 
@@ -656,11 +680,27 @@ server <- function(input,output, session){
       first_array <- extract_first_array()
       first_mult_counter <- extract_first_multiply_counter()
       
-      return (buildIGraph(first_array, first_norm_matrix, first_mult_counter, thresholdMax = 1.0, thresholdMin = 0))
+      # Create a Progress object
+      progress <- shiny::Progress$new()
+      progress$set(message = "Computing data", value = 0)
+      # Close the progress when this reactive exits (even if there's an error)
+      on.exit(progress$close())
+      
+      # Create a callback function to update progress.
+      # Each time this is called:
+      # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+      #   distance. If non-NULL, it will set the progress to that value.
+      # - It also accepts optional detail text.
+      update_progress <- function(value = NULL, detail = NULL) {
+        progress$set(value = value, detail = detail)
+      }
+      
+      return (buildIGraph(first_array, first_norm_matrix, first_mult_counter, thresholdMax = 1.0, thresholdMin = 0, update_progress))
     }
     else {
       return (NULL)
     }
+    
   })
   
   extract_second_graph <- eventReactive({
@@ -677,7 +717,22 @@ server <- function(input,output, session){
       second_array <- extract_second_array()
       second_mult_counter <- extract_second_multiply_counter()
       
-      return (buildIGraph(second_array, second_matrix, second_mult_counter, thresholdMax = 1.0, thresholdMin = 0))
+      # Create a Progress object
+      progress <- shiny::Progress$new()
+      progress$set(message = "Computing data", value = 0)
+      # Close the progress when this reactive exits (even if there's an error)
+      on.exit(progress$close())
+      
+      # Create a callback function to update progress.
+      # Each time this is called:
+      # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+      #   distance. If non-NULL, it will set the progress to that value.
+      # - It also accepts optional detail text.
+      update_progress <- function(value = NULL, detail = NULL) {
+        progress$set(value = value, detail = detail)
+      }
+      
+      return (buildIGraph(second_array, second_matrix, second_mult_counter, thresholdMax = 1.0, thresholdMin = 0, update_progress = update_progress))
     }
     else {
       return (NULL)
