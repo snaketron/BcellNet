@@ -1,5 +1,24 @@
-.Rproj.user
-.Rhistory
-.RData
-.Ruserdata
-Rplots.pdf
+# ignore everything
+/*
+
+# but include
+# project related files
+!README.md
+!LICENSE
+
+# R related files
+!.Rbuildignore
+!BcellNet.Rproj
+!DESCRIPTION
+!NAMESPACE
+!data/
+!man/
+!R/
+!tests/
+
+# git related files
+!.gitignore
+
+# CI related files
+!.travis.yml
+!appveyor.yml
