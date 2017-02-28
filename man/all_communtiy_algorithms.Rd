@@ -22,3 +22,4 @@ all_communtiy_algorithms()
 \keyword{community}
 \keyword{igraph}
 \keyword{provider}
+

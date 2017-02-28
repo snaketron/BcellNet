@@ -9,7 +9,6 @@ loadSource <- function(sourceName) {
 }
 
 loadSource("DistanceMetric.R")
-loadSource("PlotBCR.R")
 
 
 #' @title calculate distances between given bcr arrays

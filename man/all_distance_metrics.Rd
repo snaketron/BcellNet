@@ -9,3 +9,4 @@ all_distance_metrics()
 \description{
 Distance metric shortform mapping
 }
+

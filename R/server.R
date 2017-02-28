@@ -9,6 +9,10 @@ loadSource <- function(sourceName) {
   }
 }
 
+loadSource("BuildIGraph.R")
+loadSource("DistanceMetric.R")
+loadSource("PlotBCR.R")
+
 
 usePackage <- function(p) {
   if (!is.element(p, installed.packages()[,1]))
@@ -19,6 +23,7 @@ usePackage <- function(p) {
 usePackage("shiny")
 usePackage("shinyjs")
 usePackage("shinyBS")
+usePackage("visNetwork")
 usePackage("markdown")
 
 
@@ -44,9 +49,9 @@ nthread <- -1
 #' @import shiny
 #' @importFrom shinyjs enable
 #' @importFrom shinyjs disabled
+#' @importFrom visNetwork visNetworkOutput
 function(input,output, session){
-  
-  
+
   #set maximum upload file to 1 gb
   options(shiny.maxRequestSize=1024*1024*1024)
   
@@ -342,7 +347,7 @@ function(input,output, session){
   # the same caluclation thus there is no need to recalculate it
   extract_community_algorithm <- reactive({
     print(paste("community algorithm selected:", input$select_community))
-    selected_community_algorithm <- all_communtiy_algorithms()[[input$select_community]]
+    selected_community_algorithm <- BcellNet::all_communtiy_algorithms()[[input$select_community]]
     
     return (selected_community_algorithm)
   })
@@ -353,7 +358,7 @@ function(input,output, session){
   # the same caluclation thus there is no need to recalculate it
   extract_layout_algorithm <- reactive({
     print(paste("layout algorithm selected:", input$select_layout))
-    selected_layout_algorithm <- all_layout_algorithms()[[input$select_layout]]
+    selected_layout_algorithm <- BcellNet::all_layout_algorithms()[[input$select_layout]]
     
     return (selected_layout_algorithm)
   })

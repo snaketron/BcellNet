@@ -143,7 +143,8 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE, update_progress
 }
 
 
-#'Distance metric shortform mapping
+#' Distance metric shortform mapping
+#' @export
 all_distance_metrics <- function() {
   all_metrics <- data.frame(algorithm=character(), parameter_enabled=logical(),parameter_name=character(), stringsAsFactors = FALSE)
   all_metrics["Damerau-Levenshtein", ] <- c("dl", FALSE,"")

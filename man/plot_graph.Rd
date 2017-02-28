@@ -58,3 +58,4 @@ plot_graph(karate)
 \keyword{graph}
 \keyword{highlight}
 \keyword{plot}
+

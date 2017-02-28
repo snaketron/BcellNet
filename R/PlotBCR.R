@@ -221,6 +221,15 @@ all_communtiy_algorithms <- function() {
   return(algos)
 }
 
+#' Provides all layout algorithms
+#' 
+#' @description \code{all_layout_algorithms} provides an easy dictionary of all algorithms to determine the layouts. This enables access to a human readable representation of the internal functions. "Foo Bar" could be called foo_bar internally, which is not something supposed to being displayed. It will returns a dictionary mapping from \code{string} to \code{string}. The \code{plot_graph} will handle the decryption of the functions internally.
+#' 
+#' @keywords all_layout_algorithms
+#' 
+#' @export
+#' 
+#' @seealso \code{\link[igraph]{igraph}}
 all_layout_algorithms <- function() {
   algos <- c(
     "Auto" = "layout_nicely",

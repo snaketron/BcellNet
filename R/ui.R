@@ -1,5 +1,30 @@
+files <- NULL
+# setwd("R") is done by shiny since the server file is in here
+loadSource <- function(sourceName) {
+  pattern <- paste("^", sourceName, "$", sep = "")
+  files <<- list.files(pattern=pattern, recursive = TRUE)
+  for (file in files) {
+    source(file)
+  }
+}
+
+loadSource("DistanceMetric.R")
+loadSource("PlotBCR.R")
+
+usePackage <- function(p) {
+  if (!is.element(p, installed.packages()[,1]))
+    install.packages(p, dependencies = TRUE, repos="http://cran.us.r-project.org")
+  require(p, character.only = TRUE)
+}
+
+usePackage("shiny")
+usePackage("shinyjs")
+usePackage("shinyBS")
+usePackage("markdown")
+
 
 #UI
+#' @importFrom shinyjs disabled
 fluidPage(
   # activate shinyjs which enables easy commands without JS knowledge
   shinyjs::useShinyjs(),
@@ -68,7 +93,7 @@ fluidPage(
                                       selected = "whole sequence", multiple = FALSE, selectize = TRUE),
                           
                           selectInput(inputId = "distance_metric_name",label = "Select distance metric",
-                                      choices = row.names(all_distance_metrics()[1]),
+                                      choices = row.names(BcellNet::all_distance_metrics()[1]),
                                       multiple = FALSE),
                           
                           disabled(numericInput( inputId = "distance_metric_parameter",label = "Parameter",value = 1,min = 0, step = 0.1)),
@@ -102,7 +127,7 @@ fluidPage(
                           # comboBox
                           
                           selectInput(inputId = "select_community",label = NULL,
-                                      choices = names(all_communtiy_algorithms()),
+                                      choices = names(BcellNet::all_communtiy_algorithms()),
                                       selected = NULL, multiple = FALSE, selectize = TRUE),
                           
                           
@@ -130,7 +155,7 @@ fluidPage(
                           
                           
                           selectInput(inputId = "select_layout",label = NULL,
-                                      choices = names(all_layout_algorithms()),
+                                      choices = names(BcellNet::all_layout_algorithms()),
                                       selected = NULL, multiple = FALSE, selectize = TRUE),
                           
                           #Buttons
