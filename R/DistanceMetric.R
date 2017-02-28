@@ -40,31 +40,32 @@ distanceb2b <- function(bcr1, bcr2){
 
 
 # bcr1 and bcr2 have to be of same length
-distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2){
+distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2, metric = "dl", parameter = -1, nthread = -1){
   
   time <- as.numeric(Sys.time())*1000
   
+  q <- 1
+  p <- 0
   
+  if(parameter > -1){
+    if(metric == "jw"){
+      p <- parameter
+    }else{
+      q <- parameter
+    }
+  }
+
+  cat(q, " ", p, " ", metric)
   
   matrix <- matrix(nrow = length(arrayBcr1), ncol = length(arrayBcr2))
   
+  if(nthread > 0){
+    matrix <- stringdistmatrix(arrayBcr1, arrayBcr2, method = metric, q = q, p = p, nthread = nthread)
+  }else{
+    matrix <- stringdistmatrix(arrayBcr1, arrayBcr2, method = metric, q = q, p = p)
+  }
   
-  matrix <- stringdistmatrix(arrayBcr1, arrayBcr2, method = "dl")
-  
-  
-  # for(i in 1:length(arrayBcr1)){
-  #   cat(i, " of " ,length(arrayBcr1),"\n")
-  #   for(j in 1:i){
-  #     
-  #     dist <- stringdist(arrayBcr1[i], arrayBcr2[j], method="dl")
-  # 
-  #     matrix[i,j] <- dist
-  #     matrix[j,i] <- dist
-  #   }
-  # }
-  
-  
-  
+
   print(as.numeric(Sys.time())*1000 - time)
   
   return(matrix)
@@ -72,7 +73,7 @@ distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2){
 
 # normalize values between 0 - 1; set groundzero to false you will get relatively values, 
 # otherwise the minimum will be 0 and the maximum 1
-normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
+normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE, update_progress = NULL){
   
   normalizedMatrixA <- matrix(nrow =nrow(matrixA), ncol = ncol(matrixA), 2)
   normalizedMatrixB <- matrix(nrow =nrow(matrixB), ncol = ncol(matrixB), 2)
@@ -83,41 +84,51 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
   if(maxVal == 0) return(list(matrixA,matrixB))
   
   if(groundZero == TRUE){
-    for(i in 1:nrow(matrixA)){
-      cat("normalized: ", i , " of ", nrow(matrixA), "\n")
+    matrix_a_nrow <- nrow(matrixA)
+    for(i in 1:matrix_a_nrow){
+      if (is.function(update_progress)) {
+        update_progress(value = i/matrix_a_nrow, detail=paste0("normalize matrix: ", i, " of ", matrix_a_nrow))
+      }
+      
       for(j in 1:i){
-
         normalizedMatrixA[i,j] <- (matrixA[i,j] - minVal) / maxVal
         normalizedMatrixA[j,i] <- normalizedMatrixA[i,j]
-        
       }
     }
-    for(i in 1:nrow(matrixB)){
-      cat("normalized: ", i , " of ", nrow(matrixB), "\n")
+    
+    matrix_b_nrow <- nrow(matrixB)
+    for(i in 1:matrix_b_nrow){
+      if (is.function(update_progress)) {
+        update_progress(value = i/matrix_b_nrow, detail=paste0("normalize matrix: ", i, " of ", matrix_b_nrow))
+      }
+      
       for(j in 1:i){
-        
         normalizedMatrixB[i,j] <- (matrixB[i,j] - minVal) / maxVal
         normalizedMatrixB[j,i] <- normalizedMatrixB[i,j]
-        
       }
     }
   } else {
-    for(i in 1:nrow(matrixA)){
-      cat("normalized: ", i , " of ", nrow(matrixA), "\n")
+    matrix_a_nrow <- nrow(matrixA)
+    for(i in 1:matrix_a_nrow){
+      if (is.function(update_progress)) {
+        update_progress(value = i/matrix_a_nrow, detail=paste0("normalize matrix: ", i, " of ", matrix_a_nrow))
+      }
+      
       for(j in 1:i){
-        
         normalizedMatrixA[i,j] <- matrixA[i,j] / maxVal
         normalizedMatrixA[j,i] <- normalizedMatrixA[i,j]
-        
       }
     }
-    for(i in 1:nrow(matrixB)){
-      cat("normalized: ", i , " of ", nrow(matrixB), "\n")
+    
+    matrix_b_nrow <- nrow(matrixB)
+    for(i in 1:matrix_b_nrow){
+      if (is.function(update_progress)) {
+        update_progress(value = i/matrix_b_nrow, detail=paste0("normalize matrix: ", i, " of ", matrix_b_nrow))
+      }
+      
       for(j in 1:i){
-        
         normalizedMatrixB[i,j] <- matrixB[i,j] / maxVal
         normalizedMatrixB[j,i] <- normalizedMatrixB[i,j]
-        
       }
     }
   } 
@@ -125,12 +136,3 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE){
   return(list(normalizedMatrixA,normalizedMatrixB))
 }
 
-
-
-#calculate distance between bcrs given a matrix of bcrs
-
-distanceSetOfBcr <- function(){
-  
-  
-  
-}

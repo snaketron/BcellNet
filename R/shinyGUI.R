@@ -20,6 +20,7 @@ usePackage <- function(p) {
 usePackage("shiny")
 usePackage("shinyjs")
 usePackage("shinyBS")
+usePackage("markdown")
 
 
 
@@ -27,11 +28,16 @@ data <- NULL
 maxAbsolutValue <- 100
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
-graphFirst <- NULL
-graphSecond <- NULL
 vjSegmentLinked <- TRUE
 choicesOfSecondPatient <- NULL
 choicesOfFirstPatient <- NULL
+currentMetric <- "Damerau-Levenshtein"
+metricPara <- -1
+oldMetricPara <- -1
+
+# change this var if you know what you are doing
+# -1 means, the number of threads are setting by system
+nthread <- -1
 
 #UI
 ui <- fluidPage(
@@ -42,28 +48,30 @@ ui <- fluidPage(
   # p(style = "font-family:Times New Roman","See other apps in the"),
   # a("Shiny Showcase",href = "http://www.rstudio.com/products/shiny/shiny-user-showcase/"),
   #html code with tags, you can also write h1("test")
-  fluidRow(
-    column(1, 
-           tags$img(height=70, width=70, src="logo.png", style="margin-top: 20px; ")
-    ),
-    column(11, 
-           tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
-           tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;")
-    )
-  ),
+  
   
   # tags$br(), line break 
-  tags$hr(),
-  
+
   # here we write *Input() & *Output() functions
   
   #Create *input functions
   
   #comboBoxes
-  sidebarLayout(
-    sidebarPanel (
-      #select File
-      fileInput('csvFile', 'Choose CSV File', 
+  navbarPage("BCellNet",
+    tabPanel("Plot",
+             fluidRow(
+               column(1, 
+                      tags$img(height=70, width=70, src="logo.png", style="margin-top: 20px; ")
+               ),
+               column(11, 
+                      tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
+                      tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;")
+               )
+             ),
+      sidebarLayout(
+         sidebarPanel (
+        #select File
+          fileInput('csvFile', 'Choose CSV File', 
                 accept=c('text/csv', 
                          'text/comma-separated-values,text/plain', 
                          '.csv')),
@@ -99,22 +107,28 @@ ui <- fluidPage(
                   choices = c("whole sequence", "CDR3", "V sequence"),
                   selected = "whole sequence", multiple = FALSE, selectize = TRUE),
       
+      selectInput(inputId = "metric",label = "Select metric",
+                  choices = c("Levensthein", "Optimal string aligment", "Damerau-Levenshtein",
+                              "Longest common substring","Q-gram","Cosine of q-gram","Jaccard of q-gram","Jaro-Winker"),
+                  selected = "Damerau-Levenshtein", multiple = FALSE, selectize = TRUE),
+      
+      disabled(numericInput( inputId = "metricParameter",label = "Parameter",value = 1,min = 0)),
+      
+      
       tags$hr(),
       
-      #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "num2",label = "Relative %",value =95,min = 0,max = 100, step = 0.01)),
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute (100):", 0)),
-      tags$br(),
 
-      
-    
-    
+
+      #numericInput
+      div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput( inputId = "relative_edge_weight_filter",label = "Relative distance in %",value =5,min = 0,max = 100, step = 1.00)),
+      div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput(inputId = "absolute_edge_weight_filter", label = "Absolute distance (100):", 0)),
+      tags$br(),
       
       # HELP POPUP community
      
       tags$span("Community Selection",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
                 popify(bsButton("q1", label = "", icon = icon("question"), 
-                                style="info", size = "extra-small"),'Help for cluster ', 
+                                style="info", size = "extra-small"),'Help for Cluster ', 
                        content = paste0("More details for community structures:<br> ", a("Fast Greedy", href = "http://igraph.org/r/doc/cluster_fast_greedy.html", target="_blank"),", ",
                                                                                        a("Label Prop",  href = "http://igraph.org/r/doc/cluster_label_prop.html",  target="_blank"),", ",
                                                                                        a("Leading Eigen", href = "http://igraph.org/r/doc/cluster_leading_eigen.html", target="_blank"),", ",
@@ -135,17 +149,24 @@ ui <- fluidPage(
       # HELP POPUP Layer
 
       tags$span("Layout Generator",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
-                popify(bsButton("q1", label = "", icon = icon("question"), 
-                                style="info", size = "extra-small"),'Help for cluster ', 
-                       content = paste0("More details for community structures:<br> ", a("Fast Greedy", href = "http://igraph.org/r/doc/cluster_fast_greedy.html", target="_blank"),", ",
-                                        a("Label Prop",  href = "http://igraph.org/r/doc/cluster_label_prop.html",  target="_blank"),", ",
-                                        a("Leading Eigen", href = "http://igraph.org/r/doc/cluster_leading_eigen.html", target="_blank"),", ",
-                                        a("Louvain", href = "http://igraph.org/r/doc/cluster_louvain.html",target="_blank"),", ",
-                                        a("Optimal", href = "http://igraph.org/r/doc/cluster_optimal.html",target="_blank"),", ",
-                                        a("Walktrap",href = "http://igraph.org/r/doc/cluster_walktrap.html",target="_blank")), trigger = "focus" ) ),
+                popify(bsButton("q2", label = "", icon = icon("question"), 
+                                style="info", size = "extra-small"),'Help for Layout ', 
+                       content = paste0("More details for community structures:<br> ", a("Star", href = "http://igraph.org/r/doc/layout_as_star.html", target="_blank"),", ",
+                                        a("Circle",  href = "http://igraph.org/r/doc/layout_in_circle.html",  target="_blank"),", ",
+                                        a("Grid", href = "http://igraph.org/r/doc/layout_on_grid.html", target="_blank"),", ",
+                                        a("Sphere", href = " http://igraph.org/r/doc/layout_on_sphere.html", target="_blank"),", ",
+                                        a("Randomly", href = "http://igraph.org/r/doc/layout_randomly.html", target="_blank"),", ",
+                                        a("Davidson-Harel", href = "http://igraph.org/r/doc/layout_with_dh.html", target="_blank"),", ",
+                                        a("DRL", href = "http://igraph.org/r/doc/layout_with_drl.html", target="_blank"),", ",
+                                        a("GEM", href = "http://igraph.org/r/doc/layout_with_gem.html", target="_blank"),", ",
+                                        a("Fruchterman-Reingold", href = "http://igraph.org/r/doc/layout_with_fr.html",target="_blank"),", ",
+                                        a("GraphOpt", href = " http://igraph.org/r/doc/layout_with_graphopt.html",target="_blank"),", ",
+                                        a("Large Graph", href = "http://igraph.org/r/doc/layout_with_lgl.html",target="_blank"),", ",
+                                        a("multidimensional scaling", href = "http://igraph.org/r/doc/layout_with_mds.html",target="_blank"),", ",
+                                        a("Kamada-Kawai",href = "http://igraph.org/r/doc/layout_with_kk.html",target="_blank")), trigger = "focus" ) ),
       
-      
- 
+     
+    
       selectInput(inputId = "select_layout",label = NULL,
                   choices = names(all_layout_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
@@ -213,7 +234,61 @@ ui <- fluidPage(
     
   ) #end of sidebarLayout
   
-)  #end of UI
+),# end of Plot tab
+navbarMenu("Advance Setting",
+           tabPanel("Setting",
+           fluidRow(
+             column(1, 
+                    tags$img(height=70, width=70, src="logo.png", style="margin-top: 20px; ")
+             ),
+             column(11, 
+                    tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
+                    tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;")
+             )
+           ),
+           sidebarLayout(
+             sidebarPanel (
+               textInput("threads","Threads",value=getOption("sd_num_thread") ,width = "50%"),
+               textInput("max","Max", value=100,width = "50%"),
+               textInput("min","Min",value=0,width = "50%"),
+               textInput("upload","Max Upload Size",value=1,width = "50%")
+               
+             ),
+             mainPanel(
+               
+             )
+             )
+           ),
+           
+           #tabPanel("Setting"),
+           tabPanel("Help",  fluidRow(
+             column(1, 
+                    tags$img(height=70, width=70, src="logo.png", style="margin-top: 20px; ")
+             ),
+             column(11, 
+                    tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
+                    tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;"),
+                    tags$br(),
+                    tags$br(),
+                    
+                    tags$h3("Description:",style = "color:#469CF1;"),
+                    tags$p ("A bioinformatic tool for biologists to visualize B-Cell correlation. License: MIT + file LICENSE"),
+                    tags$h3 ("For more Information:",style = "color:#469CF1;"),
+                    tags$p("Simo Kitanovski <simo.kitanovski@uni-due.de>"),
+                    tags$p ("Github Link ",
+                      a(href="https://github.com/snaketron/BcellNet",
+                        "BcellNet")
+                    )
+             )
+           )
+                    
+                   
+                      )# End of Help Tab
+                    )# End of Advance Setting
+           )
+
+)
+
 
 
 #####################server side####################################
@@ -221,6 +296,7 @@ ui <- fluidPage(
 #' @import shiny
 #' @importFrom shinyjs enable
 server <- function(input,output, session){
+ 
 
   #set maximum upload file to 1 gb
   options(shiny.maxRequestSize=1024*1024^2)
@@ -288,6 +364,55 @@ server <- function(input,output, session){
     vjSegmentLinked <<- input$linkVJSegments
   })
   
+  observeEvent(input$metricPara,{
+    metricPara <<- input$metricPara
+    oldMetricPar <<- metricPara
+  })
+  
+  observeEvent(input$metric,{
+    
+    distanceMetric <- input$metric
+    
+    # Map distances to shortform
+    if(distanceMetric == "Levensthein"){
+      distanceMetric <- "lv"
+      shinyjs::disable("metricParameter")
+      metricPara <<- -1
+    }else if(distanceMetric == "Optimal string aligment"){
+      distanceMetric <- "osa"
+      shinyjs::disable("metricParameter")
+      metricPara <<- -1
+    }else if(distanceMetric == "Damerau-Levenshtein"){
+      distanceMetric <- "dl"
+      shinyjs::disable("metricParameter")
+      metricPara <<- -1
+    }else if(distanceMetric == "Longest common substring"){
+      distanceMetric <- "kcs"
+      shinyjs::disable("metricParameter")
+      metricPara <<- -1
+    }else if(distanceMetric == "Q-gram"){
+      distanceMetric <- "qgram"
+      shinyjs::enable("metricParameter")
+      metricPara <<- oldMetricPara
+    }else if(distanceMetric == "Cosine of q-gram"){
+      distanceMetric <- "cosine"
+      shinyjs::enable("metricParameter")
+      metricPara <<- oldMetricPara
+    }else if(distanceMetric == "Jaccard of q-gram"){
+      distanceMetric <- "jaccard"
+      shinyjs::enable("metricParameter")
+      metricPara <<- oldMetricPara
+    }else if(distanceMetric == "Jaro-Winker"){
+      distanceMetric <- "jw"
+      shinyjs::enable("metricParameter")
+      metricPara <<- oldMetricPara
+    }else{
+      print("ERROR")
+    }
+    
+    currentMetric <<- distanceMetric
+  })
+  
   # when selecting an element in first patient list, this element will be selected in combolist for
   # second patient too. 
   observeEvent(input$vjSegmentFirst,{
@@ -303,31 +428,32 @@ server <- function(input,output, session){
       updateSelectInput(session, "vjSegmentFirst", selected = selectedItem)
     }
   })
-
-  #plot networt button action
-  observeEvent(input$pn, {
-    prepareGraphs()
-
-    community_algorithm <- extract_community_algorithm()
-    layout_algorithm <- extract_layout_algorithm()
-
-    ######## match max of absolute after uploaded a graph ######
+  
+  recalculate_edge_weight_filter <- function() {
+    print("recalculating absolute edge weight filter")
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute",label=maxLabel)
-    procentValue <-(input$num2/100)*maxAbsolutValue
+    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
+    procentValue <- ((input$relative_edge_weight_filter/100)*maxAbsolutValue)
     absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
+    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
+  }
+  
+  #plot networt button action
+  observeEvent(input$pn, {
+    community_algorithm <- extract_community_algorithm()
+    layout_algorithm <- extract_layout_algorithm()
+    recalculate_edge_weight_filter()
     
     ################ Plot Graphs #####################
-    graphFirst <- extract_first_graph()
+    first_graph <- extract_first_graph()
     
-    if(!is.null(graphFirst)){
+    if(!is.null(first_graph)){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
-        edge_threshold <- 1 - (input$num2 / 100.0)
-        patientOne<- plot_graph(graphFirst, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
+        edge_threshold <- 1 - (input$relative_edge_weight_filter / 100.0)
+        patientOne<- plot_graph(first_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
     }
@@ -336,13 +462,13 @@ server <- function(input,output, session){
       output$firstPatient <- renderVisNetwork({})
     }
     
-    graphSecond <- extract_second_graph()
-    if(!is.null(graphSecond)){
+    second_graph <- extract_second_graph()
+    if(!is.null(second_graph)){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
       zweite<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
-        edge_threshold <- 1 - (input$num2 / 100.0)
-        patientTwo<- plot_graph(graphSecond, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
+        edge_threshold <- 1 - (input$relative_edge_weight_filter / 100.0)
+        patientTwo<- plot_graph(second_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
     }
@@ -355,27 +481,20 @@ server <- function(input,output, session){
   
   # for plotting the degree distribution
   observeEvent(input$pdd, {
-    prepareGraphs()
-    maxAbsolutValue <<- extract_max_edge_weight()
-    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute",label=maxLabel)
-    procentValue <-(input$num2/100)*maxAbsolutValue
-    absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
-
-    graphFirst <- extract_first_graph()
-    if(!is.null(graphFirst)){
+    recalculate_edge_weight_filter()
+    first_graph <- extract_first_graph()
+    if(!is.null(first_graph)){
       output$firstPatientDegreeDistribution <- renderPlot(
-        hist(degree(graphFirst))
+        hist(degree(first_graph))
       )
     }
     else {
       output$firstPatientDegreeDistribution <- renderPlot({})
     }
     
-    graphSecond <- extract_second_graph()
-    if(!is.null(graphSecond)){
-      output$secondPatientDegreeDistribution <- renderPlot(
+    second_graph <- extract_second_graph()
+    if(!is.null(second_graph)){
+      output$second_graph <- renderPlot(
         hist(degree(graphSecond))
       )
     }
@@ -385,29 +504,22 @@ server <- function(input,output, session){
   })
   
   observeEvent(input$pcsd, {
-    prepareGraphs()
-    maxAbsolutValue <<- extract_max_edge_weight()
-    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute",label=maxLabel)
-    procentValue <-(input$num2/100)*maxAbsolutValue
-    absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
-
-    community_algorithm <- extract_community_algorithm()
-    graphFirst <- extract_first_graph()
-    if(!is.null(graphFirst)){
+    recalculate_edge_weight_filter()
+    community_algorithm <- isolate(extract_community_algorithm())
+    first_graph <- isolate(extract_first_graph())
+    if(!is.null(first_graph)){
       output$firstPatientCommunitySizeDistribution <- renderPlot({
-        hist(sizes(community_algorithm(graphFirst)))
+        hist(sizes(community_algorithm(first_graph)))
       })
     }
     else {
       output$firstPatientCommunitySizeDistribution <- renderPlot({})
     }
     
-    graphSecond <- extract_second_graph()
-    if(!is.null(graphSecond)){
+    second_graph <- extract_second_graph()
+    if(!is.null(second_graph)){
       output$secondPatientCommunitySizeDistribution <- renderPlot(
-        hist(sizes(community_algorithm(graphSecond)))
+        hist(sizes(community_algorithm(second_graph)))
       )
     }
     else {
@@ -415,10 +527,6 @@ server <- function(input,output, session){
     }
   })
   
-  prepareGraphs <- function() {
-    if(is.null(data)) session$sendCustomMessage(type = 'testmessage',
-                                                message = 'Select data first')
-  }
   
   #function to update vj segment combo list
   updateVJSegment <- function(){
@@ -460,38 +568,38 @@ server <- function(input,output, session){
 
   ############ change absolute value, which it changes relative value ##########
 
-  observeEvent(input$absolute,{
-        neuAbsoluteValue<-input$absolute
+  observeEvent(input$absolute_edge_weight_filter,{
+        neuAbsoluteValue<-input$absolute_edge_weight_filter
        # print(neuAbsoluteValue)
     if(!is.null(neuAbsoluteValue)){
       maxAbsolutValue <<- extract_max_edge_weight()
       calProcentValue<-(neuAbsoluteValue*100)/maxAbsolutValue
       neuProcentValue<-format.default(calProcentValue,digits = 5)
-      updateNumericInput(session,"num2",value = neuProcentValue, min=0, max = 100)
+      updateNumericInput(session,"relative_edge_weight_filter",value = neuProcentValue, min=0, max = 100)
     }
   })
   
   
   ############ change relative value %, which it changes absolute value ##########
-  observeEvent(input$num2,{
+  observeEvent(input$relative_edge_weight_filter,{
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     
-    if(!is.numeric(input$num2)){
+    if(!is.numeric(input$relative_edge_weight_filter)){
       
-      updateNumericInput(session,"num2", min=0, max = 100)
+      updateNumericInput(session,"relative_edge_weight_filter", min=0, max = 100)
       
-    }else if(input$num2>0 && input$num2<=100){
+    }else if(input$relative_edge_weight_filter>0 && input$relative_edge_weight_filter<=100){
       
-      userInput<-(input$num2)
-      updateNumericInput(session,"num2",value = userInput, min=0, max = 100)
+      userInput<-(input$relative_edge_weight_filter)
+      updateNumericInput(session,"relative_edge_weight_filter",value = userInput, min=0, max = 100)
       procentValue<-(userInput/100)*maxAbsolutValue
       absoluteValue<-as.integer(procentValue+0.5)
 
-      updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
+      updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
       
-    }else if(input$num2>100){
-      updateNumericInput(session,"num2",value = 100, min=0, max = 100)
+    }else if(input$relative_edge_weight_filter>100){
+      updateNumericInput(session,"relative_edge_weight_filter",value = 100, min=0, max = 100)
       
     }
   })
@@ -500,8 +608,8 @@ server <- function(input,output, session){
   # updated if the reactive event was triggered else the returned value will be
   # the same this is useful for heavy calculation where the plots are based on
   # the same caluclation thus there is no need to recalculate it
-  extract_community_algorithm <- eventReactive(input$select_community, {
-    cat("community algorithm selected:", input$select_community, "\n")
+  extract_community_algorithm <- reactive({
+    print(paste("community algorithm selected:", input$select_community))
     selected_community_algorithm <- all_communtiy_algorithms()[[input$select_community]]
 
     return (selected_community_algorithm)
@@ -511,8 +619,8 @@ server <- function(input,output, session){
   # updated if the reactive event was triggered else the returned value will be
   # the same this is useful for heavy calculation where the plots are based on
   # the same caluclation thus there is no need to recalculate it
-  extract_layout_algorithm <- eventReactive(input$select_layout, {
-    cat("layout algorithm selected:", input$select_layout, "\n")
+  extract_layout_algorithm <- reactive({
+    print(paste("layout algorithm selected:", input$select_layout))
     selected_layout_algorithm <- all_layout_algorithms()[[input$select_layout]]
 
     return (selected_layout_algorithm)
@@ -526,7 +634,7 @@ server <- function(input,output, session){
   }, {
     print("recalculating first array")
     
-    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating sequences"), value = 0, {
+    withProgress(message = paste0("Patient ", input$comboFirstPatient, ": filtering sequences"), value = 0, {
       dataFirst <- data[[selectFirstPatient]]
       if(!input$vjSegmentFirst == "whole data"){
         dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegmentFirst,]
@@ -556,7 +664,7 @@ server <- function(input,output, session){
   }, {
     print("recalculating second array")
     
-    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating sequences"), value = 0, {
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": filtering sequences"), value = 0, {
       dataSecond <- data[[selectSecondPatient]]
       
       if(!input$vjSegmentSecond == "whole data"){
@@ -588,12 +696,13 @@ server <- function(input,output, session){
     print("recalculating first matrix")
     first_array <- extract_first_array()
     
+
     withProgress(message = paste0("Patient ", input$comboFirstPatient, ": calculating matrix"), value = 0, {
-      matrixFirst <- calculateDistances(first_array)
+      matrixFirst <- calculateDistances(first_array, currentMetric, metricPara, nthread = nthread)
       
       incProgress(1)
     })
-    
+
     return (matrixFirst)
   })
   
@@ -607,11 +716,13 @@ server <- function(input,output, session){
     print("recalculating second matrix")
     second_array <- extract_second_array()
     
+
     withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating matrix"), value = 0, {
-      second_matrix <- calculateDistances(second_array)
+      second_matrix <- calculateDistances(second_array, currentMetric, metricPara)
       
       incProgress(1)
     })
+
     
     return (second_matrix)
   })
@@ -623,25 +734,38 @@ server <- function(input,output, session){
     input$partOfSequence
     input$csvFile
   }, {
+    print("Normalizing first matrix")
+    
     first_matrix <- extract_first_matrix()
     second_matrix <- extract_second_matrix()
     
-    withProgress(message = paste0("Patient ", input$comboFirstPatient, ": normalizing matrix"), value = 0, {
-      #avoid numeric(0) exception
-      if(is.null(first_matrix)){
-        matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE)
-        second_matrix <- matrices[[1]]
-      }else if(is.null(second_matrix)){
-        matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE)
-        first_matrix <- matrices[[1]]
-      }else{
-        matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE)
-        second_matrix <- matrices[[2]]
-        first_matrix <- matrices[[1]]
-      }
-      
-      incProgress(1)
-    })
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+    progress$set(message = paste0("Patient ", input$comboFirstPatient, ": "), value = 0)
+    # Close the progress when this reactive exits (even if there's an error)
+    on.exit(progress$close())
+    
+    # Create a callback function to update progress.
+    # Each time this is called:
+    # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+    #   distance. If non-NULL, it will set the progress to that value.
+    # - It also accepts optional detail text.
+    update_progress <- function(value = NULL, detail = NULL) {
+      progress$set(value = value, detail = detail)
+    }
+    
+    #avoid numeric(0) exception
+    if(is.null(first_matrix)){
+      matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE, update_progress = update_progress)
+      second_matrix <- matrices[[1]]
+    }else if(is.null(second_matrix)){
+      matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE, update_progress = update_progress)
+      first_matrix <- matrices[[1]]
+    }else{
+      matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE, update_progress = update_progress)
+      second_matrix <- matrices[[2]]
+      first_matrix <- matrices[[1]]
+    }
     
     return (first_matrix)
   })
@@ -653,26 +777,39 @@ server <- function(input,output, session){
     input$partOfSequence
     input$csvFile
   }, {
+    print("Normalizing second matrix")
+    
     first_matrix <- extract_first_matrix()
     second_matrix <- extract_second_matrix()
     
-    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": normalizing matrix"), value = 0, {
-      #avoid numeric(0) exception
-      if(is.null(first_matrix)){
-        matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE)
-        second_matrix <- matrices[[1]]
-      }else if(is.null(second_matrix)){
-        matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE)
-        first_matrix <- matrices[[1]]
-      }else{
-        matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE)
-        second_matrix <- matrices[[2]]
-        first_matrix <- matrices[[1]]
-      }
-      
-      incProgress(1)
-    })
+    # Create a Progress object
+    progress <- shiny::Progress$new()
+    progress$set(message = paste0("Patient ", input$comboSecondPatient, ": "), value = 0)
+    # Close the progress when this reactive exits (even if there's an error)
+    on.exit(progress$close())
     
+    # Create a callback function to update progress.
+    # Each time this is called:
+    # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+    #   distance. If non-NULL, it will set the progress to that value.
+    # - It also accepts optional detail text.
+    update_progress <- function(value = NULL, detail = NULL) {
+      progress$set(value = value, detail = detail)
+    }
+    
+    #avoid numeric(0) exception
+    if(is.null(first_matrix)){
+      matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE, update_progress = update_progress)
+      second_matrix <- matrices[[1]]
+    }else if(is.null(second_matrix)){
+      matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE, update_progress = update_progress)
+      first_matrix <- matrices[[1]]
+    }else{
+      matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE, update_progress = update_progress)
+      second_matrix <- matrices[[2]]
+      first_matrix <- matrices[[1]]
+    }
+      
     return (second_matrix)
   }) 
   
@@ -724,7 +861,7 @@ server <- function(input,output, session){
     input$comboFirstPatient
     input$vjSegmentFirst
     input$partOfSequence
-    input$absolute
+    input$absolute_edge_weight_filter
   },
   {
     print("recalculating first graph")
@@ -736,7 +873,7 @@ server <- function(input,output, session){
       
       # Create a Progress object
       progress <- shiny::Progress$new()
-      progress$set(message = "Computing data", value = 0)
+      progress$set(message = paste0("Patient ", input$comboFirstPatient, ": "), value = 0)
       # Close the progress when this reactive exits (even if there's an error)
       on.exit(progress$close())
       
@@ -761,7 +898,7 @@ server <- function(input,output, session){
     input$comboSecondPatient
     input$vjSegmentSecond
     input$partOfSequence
-    input$absolute
+    input$absolute_edge_weight_filter
   },
   {
     print("recalculating second graph")
@@ -773,7 +910,7 @@ server <- function(input,output, session){
       
       # Create a Progress object
       progress <- shiny::Progress$new()
-      progress$set(message = "Computing data", value = 0)
+      progress$set(message = paste0("Patient ", input$comboSecondPatient, ": "), value = 0)
       # Close the progress when this reactive exits (even if there's an error)
       on.exit(progress$close())
       
