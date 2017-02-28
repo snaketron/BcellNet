@@ -352,32 +352,36 @@ server <- function(input,output, session){
   
   
   #save selected patient into global var
-  observeEvent(input$comboFirstPatient, {
+  observeEvent(input$comboFirstPatient, ignoreInit = TRUE, {
     selectFirstPatient <<- input$comboFirstPatient
     updateVJSegment()
   })
   
   
-  observeEvent(input$comboSecondPatient, {
+  observeEvent(input$comboSecondPatient, ignoreInit = TRUE, {
     selectSecondPatient <<- input$comboSecondPatient
     updateVJSegment()
   })
 
-  observeEvent(input$linkVJSegments,{
+  observeEvent(input$linkVJSegments, ignoreInit = TRUE, {
     vjSegmentLinked <<- input$linkVJSegments
   })
   
   
   # when selecting an element in first patient list, this element will be selected in combolist for
   # second patient too. 
-  observeEvent(input$vjSegmentFirst,{
+  observeEvent(input$vjSegmentFirst, ignoreInit = TRUE, {
+    print("recalculate first vj segment")
+    
     selectedItem <- input$vjSegmentFirst
     if(vjSegmentLinked && (selectedItem %in% choicesOfSecondPatient)){
       updateSelectInput(session, "vjSegmentSecond", selected = selectedItem)
     }
   })
 
-  observeEvent(input$vjSegmentSecond,{
+  observeEvent(input$vjSegmentSecond, ignoreInit = TRUE, {
+    print("recalculate second vj segment")
+    
     selectedItem <- input$vjSegmentSecond
     if(vjSegmentLinked && (selectedItem %in% choicesOfFirstPatient)){
       updateSelectInput(session, "vjSegmentFirst", selected = selectedItem)
@@ -408,14 +412,13 @@ server <- function(input,output, session){
     recalculate_edge_weight_filter()
     
     ################ Plot Graphs #####################
-    first_graph <- extract_first_graph()
-    
-    if(!is.null(first_graph)){
+    first_trimmed_graph <- extract_trimmed_first_graph()
+    if(!is.null(first_trimmed_graph)){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
         edge_threshold <- input$relative_edge_weight_filter / 100.0
-        patientOne<- plot_graph(first_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
+        patientOne<- plot_graph(first_trimmed_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
     }
@@ -424,13 +427,13 @@ server <- function(input,output, session){
       output$firstPatient <- renderVisNetwork({})
     }
     
-    second_graph <- extract_second_graph()
-    if(!is.null(second_graph)){
+    second_trimmed_graph <- extract_trimmed_second_graph()
+    if(!is.null(second_trimmed_graph)){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
       zweite<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
         edge_threshold <- input$relative_edge_weight_filter / 100.0
-        patientTwo<- plot_graph(second_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
+        patientTwo<- plot_graph(second_trimmed_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
     }
@@ -444,20 +447,20 @@ server <- function(input,output, session){
   # for plotting the degree distribution
   observeEvent(input$pdd, {
     recalculate_edge_weight_filter()
-    first_graph <- extract_first_graph()
-    if(!is.null(first_graph)){
+    first_trimmed_graph <- extract_trimmed_first_graph()
+    if(!is.null(first_trimmed_graph)){
       output$firstPatientDegreeDistribution <- renderPlot(
-        hist(degree(first_graph))
+        hist(degree(first_trimmed_graph))
       )
     }
     else {
       output$firstPatientDegreeDistribution <- renderPlot({})
     }
     
-    second_graph <- extract_second_graph()
-    if(!is.null(second_graph)){
+    second_trimmed_graph <- extract_trimmed_second_graph()
+    if(!is.null(second_trimmed_graph)){
       output$second_graph <- renderPlot(
-        hist(degree(graphSecond))
+        hist(degree(second_trimmed_graph))
       )
     }
     else {
@@ -468,20 +471,20 @@ server <- function(input,output, session){
   observeEvent(input$pcsd, {
     recalculate_edge_weight_filter()
     community_algorithm <- isolate(extract_community_algorithm())
-    first_graph <- isolate(extract_first_graph())
-    if(!is.null(first_graph)){
+    first_trimmed_graph <- extract_trimmed_first_graph()
+    if(!is.null(first_trimmed_graph)){
       output$firstPatientCommunitySizeDistribution <- renderPlot({
-        hist(sizes(community_algorithm(first_graph)))
+        hist(sizes(community_algorithm(first_trimmed_graph)))
       })
     }
     else {
       output$firstPatientCommunitySizeDistribution <- renderPlot({})
     }
     
-    second_graph <- extract_second_graph()
-    if(!is.null(second_graph)){
+    second_trimmed_graph <- extract_trimmed_second_graph()
+    if(!is.null(second_trimmed_graph)){
       output$secondPatientCommunitySizeDistribution <- renderPlot(
-        hist(sizes(community_algorithm(second_graph)))
+        hist(sizes(community_algorithm(second_trimmed_graph)))
       )
     }
     else {
@@ -530,7 +533,8 @@ server <- function(input,output, session){
 
   ############ change absolute value, which it changes relative value ##########
 
-  observeEvent(input$absolute_edge_weight_filter,{
+  observeEvent(input$absolute_edge_weight_filter, ignoreInit = TRUE, {
+    print("changed absolute edge weight filter")
         newAbsoluteValue<-input$absolute_edge_weight_filter
        # print(neuAbsoluteValue)
     if(!is.null(newAbsoluteValue)){
@@ -550,7 +554,9 @@ server <- function(input,output, session){
   
   
   ############ change relative value %, which it changes absolute value ##########
-  observeEvent(input$relative_edge_weight_filter,{
+  observeEvent(input$relative_edge_weight_filter, ignoreInit = TRUE, {
+    print("changed relative edge weight filter")
+
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute distance (",maxAbsolutValue,"):")
     
@@ -872,27 +878,30 @@ server <- function(input,output, session){
   }) 
   
   extract_max_edge_weight <- eventReactive({
-    input$comboSecondPatient
-    input$comboFirstPatient
-    input$vjSegmentSecond
-    input$vjSegmentFirst
-    input$partOfSequence
-    input$distance_metric_name
-    input$distance_metric_parameter
-    input$csvFile
-    input$linkVJSegments
+    # input$comboSecondPatient
+    # input$comboFirstPatient
+    # input$vjSegmentSecond
+    # input$vjSegmentFirst
+    # input$partOfSequence
+    # input$distance_metric_name
+    # input$distance_metric_parameter
+    # input$csvFile
+    # # input$linkVJSegments
+    extract_first_matrix
+    extract_second_matrix
   }, {
     print("recalculating max edge weight")
     first_matrix <- extract_first_matrix()
     second_matrix <- extract_second_matrix()
+    print(paste("first matrix: ", first_matrix))
     max_edge_weight <- max(first_matrix, second_matrix)
     
     return (max_edge_weight)
   })
   
   extract_first_multiply_counter <- eventReactive({
-    input$comboSecondPatient
-    input$vjSegmentSecond
+    input$comboFirstPatient
+    input$vjSegmentFirst
     input$partOfSequence
     input$csvFile
     input$linkVJSegments
@@ -1001,6 +1010,40 @@ server <- function(input,output, session){
     else {
       return (NULL)
     }
+  })
+
+  extract_trimmed_first_graph <- eventReactive({
+    input$comboSecondPatient
+    input$comboFirstPatient
+    input$vjSegmentSecond
+    input$vjSegmentFirst
+    input$partOfSequence
+    input$distance_metric_name
+    input$distance_metric_parameter
+    input$csvFile
+    input$linkVJSegments
+    input$relative_edge_weight_filter
+  }, {
+    first_graph <- extract_first_graph()
+
+    return (first_graph)
+  })
+
+  extract_trimmed_second_graph <- eventReactive({
+    input$comboSecondPatient
+    input$comboFirstPatient
+    input$vjSegmentSecond
+    input$vjSegmentFirst
+    input$partOfSequence
+    input$distance_metric_name
+    input$distance_metric_parameter
+    input$csvFile
+    input$linkVJSegments
+    input$relative_edge_weight_filter
+  }, {
+    second_graph <- extract_second_graph()
+
+    return (second_graph)
   })
 
 }
