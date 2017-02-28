@@ -960,6 +960,10 @@ server <- function(input,output, session){
     input$distance_metric_parameter
     input$csvFile
     input$linkVJSegments
+    input$min_weight
+    input$max_weight
+    extract_relative_min_weight
+    extract_relative_max_weight
   },
   {
     print("recalculating first graph")
@@ -984,7 +988,7 @@ server <- function(input,output, session){
         progress$set(value = value, detail = detail)
       }
       
-      return (buildIGraph(first_array, first_norm_matrix, first_mult_counter, thresholdMax = 1.0, thresholdMin = 0, update_progress))
+      return (buildIGraph(first_array, first_norm_matrix, first_mult_counter, thresholdMax = extract_relative_max_weight(), thresholdMin = extract_relative_min_weight(), update_progress))
     }
     else {
       return (NULL)
@@ -1002,6 +1006,10 @@ server <- function(input,output, session){
     input$distance_metric_parameter
     input$csvFile
     input$linkVJSegments
+    input$min_weight
+    input$max_weight
+    extract_relative_min_weight
+    extract_relative_max_weight
   },
   {
     print("recalculating second graph")
@@ -1026,11 +1034,27 @@ server <- function(input,output, session){
         progress$set(value = value, detail = detail)
       }
       
-      return (buildIGraph(second_array, second_matrix, second_mult_counter, thresholdMax = 1.0, thresholdMin = 0, update_progress = update_progress))
+      return (buildIGraph(second_array, second_matrix, second_mult_counter, thresholdMax = extract_relative_max_weight(), thresholdMin = extract_relative_min_weight(), update_progress = update_progress))
     }
     else {
       return (NULL)
     }
+  })
+  
+  
+  extract_relative_min_weight <- reactive({
+    relative_min_weight <- as.numeric(input$min_weight)/100
+    print(paste("recalculating relative min weight: ", relative_min_weight))
+    
+    return (relative_min_weight)
+  })
+  
+  
+  extract_relative_max_weight <- reactive({
+    relative_max_weight <- as.numeric(input$max_weight)/100
+    print(paste("recalculating relative max weight: ", relative_max_weight))
+    
+    return (relative_max_weight)
   })
 
   extract_trimmed_first_graph <- eventReactive({
@@ -1044,10 +1068,15 @@ server <- function(input,output, session){
     input$csvFile
     input$linkVJSegments
     input$relative_edge_weight_filter
+    input$min_weight
+    input$max_weight
+    extract_relative_min_weight
+    extract_relative_max_weight
   }, {
     first_graph <- extract_first_graph()
-
-    return (first_graph)
+    trimmed_first_graph <- trim_igraph_by_similarity(first_graph, input$relative_edge_weight_filter, 1)
+    
+    return (trimmed_first_graph)
   })
 
   extract_trimmed_second_graph <- eventReactive({
@@ -1061,10 +1090,15 @@ server <- function(input,output, session){
     input$csvFile
     input$linkVJSegments
     input$relative_edge_weight_filter
+    input$min_weight
+    input$max_weight
+    extract_relative_min_weight
+    extract_relative_max_weight
   }, {
     second_graph <- extract_second_graph()
+    trimmed_second_graph <- trim_igraph_by_similarity(second_graph, input$relative_edge_weight_filter, 1)
 
-    return (second_graph)
+    return (trimmed_second_graph)
   })
 
 }

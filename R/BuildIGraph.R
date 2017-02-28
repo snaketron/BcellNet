@@ -86,6 +86,13 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax,
 }
 
 
+trim_igraph_by_similarity <- function(untrimmed_igraph, min_similarity, max_similarity) {
+  trimmed_graph <- delete.edges(untrimmed_igraph, which(E(untrimmed_igraph)$weight < min_similarity || E(untrimmed_igraph)$weight > max_similarity))
+  
+  return (trimmed_graph)
+}
+
+
 
 
 
