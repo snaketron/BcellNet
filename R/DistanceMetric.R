@@ -91,7 +91,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE, update_progress
       }
       
       for(j in 1:i){
-        normalizedMatrixA[i,j] <- (matrixA[i,j] - minVal) / maxVal
+        normalizedMatrixA[i,j] <- 1 - ((matrixA[i,j] - minVal) / maxVal)
         normalizedMatrixA[j,i] <- normalizedMatrixA[i,j]
       }
     }
@@ -103,7 +103,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE, update_progress
       }
       
       for(j in 1:i){
-        normalizedMatrixB[i,j] <- (matrixB[i,j] - minVal) / maxVal
+        normalizedMatrixB[i,j] <- 1 - ((matrixB[i,j] - minVal) / maxVal)
         normalizedMatrixB[j,i] <- normalizedMatrixB[i,j]
       }
     }
@@ -115,7 +115,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE, update_progress
       }
       
       for(j in 1:i){
-        normalizedMatrixA[i,j] <- matrixA[i,j] / maxVal
+        normalizedMatrixA[i,j] <- 1 - (matrixA[i,j] / maxVal)
         normalizedMatrixA[j,i] <- normalizedMatrixA[i,j]
       }
     }
@@ -127,7 +127,7 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE, update_progress
       }
       
       for(j in 1:i){
-        normalizedMatrixB[i,j] <- matrixB[i,j] / maxVal
+        normalizedMatrixB[i,j] <- 1 - (matrixB[i,j] / maxVal)
         normalizedMatrixB[j,i] <- normalizedMatrixB[i,j]
       }
     }

@@ -66,11 +66,14 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax,
     if (is.function(update_progress)) {
       update_progress(value = i/array_length, detail=paste0("construct graph: ", i, " of ", array_length))
     }
-    #for(bcr2 in arrayBcr2){ 
-    for(j in i:length(arrayBcr)){ 
-      weight <- distanceMatrix[i,j]
-      if(weight >= thresholdMin && weight <= thresholdMax){
-        graph <- graph + edge(arrayBcr[i],arrayBcr[j], weight = weight)
+
+    if(i > 1){
+      for(j in 1:(i-1)){ 
+        weight <- distanceMatrix[i,j]
+        #cat("\n",weight, i ,j,"\n")
+        if(weight >= thresholdMin && weight <= thresholdMax){
+          graph <- graph + edge(arrayBcr[i],arrayBcr[j], weight = weight)
+        }
       }
     }
   }
