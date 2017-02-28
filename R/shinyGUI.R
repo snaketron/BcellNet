@@ -468,6 +468,7 @@ server <- function(input,output, session){
 
   
   # for plotting the degree distribution
+  #' @importFrom igraph degree
   observeEvent(input$pdd, {
     recalculate_edge_weight_filter()
     first_trimmed_graph <- extract_trimmed_first_graph()
@@ -491,6 +492,7 @@ server <- function(input,output, session){
     }
   })
   
+  #' @importFrom igraph sizes
   observeEvent(input$pcsd, {
     recalculate_edge_weight_filter()
     community_algorithm <- isolate(extract_community_algorithm())

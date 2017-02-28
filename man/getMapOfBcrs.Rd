@@ -6,6 +6,9 @@
 \usage{
 getMapOfBcrs(arrayBcr)
 }
+\arguments{
+\item{arrayBcr}{Array of bcrs, should contain only unique values}
+}
 \description{
 returns an environments contain the bcrs and its number of occurrence
 }

@@ -15,3 +15,6 @@ README.md
 
 ## Ignore test data
 ^data$
+
+## Ignore other custom files
+^.*\.idea$

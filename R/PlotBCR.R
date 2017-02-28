@@ -8,6 +8,7 @@ library(visNetwork)
 #' and highlight important communities detected. You can adjust the behaviour by applying different arguments to the parameters.
 #' 
 #' @param weighted_graph The base graph. Will be used as a base for the layout of the final graph.
+#' @param edge_threshold All edges lower than this are removed from the final graph.
 #' @param community_threshold Only communities with higher vertex count than this are highlighted.
 #' @param vertex_size Controls size of vertices.
 #' @param vertex_color Controls color of vertices.

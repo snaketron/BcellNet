@@ -12,6 +12,8 @@ plot_graph(weighted_graph, edge_threshold = 4, community_threshold = 1,
 \arguments{
 \item{weighted_graph}{The base graph. Will be used as a base for the layout of the final graph.}
 
+\item{edge_threshold}{All edges lower than this are removed from the final graph.}
+
 \item{community_threshold}{Only communities with higher vertex count than this are highlighted.}
 
 \item{vertex_size}{Controls size of vertices.}

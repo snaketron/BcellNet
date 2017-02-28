@@ -12,7 +12,6 @@ loadSource("DistanceMetric.R")
 loadSource("PlotBCR.R")
 
 
-
 #' @title calculate distances between given bcr arrays
 #' 
 #' @description \code{calculateDistances} returns the distance of the given arrays.
@@ -21,7 +20,8 @@ loadSource("PlotBCR.R")
 #' 
 #' @param arrayBcr Array of bcrs, should contain only unique values
 #' @param distanceMetric Possilble distance metrics ("LD" - Levenshtein Damerau (default), etc.)
-#' 
+#' @param parameter optional parameter depending on the selected distance metric
+#' @param nthread the number of threads used to calculate the distance. Caution when using too high number
 #' 
 #' @return Distance matrix between first and second BCR array determined by given distance. 
 #' 
@@ -47,9 +47,6 @@ calculateDistances <- function(arrayBcr, distanceMetric = "LD", parameter = -1, 
 }
 
 
-
-
-
 #' @importFrom igraph graph.empty
 #' @importFrom igraph vertex
 #' @importFrom igraph edge
@@ -60,9 +57,7 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax,
   #fill graph
   #add bcrs as verticies 
   for(i in 1:length(arrayBcr)){
-    
     graph <- graph + vertex(name = arrayBcr[i], multiplyCounter = multiplyCounter[[arrayBcr[i]]]) 
-    
   }
 
   # Connect them with their distance (add edges) 
@@ -92,24 +87,12 @@ trim_igraph_by_similarity <- function(untrimmed_igraph, min_similarity, max_simi
   return (trimmed_graph)
 }
 
-
-
-
-
-plotGraph <- function(iGraphData, label = "Patient X"){
-  
-  # plot graph
-  plot_graph(weighted_graph = iGraphData, edge_threshold=1, community_threshold=1, label = label)
-}
-
-
-
-
-
 ####################### helper calsses #######################
 
 
 #' returns an environments contain the bcrs and its number of occurrence
+#' 
+#' @param arrayBcr Array of bcrs, should contain only unique values
 getMapOfBcrs <- function(arrayBcr){
 
   if(is.null(arrayBcr) || identical(arrayBcr,character(0))) return(NULL)
@@ -117,7 +100,6 @@ getMapOfBcrs <- function(arrayBcr){
   envMultiplyCounter <- new.env()
   
   for(i in 1:length(arrayBcr)){
-    
     curBcr <- arrayBcr[i]
     
     if(is.null(envMultiplyCounter[[curBcr]])){
@@ -126,19 +108,14 @@ getMapOfBcrs <- function(arrayBcr){
       count <- envMultiplyCounter[[curBcr]]
       envMultiplyCounter[[curBcr]] <- (count + 1)
     }
-    
   }
   
   return(envMultiplyCounter)
 }
 
 
-
-
 #' @import utils
 csvToSubset <- function(path, header = TRUE, sep = "def"){
-  
-  
   if(sep == "def"){
     #detect separator (";", "," , "TAB")
     line <- readLines(path, n=1)
@@ -154,7 +131,6 @@ csvToSubset <- function(path, header = TRUE, sep = "def"){
 
   }
 
-
   print("read data. . . ")  
   data <- read.csv(path, header = header, sep = sep,stringsAsFactors=FALSE)
   print("data read!")
@@ -168,10 +144,7 @@ csvToSubset <- function(path, header = TRUE, sep = "def"){
 }
 
 
-
-
 csvToDistanceMatrices <- function(path, header = TRUE, sep = ";", distanceMetric = "LD"){
-  
   data <- read.csv(path, header = header, sep = sep)
   
   #split data into subset determine by patients
@@ -185,25 +158,5 @@ csvToDistanceMatrices <- function(path, header = TRUE, sep = ";", distanceMetric
     i <- i+1
   }
   
-  
   return(distances)
 }
-
-
-
-
-
-
-#' @importFrom igraph vcount
-#' @importFrom igraph ecount
-printInformation <- function(iGraphData){
-  
-  #print number of verticesd
-  cat("vertices:", vcount(iGraphData),"\n")
-  #print number of edges
-  cat("edges:", toString(ecount(iGraphData)),"\n")
-  
-}
-
-
-

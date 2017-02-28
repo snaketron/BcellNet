@@ -12,6 +12,10 @@ calculateDistances(arrayBcr, distanceMetric = "LD", parameter = -1,
 \item{arrayBcr}{Array of bcrs, should contain only unique values}
 
 \item{distanceMetric}{Possilble distance metrics ("LD" - Levenshtein Damerau (default), etc.)}
+
+\item{parameter}{optional parameter depending on the selected distance metric}
+
+\item{nthread}{the number of threads used to calculate the distance. Caution when using too high number}
 }
 \value{
 Distance matrix between first and second BCR array determined by given distance.
