@@ -8,8 +8,6 @@ loadSource <- function(sourceName) {
     source(file)
   }
 }
-loadSource("BuildIGraph.R")
-
 
 
 usePackage <- function(p) {
@@ -22,7 +20,6 @@ usePackage("shiny")
 usePackage("shinyjs")
 usePackage("shinyBS")
 usePackage("markdown")
-
 
 
 data <- NULL

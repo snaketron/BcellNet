@@ -1,6 +1,12 @@
 # Distance metrics
 
-library(stringdist)
+usePackage <- function(p) {
+  if (!is.element(p, installed.packages()[,1]))
+    install.packages(p, dependencies = TRUE, repos="http://cran.us.r-project.org")
+  require(p, character.only = TRUE)
+}
+
+usePackage("stringdist")
 
 
 #' @title calculate distance between two BCRs.

@@ -1,5 +1,11 @@
-library(igraph)
-library(visNetwork)
+usePackage <- function(p) {
+  if (!is.element(p, installed.packages()[,1]))
+    install.packages(p, dependencies = TRUE, repos="http://cran.us.r-project.org")
+  require(p, character.only = TRUE)
+}
+
+usePackage("igraph")
+usePackage("visNetwork")
 
 
 #' @title Plots graphs containing thresholded communties
