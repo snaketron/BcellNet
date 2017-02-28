@@ -189,7 +189,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 #' @description \code{all_communtiy_algorithms} provides an easy dictionary of all algorithms to determine the communities. This enables access to a human readable representation of the internal functions. "Foo Bar" could be called foo_bar internally, which is not something supposed to being displayed. It will returns a dictionary mapping from \code{string} to \code{string}. The \code{plot_graph} will handle the decryption of the functions internally.
 #' 
 #' @examples
-#' all_communtiy_algorithms()
+#' BcellNet::all_communtiy_algorithms()
 #' 
 #' @aliases all_communtiy_algorithms
 #' 
@@ -203,7 +203,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 #' @importFrom igraph cluster_walktrap
 #' 
 #' @export
-#'
+#' 
 #' @seealso \code{\link[igraph]{igraph}}
 #' @seealso \code{\link[igraph]{communities}}
 all_communtiy_algorithms <- function() {
@@ -226,8 +226,6 @@ all_communtiy_algorithms <- function() {
 #' @description \code{all_layout_algorithms} provides an easy dictionary of all algorithms to determine the layouts. This enables access to a human readable representation of the internal functions. "Foo Bar" could be called foo_bar internally, which is not something supposed to being displayed. It will returns a dictionary mapping from \code{string} to \code{string}. The \code{plot_graph} will handle the decryption of the functions internally.
 #' 
 #' @keywords all_layout_algorithms
-#' 
-#' @export
 #' 
 #' @seealso \code{\link[igraph]{igraph}}
 all_layout_algorithms <- function() {

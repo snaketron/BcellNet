@@ -93,7 +93,7 @@ fluidPage(
                                       selected = "whole sequence", multiple = FALSE, selectize = TRUE),
                           
                           selectInput(inputId = "distance_metric_name",label = "Select distance metric",
-                                      choices = row.names(BcellNet::all_distance_metrics()[1]),
+                                      choices = row.names(all_distance_metrics()[1]),
                                       multiple = FALSE),
                           
                           disabled(numericInput( inputId = "distance_metric_parameter",label = "Parameter",value = 1,min = 0, step = 0.1)),
@@ -127,7 +127,7 @@ fluidPage(
                           # comboBox
                           
                           selectInput(inputId = "select_community",label = NULL,
-                                      choices = names(BcellNet::all_communtiy_algorithms()),
+                                      choices = names(all_communtiy_algorithms()),
                                       selected = NULL, multiple = FALSE, selectize = TRUE),
                           
                           
@@ -155,7 +155,7 @@ fluidPage(
                           
                           
                           selectInput(inputId = "select_layout",label = NULL,
-                                      choices = names(BcellNet::all_layout_algorithms()),
+                                      choices = names(all_layout_algorithms()),
                                       selected = NULL, multiple = FALSE, selectize = TRUE),
                           
                           #Buttons

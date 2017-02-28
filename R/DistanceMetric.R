@@ -143,8 +143,11 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE, update_progress
 }
 
 
-#' Distance metric shortform mapping
-#' @export
+#' @title Distance metric shortform mapping
+#' 
+#' @description \code{all_distance_metrics} provides easy access to all distance metric algorithms.
+#' 
+#' @keywords all_distance_metrics
 all_distance_metrics <- function() {
   all_metrics <- data.frame(algorithm=character(), parameter_enabled=logical(),parameter_name=character(), stringsAsFactors = FALSE)
   all_metrics["Damerau-Levenshtein", ] <- c("dl", FALSE,"")

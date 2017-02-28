@@ -7,6 +7,7 @@
 all_distance_metrics()
 }
 \description{
-Distance metric shortform mapping
+\code{all_distance_metrics} provides easy access to all distance metric algorithms.
 }
+\keyword{all_distance_metrics}
 

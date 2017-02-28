@@ -348,7 +348,7 @@ function(input,output, session){
   # the same caluclation thus there is no need to recalculate it
   extract_community_algorithm <- reactive({
     print(paste("community algorithm selected:", input$select_community))
-    selected_community_algorithm <- BcellNet::all_communtiy_algorithms()[[input$select_community]]
+    selected_community_algorithm <- all_communtiy_algorithms()[[input$select_community]]
     
     return (selected_community_algorithm)
   })
@@ -359,7 +359,7 @@ function(input,output, session){
   # the same caluclation thus there is no need to recalculate it
   extract_layout_algorithm <- reactive({
     print(paste("layout algorithm selected:", input$select_layout))
-    selected_layout_algorithm <- BcellNet::all_layout_algorithms()[[input$select_layout]]
+    selected_layout_algorithm <- all_layout_algorithms()[[input$select_layout]]
     
     return (selected_layout_algorithm)
   })
