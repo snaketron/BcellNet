@@ -33,6 +33,10 @@ currentMetric <- "Damerau-Levenshtein"
 metricPara <- -1
 oldMetricPara <- -1
 
+absoluteDistance <- 5
+relativeDistance <- 95
+loopDistance <- TRUE
+
 # change this var if you know what you are doing
 # -1 means, the number of threads are setting by system
 nthread <- -1
@@ -112,8 +116,8 @@ ui <- fluidPage(
       
       #numericInput
       #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "relative_edge_weight_filter",label = "Relative distance in %",value =5,min = 0,max = 100, step = 1.00)),
-      div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute_edge_weight_filter", label = "Absolute distance (100):", 0)),
+      div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput( inputId = "relative_edge_weight_filter",label = "Similarity in %",value =95,min = 0,max = 100, step = 0.01)),
+      div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput(inputId = "absolute_edge_weight_filter", label = "Absolute distance (100):", 5), min = 0, max = 100),
       
       #Slider
       # sliderInput(inputId = "num", label = "Egde definition", 
@@ -330,10 +334,17 @@ server <- function(input,output, session){
     print("recalculating absolute edge weight filter")
     maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
-    procentValue <- ((input$relative_edge_weight_filter/100)*maxAbsolutValue)
+    procentValue <- (((100-input$relative_edge_weight_filter)/100)*maxAbsolutValue)
     absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
+    # if(absoluteValue != absoluteDistance){
+    if(loopDistance){
+      absoluteDistance <<- absoluteValue
+      loopDistance <<- FALSE
+      updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue, min = 0, max = maxAbsolutValue)
+    }else{
+      loopDistance <<- TRUE
+    }
+
   }
   
   #plot networt button action
@@ -349,7 +360,7 @@ server <- function(input,output, session){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
-        edge_threshold <- 1 - (input$relative_edge_weight_filter / 100.0)
+        edge_threshold <- input$relative_edge_weight_filter / 100.0
         patientOne<- plot_graph(first_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
@@ -364,7 +375,7 @@ server <- function(input,output, session){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
       zweite<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
-        edge_threshold <- 1 - (input$relative_edge_weight_filter / 100.0)
+        edge_threshold <- input$relative_edge_weight_filter / 100.0
         patientTwo<- plot_graph(second_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
@@ -466,13 +477,20 @@ server <- function(input,output, session){
   ############ change absolute value, which it changes relative value ##########
 
   observeEvent(input$absolute_edge_weight_filter,{
-        neuAbsoluteValue<-input$absolute_edge_weight_filter
+        newAbsoluteValue<-input$absolute_edge_weight_filter
        # print(neuAbsoluteValue)
-    if(!is.null(neuAbsoluteValue)){
+    if(!is.null(newAbsoluteValue)){
       maxAbsolutValue <<- extract_max_edge_weight()
-      calProcentValue<-(neuAbsoluteValue*100)/maxAbsolutValue
-      neuProcentValue<-format.default(calProcentValue,digits = 5)
-      updateNumericInput(session,"relative_edge_weight_filter",value = neuProcentValue, min=0, max = 100)
+      calProcentValue<-100 - ((newAbsoluteValue*100)/maxAbsolutValue)
+      newProcentValue<-format.default(calProcentValue,digits = 5)
+      # if(newProcentValue != relativeDistance){
+      if(loopDistance){
+        relativeDistance <<- newProcentValue
+        loopDistance <<- FALSE
+        updateNumericInput(session,"relative_edge_weight_filter",value = newProcentValue, min=0, max = 100)
+      }else{
+        loopDistance <<- TRUE
+      }
     }
   })
   
@@ -480,24 +498,33 @@ server <- function(input,output, session){
   ############ change relative value %, which it changes absolute value ##########
   observeEvent(input$relative_edge_weight_filter,{
     maxAbsolutValue <<- extract_max_edge_weight()
-    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    maxLabel<-paste("Absolute distance (",maxAbsolutValue,"):")
     
     if(!is.numeric(input$relative_edge_weight_filter)){
       
-      updateNumericInput(session,"relative_edge_weight_filter", min=0, max = 100)
+      #updateNumericInput(session,"relative_edge_weight_filter", min=0, max = 100)
       
-    }else if(input$relative_edge_weight_filter>0 && input$relative_edge_weight_filter<=100){
+    }else if(input$relative_edge_weight_filter>=0 && input$relative_edge_weight_filter<=100){
       
       userInput<-(input$relative_edge_weight_filter)
-      updateNumericInput(session,"relative_edge_weight_filter",value = userInput, min=0, max = 100)
-      procentValue<-(userInput/100)*maxAbsolutValue
+      #updateNumericInput(session,"relative_edge_weight_filter",value = userInput, min=0, max = 100)
+      procentValue<-((100-userInput)/100)*maxAbsolutValue
       absoluteValue<-as.integer(procentValue+0.5)
 
-      updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
+      if(loopDistance){
+        absoluteDistance <-- absoluteValue
+        loopDistance <<- FALSE
+        updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue, min = 0, max = maxAbsolutValue)
+      }else{
+        loopDistance <<- TRUE
+      }
       
     }else if(input$relative_edge_weight_filter>100){
+      relativeDistance <<- 100
       updateNumericInput(session,"relative_edge_weight_filter",value = 100, min=0, max = 100)
       
+    }else{
+      loopDistance <<- TRUE
     }
   })
 
