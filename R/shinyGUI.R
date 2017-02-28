@@ -31,9 +31,10 @@ selectSecondPatient <- NULL
 vjSegmentLinked <- TRUE
 choicesOfSecondPatient <- NULL
 choicesOfFirstPatient <- NULL
-currentMetric <- "Damerau-Levenshtein"
-metricPara <- -1
-oldMetricPara <- -1
+
+absoluteDistance <- 5
+relativeDistance <- 95
+loopDistance <- TRUE
 
 # change this var if you know what you are doing
 # -1 means, the number of threads are setting by system
@@ -107,21 +108,22 @@ ui <- fluidPage(
                   choices = c("whole sequence", "CDR3", "V sequence"),
                   selected = "whole sequence", multiple = FALSE, selectize = TRUE),
       
-      selectInput(inputId = "metric",label = "Select metric",
-                  choices = c("Levensthein", "Optimal string aligment", "Damerau-Levenshtein",
-                              "Longest common substring","Q-gram","Cosine of q-gram","Jaccard of q-gram","Jaro-Winker"),
-                  selected = "Damerau-Levenshtein", multiple = FALSE, selectize = TRUE),
+      selectInput(inputId = "distance_metric_name",label = "Select metric",
+                  choices = row.names(all_distance_metrics()[1]),
+                  multiple = FALSE),
       
-      disabled(numericInput( inputId = "metricParameter",label = "Parameter",value = 1,min = 0)),
+      disabled(numericInput( inputId = "distance_metric_parameter",label = "Parameter",value = 1,min = 0, step = 0.1)),
       
       
       tags$hr(),
       
 
 
-      #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput( inputId = "relative_edge_weight_filter",label = "Relative distance in %",value =5,min = 0,max = 100, step = 1.00)),
-      div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput(inputId = "absolute_edge_weight_filter", label = "Absolute distance (100):", 0)),
+    
+#numericInput
+div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput( inputId = "relative_edge_weight_filter",label = "Similarity in %",value =95,min = 0,max = 100, step = 0.01)),
+div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput(inputId = "absolute_edge_weight_filter", label = "Absolute distance (100):", 5), min = 0, max = 100),
+
       tags$br(),
       
       # HELP POPUP community
@@ -135,6 +137,7 @@ ui <- fluidPage(
                                                                                        a("Louvain", href = "http://igraph.org/r/doc/cluster_louvain.html",target="_blank"),", ",
                                                                                        a("Optimal", href = "http://igraph.org/r/doc/cluster_optimal.html",target="_blank"),", ",
                                                                                        a("Walktrap",href = "http://igraph.org/r/doc/cluster_walktrap.html",target="_blank")), trigger = "focus" ) ),
+
       
       
       # comboBox
@@ -364,54 +367,6 @@ server <- function(input,output, session){
     vjSegmentLinked <<- input$linkVJSegments
   })
   
-  observeEvent(input$metricPara,{
-    metricPara <<- input$metricPara
-    oldMetricPar <<- metricPara
-  })
-  
-  observeEvent(input$metric,{
-    
-    distanceMetric <- input$metric
-    
-    # Map distances to shortform
-    if(distanceMetric == "Levensthein"){
-      distanceMetric <- "lv"
-      shinyjs::disable("metricParameter")
-      metricPara <<- -1
-    }else if(distanceMetric == "Optimal string aligment"){
-      distanceMetric <- "osa"
-      shinyjs::disable("metricParameter")
-      metricPara <<- -1
-    }else if(distanceMetric == "Damerau-Levenshtein"){
-      distanceMetric <- "dl"
-      shinyjs::disable("metricParameter")
-      metricPara <<- -1
-    }else if(distanceMetric == "Longest common substring"){
-      distanceMetric <- "kcs"
-      shinyjs::disable("metricParameter")
-      metricPara <<- -1
-    }else if(distanceMetric == "Q-gram"){
-      distanceMetric <- "qgram"
-      shinyjs::enable("metricParameter")
-      metricPara <<- oldMetricPara
-    }else if(distanceMetric == "Cosine of q-gram"){
-      distanceMetric <- "cosine"
-      shinyjs::enable("metricParameter")
-      metricPara <<- oldMetricPara
-    }else if(distanceMetric == "Jaccard of q-gram"){
-      distanceMetric <- "jaccard"
-      shinyjs::enable("metricParameter")
-      metricPara <<- oldMetricPara
-    }else if(distanceMetric == "Jaro-Winker"){
-      distanceMetric <- "jw"
-      shinyjs::enable("metricParameter")
-      metricPara <<- oldMetricPara
-    }else{
-      print("ERROR")
-    }
-    
-    currentMetric <<- distanceMetric
-  })
   
   # when selecting an element in first patient list, this element will be selected in combolist for
   # second patient too. 
@@ -432,11 +387,18 @@ server <- function(input,output, session){
   recalculate_edge_weight_filter <- function() {
     print("recalculating absolute edge weight filter")
     maxAbsolutValue <<- extract_max_edge_weight()
-    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
-    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel)
-    procentValue <- ((input$relative_edge_weight_filter/100)*maxAbsolutValue)
+    maxLabel<-paste("Absolute distance (",maxAbsolutValue,"):")
+    procentValue <- (((100-input$relative_edge_weight_filter)/100)*maxAbsolutValue)
     absoluteValue<-as.integer(procentValue+0.5)
-    updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
+    # if(absoluteValue != absoluteDistance){
+    if(loopDistance){
+      absoluteDistance <<- absoluteValue
+      loopDistance <<- FALSE
+      updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue, min = 0, max = maxAbsolutValue)
+    }else{
+      loopDistance <<- TRUE
+    }
+
   }
   
   #plot networt button action
@@ -452,7 +414,7 @@ server <- function(input,output, session){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
-        edge_threshold <- 1 - (input$relative_edge_weight_filter / 100.0)
+        edge_threshold <- input$relative_edge_weight_filter / 100.0
         patientOne<- plot_graph(first_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
@@ -467,7 +429,7 @@ server <- function(input,output, session){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
       zweite<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
-        edge_threshold <- 1 - (input$relative_edge_weight_filter / 100.0)
+        edge_threshold <- input$relative_edge_weight_filter / 100.0
         patientTwo<- plot_graph(second_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
@@ -569,13 +531,20 @@ server <- function(input,output, session){
   ############ change absolute value, which it changes relative value ##########
 
   observeEvent(input$absolute_edge_weight_filter,{
-        neuAbsoluteValue<-input$absolute_edge_weight_filter
+        newAbsoluteValue<-input$absolute_edge_weight_filter
        # print(neuAbsoluteValue)
-    if(!is.null(neuAbsoluteValue)){
+    if(!is.null(newAbsoluteValue)){
       maxAbsolutValue <<- extract_max_edge_weight()
-      calProcentValue<-(neuAbsoluteValue*100)/maxAbsolutValue
-      neuProcentValue<-format.default(calProcentValue,digits = 5)
-      updateNumericInput(session,"relative_edge_weight_filter",value = neuProcentValue, min=0, max = 100)
+      calProcentValue<-100 - ((newAbsoluteValue*100)/maxAbsolutValue)
+      newProcentValue<-format.default(calProcentValue,digits = 5)
+      # if(newProcentValue != relativeDistance){
+      if(loopDistance){
+        relativeDistance <<- newProcentValue
+        loopDistance <<- FALSE
+        updateNumericInput(session,"relative_edge_weight_filter",value = newProcentValue, min=0, max = 100)
+      }else{
+        loopDistance <<- TRUE
+      }
     }
   })
   
@@ -583,24 +552,33 @@ server <- function(input,output, session){
   ############ change relative value %, which it changes absolute value ##########
   observeEvent(input$relative_edge_weight_filter,{
     maxAbsolutValue <<- extract_max_edge_weight()
-    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    maxLabel<-paste("Absolute distance (",maxAbsolutValue,"):")
     
     if(!is.numeric(input$relative_edge_weight_filter)){
       
-      updateNumericInput(session,"relative_edge_weight_filter", min=0, max = 100)
+      #updateNumericInput(session,"relative_edge_weight_filter", min=0, max = 100)
       
-    }else if(input$relative_edge_weight_filter>0 && input$relative_edge_weight_filter<=100){
+    }else if(input$relative_edge_weight_filter>=0 && input$relative_edge_weight_filter<=100){
       
       userInput<-(input$relative_edge_weight_filter)
-      updateNumericInput(session,"relative_edge_weight_filter",value = userInput, min=0, max = 100)
-      procentValue<-(userInput/100)*maxAbsolutValue
+      #updateNumericInput(session,"relative_edge_weight_filter",value = userInput, min=0, max = 100)
+      procentValue<-((100-userInput)/100)*maxAbsolutValue
       absoluteValue<-as.integer(procentValue+0.5)
 
-      updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue)
+      if(loopDistance){
+        absoluteDistance <-- absoluteValue
+        loopDistance <<- FALSE
+        updateNumericInput(session,"absolute_edge_weight_filter",label=maxLabel,value =absoluteValue, min = 0, max = maxAbsolutValue)
+      }else{
+        loopDistance <<- TRUE
+      }
       
     }else if(input$relative_edge_weight_filter>100){
+      relativeDistance <<- 100
       updateNumericInput(session,"relative_edge_weight_filter",value = 100, min=0, max = 100)
       
+    }else{
+      loopDistance <<- TRUE
     }
   })
 
@@ -626,11 +604,71 @@ server <- function(input,output, session){
     return (selected_layout_algorithm)
   })
   
+  
+  # this is a special handler to rerender the GUI interactivly
+  observeEvent(input$distance_metric_name, {
+    distance_metric_opts <- all_distance_metrics()[input$distance_metric_name, ]
+    distance_metric_parameter_enabled <- distance_metric_opts$parameter_enabled
+    if (distance_metric_parameter_enabled) {
+      shinyjs::enable("distance_metric_parameter")
+    }
+    else {
+      shinyjs::disable("distance_metric_parameter")
+    }
+  })
+  
+  
+  observeEvent(input$distance_metric_parameter, {
+    
+    if(input$distance_metric_parameter < 0){
+      updateNumericInput(session, "distance_metric_parameter", value = 0)
+    }
+    
+  })
+  
+  
+  extract_distance_metric <- eventReactive({
+    input$distance_metric_name
+  }, {
+    print("recalculating distance metric")
+    
+    # input$distance_metric_name is a name
+    # but the algorithms use the short name which is saved in the DistanceMetric.R
+    distance_metric_opts <- all_distance_metrics()[input$distance_metric_name, ]
+    distance_metric <- distance_metric_opts$algorithm
+    distance_metric_parameter_enabled <- distance_metric_opts$parameter_enabled
+    if (distance_metric_parameter_enabled) {
+      shinyjs::enable("distance_metric_parameter")
+    }
+    else {
+      shinyjs::disable("distance_metric_parameter")
+    }
+    
+    return (distance_metric)
+  })
+  
+  extract_distance_metric_parameter <- eventReactive({
+    input$distance_metric_name
+    input$distance_metric_parameter
+  }, {
+    print("recalculating distance metric parameter")
+    
+    distance_metric_opts <- all_distance_metrics()[input$distance_metric_name, ]
+    distance_metric_parameter_enabled <- distance_metric_opts$parameter_enabled
+    if (distance_metric_parameter_enabled) {
+      return (input$distance_metric_parameter)
+    }
+    else {
+      return (-1)
+    }
+  })
+  
   extract_first_array <- eventReactive({
     input$comboFirstPatient
     input$vjSegmentFirst
     input$partOfSequence
     input$csvFile
+    input$linkVJSegments
   }, {
     print("recalculating first array")
     
@@ -661,6 +699,7 @@ server <- function(input,output, session){
     input$vjSegmentSecond
     input$partOfSequence
     input$csvFile
+    input$linkVJSegments
   }, {
     print("recalculating second array")
     
@@ -692,13 +731,18 @@ server <- function(input,output, session){
     input$vjSegmentFirst
     input$partOfSequence
     input$csvFile
+    input$distance_metric_name
+    input$distance_metric_parameter
+    input$linkVJSegments
   },{
     print("recalculating first matrix")
-    first_array <- extract_first_array()
     
+    first_array <- extract_first_array()
+    distance_metric <- extract_distance_metric()
+    distance_metric_parameter <- extract_distance_metric_parameter()
 
     withProgress(message = paste0("Patient ", input$comboFirstPatient, ": calculating matrix"), value = 0, {
-      matrixFirst <- calculateDistances(first_array, currentMetric, metricPara, nthread = nthread)
+      matrixFirst <- calculateDistances(first_array, distance_metric, distance_metric_parameter, nthread = nthread)
       
       incProgress(1)
     })
@@ -712,13 +756,17 @@ server <- function(input,output, session){
     input$vjSegmentSecond
     input$partOfSequence
     input$csvFile
+    input$distance_metric_name
+    input$distance_metric_parameter
+    input$linkVJSegments
   }, {
     print("recalculating second matrix")
     second_array <- extract_second_array()
-    
+    distance_metric <- extract_distance_metric()
+    distance_metric_parameter <- extract_distance_metric_parameter()
 
     withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating matrix"), value = 0, {
-      second_matrix <- calculateDistances(second_array, currentMetric, metricPara)
+      second_matrix <- calculateDistances(second_array, distance_metric, distance_metric_parameter, nthread = nthread)
       
       incProgress(1)
     })
@@ -729,10 +777,15 @@ server <- function(input,output, session){
   
   
   extract_normalized_first_matrix <- eventReactive({
+    input$comboSecondPatient
     input$comboFirstPatient
+    input$vjSegmentSecond
     input$vjSegmentFirst
     input$partOfSequence
+    input$distance_metric_name
+    input$distance_metric_parameter
     input$csvFile
+    input$linkVJSegments
   }, {
     print("Normalizing first matrix")
     
@@ -773,9 +826,14 @@ server <- function(input,output, session){
   
   extract_normalized_second_matrix <- eventReactive({
     input$comboSecondPatient
+    input$comboFirstPatient
     input$vjSegmentSecond
+    input$vjSegmentFirst
     input$partOfSequence
+    input$distance_metric_name
+    input$distance_metric_parameter
     input$csvFile
+    input$linkVJSegments
   }, {
     print("Normalizing second matrix")
     
@@ -814,12 +872,15 @@ server <- function(input,output, session){
   }) 
   
   extract_max_edge_weight <- eventReactive({
-    input$comboFirstPatient
     input$comboSecondPatient
-    input$vjSegmentFirst
+    input$comboFirstPatient
     input$vjSegmentSecond
+    input$vjSegmentFirst
     input$partOfSequence
+    input$distance_metric_name
+    input$distance_metric_parameter
     input$csvFile
+    input$linkVJSegments
   }, {
     print("recalculating max edge weight")
     first_matrix <- extract_first_matrix()
@@ -830,10 +891,11 @@ server <- function(input,output, session){
   })
   
   extract_first_multiply_counter <- eventReactive({
-    input$comboFirstPatient
-    input$vjSegmentFirst
+    input$comboSecondPatient
+    input$vjSegmentSecond
     input$partOfSequence
     input$csvFile
+    input$linkVJSegments
   }, {
     print("recalculating first multiplier counter")
     
@@ -848,6 +910,7 @@ server <- function(input,output, session){
     input$vjSegmentSecond
     input$partOfSequence
     input$csvFile
+    input$linkVJSegments
   }, {
     print("recalculating second multiplier counter")
     
@@ -858,10 +921,15 @@ server <- function(input,output, session){
   })
   
   extract_first_graph <- eventReactive({
+    input$comboSecondPatient
     input$comboFirstPatient
+    input$vjSegmentSecond
     input$vjSegmentFirst
     input$partOfSequence
-    input$absolute_edge_weight_filter
+    input$distance_metric_name
+    input$distance_metric_parameter
+    input$csvFile
+    input$linkVJSegments
   },
   {
     print("recalculating first graph")
@@ -896,9 +964,14 @@ server <- function(input,output, session){
   
   extract_second_graph <- eventReactive({
     input$comboSecondPatient
+    input$comboFirstPatient
     input$vjSegmentSecond
+    input$vjSegmentFirst
     input$partOfSequence
-    input$absolute_edge_weight_filter
+    input$distance_metric_name
+    input$distance_metric_parameter
+    input$csvFile
+    input$linkVJSegments
   },
   {
     print("recalculating second graph")
