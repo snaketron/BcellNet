@@ -8,7 +8,6 @@ library(visNetwork)
 #' and highlight important communities detected. You can adjust the behaviour by applying different arguments to the parameters.
 #' 
 #' @param weighted_graph The base graph. Will be used as a base for the layout of the final graph.
-#' @param edge_threshold All edges lower than this are removed from the final graph.
 #' @param community_threshold Only communities with higher vertex count than this are highlighted.
 #' @param vertex_size Controls size of vertices.
 #' @param vertex_color Controls color of vertices.
@@ -75,10 +74,10 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   
   # to plot only the edges with at least of threshold level
   # we need to copy the graph and delete the edges from it
-  trimmed_network <- delete.edges(weighted_graph, which(E(weighted_graph)$weight < edge_threshold))
+  # trimmed_network <- delete.edges(weighted_graph, which(E(weighted_graph)$weight < edge_threshold))
   
   # detect communities
-  communities <- community_algorithm(trimmed_network)
+  communities <- community_algorithm(weighted_graph)
   
   # Get community membership
   memb <- membership(communities)
@@ -139,12 +138,6 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   
   return (vn)
 }
-
-# igraph will colorize communities provided by the col=X statement
-# if given plot(communities, network, ...) form and not just plot(network, ...)
-# plot(communities, trimmed_network, mark.groups=mark_groups, vertex.size=vertex_size, edge.width=edge_width,
-#      vertex.label=NA, edge.color=edge_color,layout=network_layout, col=community_colors,
-#      main=label, edge.label=NA) 
 
 .normalize_numeric_inpuc <- function(numeric, default) {
   if (!is.numeric(numeric)) {
