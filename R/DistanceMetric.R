@@ -136,16 +136,18 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE, update_progress
   return(list(normalizedMatrixA,normalizedMatrixB))
 }
 
+
+#'Distance metric shortform mapping
 all_distance_metrics <- function() {
-  all_metrics <- data.frame(algorithm=character(), parameter_enabled=logical(), stringsAsFactors = FALSE)
-  all_metrics["Damerau-Levenshtein", ] <- c("dl", FALSE)
-  all_metrics["Levenshtein", ] <- c("lv", FALSE)
-  all_metrics["Optimal string aligment", ] <- c("osa", FALSE)
-  all_metrics["Longest common substring", ] <- c("kcs", FALSE)
-  all_metrics["Q-gram", ] <- c("qgram", TRUE)
-  all_metrics["Cosine of q-gram", ] <- c("cosine", TRUE)
-  all_metrics["Jaccard of q-gram", ] <- c("jaccard", TRUE)
-  all_metrics["Jaro-Winker", ] <- c("jw", TRUE)
+  all_metrics <- data.frame(algorithm=character(), parameter_enabled=logical(),parameter_name=character(), stringsAsFactors = FALSE)
+  all_metrics["Damerau-Levenshtein", ] <- c("dl", FALSE,"")
+  all_metrics["Levenshtein", ] <- c("lv", FALSE,"")
+  all_metrics["Optimal string aligment", ] <- c("osa", FALSE,"")
+  all_metrics["Longest common substring", ] <- c("kcs", FALSE,"")
+  all_metrics["Q-gram", ] <- c("qgram", TRUE,"q")
+  all_metrics["Cosine of q-gram", ] <- c("cosine", TRUE,"q")
+  all_metrics["Jaccard of q-gram", ] <- c("jaccard", TRUE,"q")
+  all_metrics["Jaro-Winker", ] <- c("jw", TRUE,"p")
   
   return (all_metrics)
 }
