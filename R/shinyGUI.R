@@ -29,9 +29,6 @@ selectSecondPatient <- NULL
 vjSegmentLinked <- TRUE
 choicesOfSecondPatient <- NULL
 choicesOfFirstPatient <- NULL
-currentMetric <- "Damerau-Levenshtein"
-metricPara <- -1
-oldMetricPara <- -1
 
 # change this var if you know what you are doing
 # -1 means, the number of threads are setting by system
@@ -100,12 +97,11 @@ ui <- fluidPage(
                   choices = c("whole sequence", "CDR3", "V sequence"),
                   selected = "whole sequence", multiple = FALSE, selectize = TRUE),
       
-      selectInput(inputId = "metric",label = "Select metric",
-                  choices = c("Levensthein", "Optimal string aligment", "Damerau-Levenshtein",
-                              "Longest common substring","Q-gram","Cosine of q-gram","Jaccard of q-gram","Jaro-Winker"),
-                  selected = "Damerau-Levenshtein", multiple = FALSE, selectize = TRUE),
+      selectInput(inputId = "distance_metric_name",label = "Select metric",
+                  choices = row.names(all_distance_metrics()[1]),
+                  multiple = FALSE),
       
-      disabled(numericInput( inputId = "metricParameter",label = "Parameter",value = 1,min = 0)),
+      disabled(numericInput( inputId = "distance_metric_parameter",label = "Parameter",value = 1,min = 0)),
       
       
       tags$hr(),
@@ -261,54 +257,6 @@ server <- function(input,output, session){
     vjSegmentLinked <<- input$linkVJSegments
   })
   
-  observeEvent(input$metricPara,{
-    metricPara <<- input$metricPara
-    oldMetricPar <<- metricPara
-  })
-  
-  observeEvent(input$metric,{
-    
-    distanceMetric <- input$metric
-    
-    # Map distances to shortform
-    if(distanceMetric == "Levensthein"){
-      distanceMetric <- "lv"
-      shinyjs::disable("metricParameter")
-      metricPara <<- -1
-    }else if(distanceMetric == "Optimal string aligment"){
-      distanceMetric <- "osa"
-      shinyjs::disable("metricParameter")
-      metricPara <<- -1
-    }else if(distanceMetric == "Damerau-Levenshtein"){
-      distanceMetric <- "dl"
-      shinyjs::disable("metricParameter")
-      metricPara <<- -1
-    }else if(distanceMetric == "Longest common substring"){
-      distanceMetric <- "kcs"
-      shinyjs::disable("metricParameter")
-      metricPara <<- -1
-    }else if(distanceMetric == "Q-gram"){
-      distanceMetric <- "qgram"
-      shinyjs::enable("metricParameter")
-      metricPara <<- oldMetricPara
-    }else if(distanceMetric == "Cosine of q-gram"){
-      distanceMetric <- "cosine"
-      shinyjs::enable("metricParameter")
-      metricPara <<- oldMetricPara
-    }else if(distanceMetric == "Jaccard of q-gram"){
-      distanceMetric <- "jaccard"
-      shinyjs::enable("metricParameter")
-      metricPara <<- oldMetricPara
-    }else if(distanceMetric == "Jaro-Winker"){
-      distanceMetric <- "jw"
-      shinyjs::enable("metricParameter")
-      metricPara <<- oldMetricPara
-    }else{
-      print("ERROR")
-    }
-    
-    currentMetric <<- distanceMetric
-  })
   
   # when selecting an element in first patient list, this element will be selected in combolist for
   # second patient too. 
@@ -523,6 +471,56 @@ server <- function(input,output, session){
     return (selected_layout_algorithm)
   })
   
+  
+  # this is a special handler to rerender the GUI interactivly
+  observeEvent(input$distance_metric_name, {
+    distance_metric_opts <- all_distance_metrics()[input$distance_metric_name, ]
+    distance_metric_parameter_enabled <- distance_metric_opts$parameter_enabled
+    if (distance_metric_parameter_enabled) {
+      shinyjs::enable("distance_metric_parameter")
+    }
+    else {
+      shinyjs::disable("distance_metric_parameter")
+    }
+  })
+  
+  
+  extract_distance_metric <- eventReactive({
+    input$distance_metric_name
+  }, {
+    print("recalculating distance metric")
+    
+    # input$distance_metric_name is a name
+    # but the algorithms use the short name which is saved in the DistanceMetric.R
+    distance_metric_opts <- all_distance_metrics()[input$distance_metric_name, ]
+    distance_metric <- distance_metric_opts$algorithm
+    distance_metric_parameter_enabled <- distance_metric_opts$parameter_enabled
+    if (distance_metric_parameter_enabled) {
+      shinyjs::enable("distance_metric_parameter")
+    }
+    else {
+      shinyjs::disable("distance_metric_parameter")
+    }
+    
+    return (distance_metric)
+  })
+  
+  extract_distance_metric_parameter <- eventReactive({
+    input$distance_metric_name
+    input$distance_metric_parameter
+  }, {
+    print("recalculating distance metric parameter")
+    
+    distance_metric_opts <- all_distance_metrics()[input$distance_metric_name, ]
+    distance_metric_parameter_enabled <- distance_metric_opts$parameter_enabled
+    if (distance_metric_parameter_enabled) {
+      return (input$distance_metric_parameter)
+    }
+    else {
+      return (-1)
+    }
+  })
+  
   extract_first_array <- eventReactive({
     input$comboFirstPatient
     input$vjSegmentFirst
@@ -589,13 +587,17 @@ server <- function(input,output, session){
     input$vjSegmentFirst
     input$partOfSequence
     input$csvFile
+    input$distance_metric_name
+    input$distance_metric_parameter
   },{
     print("recalculating first matrix")
-    first_array <- extract_first_array()
     
+    first_array <- extract_first_array()
+    distance_metric <- extract_distance_metric()
+    distance_metric_parameter <- extract_distance_metric_parameter()
 
     withProgress(message = paste0("Patient ", input$comboFirstPatient, ": calculating matrix"), value = 0, {
-      matrixFirst <- calculateDistances(first_array, currentMetric, metricPara, nthread = nthread)
+      matrixFirst <- calculateDistances(first_array, distance_metric, distance_metric_parameter, nthread = nthread)
       
       incProgress(1)
     })
@@ -609,13 +611,16 @@ server <- function(input,output, session){
     input$vjSegmentSecond
     input$partOfSequence
     input$csvFile
+    input$distance_metric_name
+    input$distance_metric_parameter
   }, {
     print("recalculating second matrix")
     second_array <- extract_second_array()
-    
+    distance_metric <- extract_distance_metric()
+    distance_metric_parameter <- extract_distance_metric_parameter()
 
     withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating matrix"), value = 0, {
-      second_matrix <- calculateDistances(second_array, currentMetric, metricPara)
+      second_matrix <- calculateDistances(second_array, distance_metric, distance_metric_parameter, nthread = nthread)
       
       incProgress(1)
     })
@@ -630,6 +635,8 @@ server <- function(input,output, session){
     input$vjSegmentFirst
     input$partOfSequence
     input$csvFile
+    input$distance_metric_name
+    input$distance_metric_parameter
   }, {
     print("Normalizing first matrix")
     
@@ -673,6 +680,8 @@ server <- function(input,output, session){
     input$vjSegmentSecond
     input$partOfSequence
     input$csvFile
+    input$distance_metric_name
+    input$distance_metric_parameter
   }, {
     print("Normalizing second matrix")
     
@@ -717,6 +726,8 @@ server <- function(input,output, session){
     input$vjSegmentSecond
     input$partOfSequence
     input$csvFile
+    input$distance_metric_name
+    input$distance_metric_parameter
   }, {
     print("recalculating max edge weight")
     first_matrix <- extract_first_matrix()
@@ -759,6 +770,8 @@ server <- function(input,output, session){
     input$vjSegmentFirst
     input$partOfSequence
     input$absolute_edge_weight_filter
+    input$distance_metric_name
+    input$distance_metric_parameter
   },
   {
     print("recalculating first graph")
@@ -796,6 +809,8 @@ server <- function(input,output, session){
     input$vjSegmentSecond
     input$partOfSequence
     input$absolute_edge_weight_filter
+    input$distance_metric_name
+    input$distance_metric_parameter
   },
   {
     print("recalculating second graph")
