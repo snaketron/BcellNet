@@ -238,8 +238,8 @@ div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput(
   ) #end of sidebarLayout
   
 ),# end of Plot tab
-navbarMenu("Advance Setting",
-           tabPanel("Setting",
+navbarMenu("Advanced settings",
+           tabPanel("Settings",
            fluidRow(
              column(1, 
                     tags$img(height=70, width=70, src="logo.png", style="margin-top: 20px; ")
@@ -255,25 +255,25 @@ navbarMenu("Advance Setting",
                tags$span("Threads",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
                          popify(bsButton("help_threads", label = "", icon = icon("question"), 
                                          style="info", size = "extra-small"),'Threads ', 
-                                content = paste0("More details for community structures:<br> "  ),trigger = "focus")),
+                                content = paste0("The default value is coming from \"sd_num_thrad\".<br> Change this parameter when you want to use another number of threads. <br>This parameter effects time performing by calculation, but can crash your program. <br>Use this parameter if you know what you are doing. "),trigger = "focus")),
                                 
                textInput("threads",label = NULL,value=getOption("sd_num_thread") ,width = "90%"),
                
                tags$span("Max weight per parameter",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
                          popify(bsButton("help_Max", label = "", icon = icon("question"), 
-                                         style="info", size = "extra-small"),'Max weight per Parameter ', 
-                                content = paste0("More details for community structures:<br> "  ),trigger = "focus")),
+                                         style="info", size = "extra-small"),'Maximum similarity pre parameter ', 
+                                content = paste0("This parameter has effect to weight calculation.<br> It can increase calculation performance, but you will loose information. <br>Set this parameter, when you want to cut your maximum similarity at the beginnig. <br>For example, you only want b-cells, which have a maximum similarity of 95%, set it to 95. <br>"  ),trigger = "focus")),
                
                textInput("max_weight",label = NULL,value=100,width = "90%"),
                
                tags$span("Min weight per parameter",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
                          popify(bsButton("help_Min", label = "", icon = icon("question"), 
-                                         style="info", size = "extra-small"),'Min weight per Parameter ', 
-                                content = paste0("More details for community structures:<br> "  ),trigger = "focus")),
+                                         style="info", size = "extra-small"),'Minimum similarity pre parameter ', 
+                                content = paste0("This parameter has effect to weight calculation. <br>It can increase calculation performance, but you will loose information.<br> Set this parameter, when you want to cut your minimum similarity at the beginnig.<br> For example, you only want b-cells, which have a mimum similarity of 50%, set it to 50.<br> "  ),trigger = "focus")),
                
                
                textInput("min_weight",label=NULL,value=0,width = "90%"),
-               textInput("upload","Max Upload Size",value=1,width = "90%")
+               textInput("upload","Max Upload Size",value="1GB",width = "90%")
                
              ),
              mainPanel(
