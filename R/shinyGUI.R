@@ -105,7 +105,7 @@ ui <- fluidPage(
                   choices = row.names(all_distance_metrics()[1]),
                   multiple = FALSE),
       
-      disabled(numericInput( inputId = "distance_metric_parameter",label = "Parameter",value = 1,min = 0)),
+      disabled(numericInput( inputId = "distance_metric_parameter",label = "Parameter",value = 1,min = 0, step = 0.1)),
       
       
       tags$hr(),
@@ -285,7 +285,7 @@ server <- function(input,output, session){
   recalculate_edge_weight_filter <- function() {
     print("recalculating absolute edge weight filter")
     maxAbsolutValue <<- extract_max_edge_weight()
-    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    maxLabel<-paste("Absolute distance (",maxAbsolutValue,"):")
     procentValue <- (((100-input$relative_edge_weight_filter)/100)*maxAbsolutValue)
     absoluteValue<-as.integer(procentValue+0.5)
     # if(absoluteValue != absoluteDistance){
@@ -515,6 +515,15 @@ server <- function(input,output, session){
     else {
       shinyjs::disable("distance_metric_parameter")
     }
+  })
+  
+  
+  observeEvent(input$distance_metric_parameter, {
+    
+    if(input$distance_metric_parameter < 0){
+      updateNumericInput(session, "distance_metric_parameter", value = 0)
+    }
+    
   })
   
   
