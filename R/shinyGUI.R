@@ -297,10 +297,7 @@ navbarMenu("Advance Setting",
                     tags$p ("A bioinformatic tool for biologists to visualize B-Cell correlation. License: MIT + file LICENSE"),
                     tags$h3 ("For more Information:",style = "color:#469CF1;"),
                     tags$p("Simo Kitanovski <simo.kitanovski@uni-due.de>"),
-                    tags$p ("Github Link ",
-                      a(href="https://github.com/snaketron/BcellNet",
-                        "BcellNet")
-                    )
+                    tags$p ("Github Link: ",a(href="https://github.com/snaketron/BcellNet","BcellNet")   )
              )
            )
                     
