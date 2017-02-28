@@ -9,7 +9,6 @@ loadSource <- function(sourceName) {
   }
 }
 
-
 usePackage <- function(p) {
   if (!is.element(p, installed.packages()[,1]))
     install.packages(p, dependencies = TRUE, repos="http://cran.us.r-project.org")
@@ -20,6 +19,10 @@ usePackage("shiny")
 usePackage("shinyjs")
 usePackage("shinyBS")
 usePackage("markdown")
+
+loadSource("DistanceMetric.R")
+loadSource("BuildIGraph.R")
+loadSource("PlotBCR.R")
 
 
 data <- NULL
@@ -43,7 +46,7 @@ nthread <- -1
 
 #' @import shiny
 #' @importFrom shinyjs enable
-#' @importFrom shinyjs disabled
+#' @importFrom shinyjs disable
 function(input,output, session){
   
   

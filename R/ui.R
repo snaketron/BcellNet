@@ -1,3 +1,28 @@
+# setwd("R") is done by shiny since the server file is in here
+loadSource <- function(sourceName) {
+  pattern <- paste("^", sourceName, "$", sep = "")
+  files <<- list.files(pattern=pattern, recursive = TRUE)
+  for (file in files) {
+    source(file)
+  }
+}
+
+usePackage <- function(p) {
+  if (!is.element(p, installed.packages()[,1]))
+    install.packages(p, dependencies = TRUE, repos="http://cran.us.r-project.org")
+  require(p, character.only = TRUE)
+}
+
+usePackage("shiny")
+usePackage("shinyjs")
+usePackage("shinyBS")
+usePackage("markdown")
+
+loadSource("DistanceMetric.R")
+loadSource("BuildIGraph.R")
+loadSource("PlotBCR.R")
+
+
 
 #UI
 fluidPage(
