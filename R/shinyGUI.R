@@ -19,7 +19,9 @@ usePackage <- function(p) {
 
 usePackage("shiny")
 usePackage("shinyjs")
-#usePackage("shinyBS")
+usePackage("shinyBS")
+usePackage("markdown")
+
 
 
 data <- NULL
@@ -47,31 +49,36 @@ ui <- fluidPage(
   # p(style = "font-family:Times New Roman","See other apps in the"),
   # a("Shiny Showcase",href = "http://www.rstudio.com/products/shiny/shiny-user-showcase/"),
   #html code with tags, you can also write h1("test")
-  fluidRow(
-    column(1, 
-           tags$img(height=70, width=70, src="logo.png", style="margin-top: 20px; ")
-    ),
-    column(11, 
-           tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
-           tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;")
-    )
-  ),
+  
   
   # tags$br(), line break 
-  tags$hr(),
-  
+
   # here we write *Input() & *Output() functions
   
   #Create *input functions
   
   #comboBoxes
-  sidebarLayout(
-    sidebarPanel (
-      #select File
-      fileInput('csvFile', 'Choose CSV File',
+  navbarPage("BCellNet",
+    tabPanel("Plot",
+             fluidRow(
+               column(1, 
+                      tags$img(height=70, width=70, src="logo.png", style="margin-top: 20px; ")
+               ),
+               column(11, 
+                      tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
+                      tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;")
+               )
+             ),
+      sidebarLayout(
+         sidebarPanel (
+        #select File
+          fileInput('csvFile', 'Choose CSV File', 
                 accept=c('text/csv', 
                          'text/comma-separated-values,text/plain', 
                          '.csv')),
+      
+      
+      
       #ende fileInput
       
       #checkBOx
@@ -110,27 +117,71 @@ ui <- fluidPage(
       
       tags$hr(),
       
-      #numericInput
-      #numericInput
-      div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput( inputId = "relative_edge_weight_filter",label = "Similarity in %",value =95,min = 0,max = 100, step = 0.01)),
-      div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput(inputId = "absolute_edge_weight_filter", label = "Absolute distance (100):", 5), min = 0, max = 100),
+
+
+    
+#numericInput
+div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput( inputId = "relative_edge_weight_filter",label = "Similarity in %",value =95,min = 0,max = 100, step = 0.01)),
+div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput(inputId = "absolute_edge_weight_filter", label = "Absolute distance (100):", 5), min = 0, max = 100),
+
+      tags$br(),
       
-      #Slider
-      # sliderInput(inputId = "num", label = "Egde definition", 
-      #              value = 0.3, min = 0, max = 1, step= 0.1),
+      # HELP POPUP community
+     
+      tags$span("Community Selection",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
+                popify(bsButton("q1", label = "", icon = icon("question"), 
+                                style="info", size = "extra-small"),'Help for Cluster ', 
+                       content = paste0("More details for community structures:<br> ", a("Fast Greedy", href = "http://igraph.org/r/doc/cluster_fast_greedy.html", target="_blank"),", ",
+                                                                                       a("Label Prop",  href = "http://igraph.org/r/doc/cluster_label_prop.html",  target="_blank"),", ",
+                                                                                       a("Leading Eigen", href = "http://igraph.org/r/doc/cluster_leading_eigen.html", target="_blank"),", ",
+                                                                                       a("Louvain", href = "http://igraph.org/r/doc/cluster_louvain.html",target="_blank"),", ",
+                                                                                       a("Optimal", href = "http://igraph.org/r/doc/cluster_optimal.html",target="_blank"),", ",
+                                                                                       a("Walktrap",href = "http://igraph.org/r/doc/cluster_walktrap.html",target="_blank")), trigger = "focus" ) ),
+
       
       
       # comboBox
-      selectInput(inputId = "select_community",label = "Community Selection",
+      
+      selectInput(inputId = "select_community",label = NULL,
                   choices = names(all_communtiy_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       
-      selectInput(inputId = "select_layout",label = "Layout Generator",
+
+      
+      
+      # HELP POPUP Layer
+
+      tags$span("Layout Generator",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
+                popify(bsButton("q2", label = "", icon = icon("question"), 
+                                style="info", size = "extra-small"),'Help for Layout ', 
+                       content = paste0("More details for community structures:<br> ", a("Star", href = "http://igraph.org/r/doc/layout_as_star.html", target="_blank"),", ",
+                                        a("Circle",  href = "http://igraph.org/r/doc/layout_in_circle.html",  target="_blank"),", ",
+                                        a("Grid", href = "http://igraph.org/r/doc/layout_on_grid.html", target="_blank"),", ",
+                                        a("Sphere", href = " http://igraph.org/r/doc/layout_on_sphere.html", target="_blank"),", ",
+                                        a("Randomly", href = "http://igraph.org/r/doc/layout_randomly.html", target="_blank"),", ",
+                                        a("Davidson-Harel", href = "http://igraph.org/r/doc/layout_with_dh.html", target="_blank"),", ",
+                                        a("DRL", href = "http://igraph.org/r/doc/layout_with_drl.html", target="_blank"),", ",
+                                        a("GEM", href = "http://igraph.org/r/doc/layout_with_gem.html", target="_blank"),", ",
+                                        a("Fruchterman-Reingold", href = "http://igraph.org/r/doc/layout_with_fr.html",target="_blank"),", ",
+                                        a("GraphOpt", href = " http://igraph.org/r/doc/layout_with_graphopt.html",target="_blank"),", ",
+                                        a("Large Graph", href = "http://igraph.org/r/doc/layout_with_lgl.html",target="_blank"),", ",
+                                        a("multidimensional scaling", href = "http://igraph.org/r/doc/layout_with_mds.html",target="_blank"),", ",
+                                        a("Kamada-Kawai",href = "http://igraph.org/r/doc/layout_with_kk.html",target="_blank")), trigger = "focus" ) ),
+      
+     
+    
+      selectInput(inputId = "select_layout",label = NULL,
                   choices = names(all_layout_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       
       #Buttons
-      div(style="display:inline-block;vertical-align:top; ",disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;"))),
+   
+     # # div(style="display:inline-block;vertical-align:top; ",
+     #      tags$span(
+     #        popify(
+     #         disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;display:inline-block;vertical-align:top; ")),'Plot Network',"1. show plot Network<br> 2. you can see the Graphs."))
+     # ,
+      div(style="display:inline-block;vertical-align:top; ", disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;"))),
       div(style="display:inline-block;vertical-align:top; ",disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;"))),
       div(style="display:inline-block;vertical-align:top; ", disabled(actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;")))
       # disabled(actionButton(inputId = "exportButton", label = " Export as...", style="margin-top:10px;")),
@@ -186,7 +237,61 @@ ui <- fluidPage(
     
   ) #end of sidebarLayout
   
-)  #end of UI
+),# end of Plot tab
+navbarMenu("Advance Setting",
+           tabPanel("Setting",
+           fluidRow(
+             column(1, 
+                    tags$img(height=70, width=70, src="logo.png", style="margin-top: 20px; ")
+             ),
+             column(11, 
+                    tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
+                    tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;")
+             )
+           ),
+           sidebarLayout(
+             sidebarPanel (
+               textInput("threads","Threads",value=getOption("sd_num_thread") ,width = "50%"),
+               textInput("max","Max", value=100,width = "50%"),
+               textInput("min","Min",value=0,width = "50%"),
+               textInput("upload","Max Upload Size",value=1,width = "50%")
+               
+             ),
+             mainPanel(
+               
+             )
+             )
+           ),
+           
+           #tabPanel("Setting"),
+           tabPanel("Help",  fluidRow(
+             column(1, 
+                    tags$img(height=70, width=70, src="logo.png", style="margin-top: 20px; ")
+             ),
+             column(11, 
+                    tags$h1("Find differences in clonal selection", style = "color:#469CF1; font-family:Forte;"),
+                    tags$em("between healthy and HCV-infected individuals", style = "color:#428BCA;"),
+                    tags$br(),
+                    tags$br(),
+                    
+                    tags$h3("Description:",style = "color:#469CF1;"),
+                    tags$p ("A bioinformatic tool for biologists to visualize B-Cell correlation. License: MIT + file LICENSE"),
+                    tags$h3 ("For more Information:",style = "color:#469CF1;"),
+                    tags$p("Simo Kitanovski <simo.kitanovski@uni-due.de>"),
+                    tags$p ("Github Link ",
+                      a(href="https://github.com/snaketron/BcellNet",
+                        "BcellNet")
+                    )
+             )
+           )
+                    
+                   
+                      )# End of Help Tab
+                    )# End of Advance Setting
+           )
+
+)
+
 
 
 #####################server side####################################
@@ -194,6 +299,7 @@ ui <- fluidPage(
 #' @import shiny
 #' @importFrom shinyjs enable
 server <- function(input,output, session){
+ 
 
   #set maximum upload file to 1 gb
   options(shiny.maxRequestSize=1024*1024^2)

@@ -227,7 +227,7 @@ all_layout_algorithms <- function() {
     # "", layout_as_bipartite, # not possible since it is not partitioned
     "Star" = "layout_as_star",
     # "Tree" = "layout_as_tree", # not usefull since this is not a tree or if we have cycles
-    "Cicle" = "layout_in_circle",
+    "Circle" = "layout_in_circle",
     "Grid" = "layout_on_grid",
     "Sphere" = "layout_on_sphere",
     "Random" = "layout_randomly",
