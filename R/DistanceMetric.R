@@ -136,12 +136,3 @@ normalizeMatrix <- function(matrixA, matrixB, groundZero = TRUE, update_progress
   return(list(normalizedMatrixA,normalizedMatrixB))
 }
 
-
-
-#calculate distance between bcrs given a matrix of bcrs
-
-distanceSetOfBcr <- function(){
-  
-  
-  
-}
