@@ -108,7 +108,7 @@ ui <- fluidPage(
                   choices = c("whole sequence", "CDR3", "V sequence"),
                   selected = "whole sequence", multiple = FALSE, selectize = TRUE),
       
-      selectInput(inputId = "distance_metric_name",label = "Select metric",
+      selectInput(inputId = "distance_metric_name",label = "Select distance metric",
                   choices = row.names(all_distance_metrics()[1]),
                   multiple = FALSE),
       
