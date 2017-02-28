@@ -12,4 +12,3 @@ getMapOfBcrs(arrayBcr)
 \description{
 returns an environments contain the bcrs and its number of occurrence
 }
-

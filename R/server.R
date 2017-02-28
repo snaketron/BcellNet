@@ -43,6 +43,7 @@ nthread <- -1
 
 #' @import shiny
 #' @importFrom shinyjs enable
+#' @importFrom shinyjs disabled
 function(input,output, session){
   
   
