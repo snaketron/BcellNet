@@ -259,21 +259,28 @@ navbarMenu("Advanced settings",
                                 
                textInput("threads",label = NULL,value=getOption("sd_num_thread") ,width = "90%"),
                
-               tags$span("Max weight per parameter",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
+               tags$span("Maximum similarity pre parameter",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
                          popify(bsButton("help_Max", label = "", icon = icon("question"), 
-                                         style="info", size = "extra-small"),'Maximum similarity pre parameter ', 
+                                         style="info", size = "extra-small"),'Maximum similarity pre parameter', 
                                 content = paste0("This parameter has effect to weight calculation.<br> It can increase calculation performance, but you will loose information. <br>Set this parameter, when you want to cut your maximum similarity at the beginnig. <br>For example, you only want b-cells, which have a maximum similarity of 95%, set it to 95. <br>"  ),trigger = "focus")),
                
                textInput("max_weight",label = NULL,value=100,width = "90%"),
                
-               tags$span("Min weight per parameter",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
+               tags$span("Minimum similarity pre parameter ",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
                          popify(bsButton("help_Min", label = "", icon = icon("question"), 
-                                         style="info", size = "extra-small"),'Minimum similarity pre parameter ', 
+                                         style="info", size = "extra-small"),'Minimum similarity pre parameter', 
                                 content = paste0("This parameter has effect to weight calculation. <br>It can increase calculation performance, but you will loose information.<br> Set this parameter, when you want to cut your minimum similarity at the beginnig.<br> For example, you only want b-cells, which have a mimum similarity of 50%, set it to 50.<br> "  ),trigger = "focus")),
                
                
                textInput("min_weight",label=NULL,value=0,width = "90%"),
-               textInput("upload","Max Upload Size",value="1GB",width = "90%")
+               
+               tags$span("Max upload size",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
+                         popify(bsButton("help_Min", label = "", icon = icon("question"), 
+                                         style="info", size = "extra-small"),'Max upload size"', 
+                                content = paste0("Set the maximum upload size of files. Use kb, mb or gb.<br> Hint: It is case sensitive!"),trigger = "focus")),
+               
+               
+               textInput("maximum_upload_size",label=NULL, value="1GB",width = "90%")
                
              ),
              mainPanel(
@@ -318,7 +325,7 @@ server <- function(input,output, session){
  
 
   #set maximum upload file to 1 gb
-  options(shiny.maxRequestSize=1024*1024^2)
+  options(shiny.maxRequestSize=1024*1024*1024)
   
   observe({
     if(is.null(input$csvFile$datapath)) return(NULL)
@@ -643,10 +650,34 @@ server <- function(input,output, session){
   })
   
   
+  #Handle negative values of metric paramter
   observeEvent(input$distance_metric_parameter, ignoreInit = TRUE,{
-    
     if(input$distance_metric_parameter < 0){
       updateNumericInput(session, "distance_metric_parameter", value = 0)
+    }
+  })
+  
+  
+  observeEvent(input$maximum_upload_size,{
+    
+    val <- input$maximum_upload_size
+    factor <- 1
+    
+    if(grepl(pattern = "gb", x = val)){
+      factor <- 1024^3
+    }else if(grepl(pattern = "mb", x = val)){
+      factor <- 1024^2
+    }else if(grepl(pattern = "kb", x = val)){
+      factor <- 1024^1
+    }
+    
+    val <- sub("([0-9]+).*$", "\\1", val)
+    
+    val <- as.numeric(val)
+    
+    
+    if(!is.na(val) && val > 0){
+      options(shiny.maxRequestSize= (val * factor))
     }
     
   })
