@@ -74,10 +74,10 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   
   # to plot only the edges with at least of threshold level
   # we need to copy the graph and delete the edges from it
-  # trimmed_network <- delete.edges(weighted_graph, which(E(weighted_graph)$weight < edge_threshold))
+  trimmed_network <- delete.edges(weighted_graph, which(E(weighted_graph)$weight < edge_threshold))
   
   # detect communities
-  communities <- community_algorithm(weighted_graph)
+  communities <- community_algorithm(trimmed_network)
   
   # Get community membership
   memb <- membership(communities)
