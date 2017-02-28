@@ -251,10 +251,10 @@ navbarMenu("Advance Setting",
            ),
            sidebarLayout(
              sidebarPanel (
-               textInput("threads","Threads",value=getOption("sd_num_thread") ,width = "50%"),
-               textInput("max","Max", value=100,width = "50%"),
-               textInput("min","Min",value=0,width = "50%"),
-               textInput("upload","Max Upload Size",value=1,width = "50%")
+               textInput("threads","Threads",value=getOption("sd_num_thread") ,width = "80%"),
+               textInput("max_wait","Max wait per Parameter", value=100,width = "80%"),
+               textInput("min_wait","Min wait per Parameter",value=0,width = "80%"),
+               textInput("upload","Max Upload Size",value=1,width = "80%")
                
              ),
              mainPanel(
