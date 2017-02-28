@@ -893,7 +893,6 @@ server <- function(input,output, session){
     print("recalculating max edge weight")
     first_matrix <- extract_first_matrix()
     second_matrix <- extract_second_matrix()
-    print(paste("first matrix: ", first_matrix))
     max_edge_weight <- max(first_matrix, second_matrix)
     
     return (max_edge_weight)
