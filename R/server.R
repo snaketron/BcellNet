@@ -368,11 +368,11 @@ function(input,output, session){
     distance_metric_parameter_name <- distance_metric_opts$parameter_name
     if (distance_metric_parameter_enabled) {
       shinyjs::enable("distance_metric_parameter")
-      updateNumericInput(session, "distance_metric_parameter", label = paste("Parameter (",distance_metric_parameter_name, ")"))
+      updateNumericInput(session, "distance_metric_parameter", label = paste("Distance metric parameter (",distance_metric_parameter_name, ")"))
     }
     else {
       shinyjs::disable("distance_metric_parameter")
-      updateNumericInput(session, "distance_metric_parameter", label = paste("Parameter (",distance_metric_parameter_name, ")"))
+      updateNumericInput(session, "distance_metric_parameter", label = paste("Distance matric parameter (",distance_metric_parameter_name, ")"))
     }
   })
   
