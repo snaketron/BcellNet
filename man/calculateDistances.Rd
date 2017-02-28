@@ -3,14 +3,13 @@
 \name{calculateDistances}
 \alias{BIG}
 \alias{calculateDistances}
-\title{calculate distance between given bcr arrays}
+\title{calculate distances between given bcr arrays}
 \usage{
-calculateDistances(arrayBcr1, arrayBcr2, distanceMetric = "LD")
+calculateDistances(arrayBcr, distanceMetric = "LD", parameter = -1,
+  nthread = -1)
 }
 \arguments{
-\item{arrayBcr1}{First array of bcrs}
-
-\item{arrayBcr2}{Second array of bcrs}
+\item{arrayBcr}{Array of bcrs, should contain only unique values}
 
 \item{distanceMetric}{Possilble distance metrics ("LD" - Levenshtein Damerau (default), etc.)}
 }

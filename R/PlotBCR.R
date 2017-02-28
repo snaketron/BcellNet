@@ -104,7 +104,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
       nData$edges$weight <- 0
     }
     
-    nData$edges$title <- paste0("Weight: ", nData$edges$weight)
+    nData$edges$title <- paste0("Similarity: ", nData$edges$weight)
   }
 
   nData$nodes$title <- paste0("sequence: ", nData$nodes$id, "<br />", "multiplier: ", nData$nodes$multiplyCounter)
