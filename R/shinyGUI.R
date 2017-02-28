@@ -526,6 +526,7 @@ server <- function(input,output, session){
     input$vjSegmentFirst
     input$partOfSequence
     input$csvFile
+    input$linkVJSegments
   }, {
     print("recalculating first array")
     
@@ -556,6 +557,7 @@ server <- function(input,output, session){
     input$vjSegmentSecond
     input$partOfSequence
     input$csvFile
+    input$linkVJSegments
   }, {
     print("recalculating second array")
     
@@ -589,6 +591,7 @@ server <- function(input,output, session){
     input$csvFile
     input$distance_metric_name
     input$distance_metric_parameter
+    input$linkVJSegments
   },{
     print("recalculating first matrix")
     
@@ -613,6 +616,7 @@ server <- function(input,output, session){
     input$csvFile
     input$distance_metric_name
     input$distance_metric_parameter
+    input$linkVJSegments
   }, {
     print("recalculating second matrix")
     second_array <- extract_second_array()
@@ -631,12 +635,15 @@ server <- function(input,output, session){
   
   
   extract_normalized_first_matrix <- eventReactive({
+    input$comboSecondPatient
     input$comboFirstPatient
+    input$vjSegmentSecond
     input$vjSegmentFirst
     input$partOfSequence
-    input$csvFile
     input$distance_metric_name
     input$distance_metric_parameter
+    input$csvFile
+    input$linkVJSegments
   }, {
     print("Normalizing first matrix")
     
@@ -677,11 +684,14 @@ server <- function(input,output, session){
   
   extract_normalized_second_matrix <- eventReactive({
     input$comboSecondPatient
+    input$comboFirstPatient
     input$vjSegmentSecond
+    input$vjSegmentFirst
     input$partOfSequence
-    input$csvFile
     input$distance_metric_name
     input$distance_metric_parameter
+    input$csvFile
+    input$linkVJSegments
   }, {
     print("Normalizing second matrix")
     
@@ -720,14 +730,15 @@ server <- function(input,output, session){
   }) 
   
   extract_max_edge_weight <- eventReactive({
-    input$comboFirstPatient
     input$comboSecondPatient
-    input$vjSegmentFirst
+    input$comboFirstPatient
     input$vjSegmentSecond
+    input$vjSegmentFirst
     input$partOfSequence
-    input$csvFile
     input$distance_metric_name
     input$distance_metric_parameter
+    input$csvFile
+    input$linkVJSegments
   }, {
     print("recalculating max edge weight")
     first_matrix <- extract_first_matrix()
@@ -738,10 +749,11 @@ server <- function(input,output, session){
   })
   
   extract_first_multiply_counter <- eventReactive({
-    input$comboFirstPatient
-    input$vjSegmentFirst
+    input$comboSecondPatient
+    input$vjSegmentSecond
     input$partOfSequence
     input$csvFile
+    input$linkVJSegments
   }, {
     print("recalculating first multiplier counter")
     
@@ -756,6 +768,7 @@ server <- function(input,output, session){
     input$vjSegmentSecond
     input$partOfSequence
     input$csvFile
+    input$linkVJSegments
   }, {
     print("recalculating second multiplier counter")
     
@@ -766,12 +779,15 @@ server <- function(input,output, session){
   })
   
   extract_first_graph <- eventReactive({
+    input$comboSecondPatient
     input$comboFirstPatient
+    input$vjSegmentSecond
     input$vjSegmentFirst
     input$partOfSequence
-    input$absolute_edge_weight_filter
     input$distance_metric_name
     input$distance_metric_parameter
+    input$csvFile
+    input$linkVJSegments
   },
   {
     print("recalculating first graph")
@@ -806,11 +822,14 @@ server <- function(input,output, session){
   
   extract_second_graph <- eventReactive({
     input$comboSecondPatient
+    input$comboFirstPatient
     input$vjSegmentSecond
+    input$vjSegmentFirst
     input$partOfSequence
-    input$absolute_edge_weight_filter
     input$distance_metric_name
     input$distance_metric_parameter
+    input$csvFile
+    input$linkVJSegments
   },
   {
     print("recalculating second graph")
