@@ -175,27 +175,11 @@ div(style="display:inline-block;vertical-align:top; width: 200px;",numericInput(
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       
       #Buttons
-   
-     # # div(style="display:inline-block;vertical-align:top; ",
-     #      tags$span(
-     #        popify(
-     #         disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;display:inline-block;vertical-align:top; ")),'Plot Network',"1. show plot Network<br> 2. you can see the Graphs."))
-     # ,
       div(style="display:inline-block;vertical-align:top; ", disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;"))),
       div(style="display:inline-block;vertical-align:top; ",disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;"))),
       div(style="display:inline-block;vertical-align:top; ", disabled(actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;")))
-      # disabled(actionButton(inputId = "exportButton", label = " Export as...", style="margin-top:10px;")),
-      
-      
-      # RadioButton
-      #  radioButtons(inputId = "saveAs", label = "Download as type:", choices = list("PNG","PDF"), inline = TRUE),
-      #  textInput(inputId = "downloadPlotFileName", label = h5("Enter file name for download")),
-      
-      # add Export as Button for Download
-      # disabled(downloadButton(outputId = "down", label = "Download the plot")),
-      
-      #popUp windows Test
-      #disabled(actionButton("go", "PopUpWindows", style="margin-left:10px;"))
+
+
       
     ), # End of sidebarLayout
     
@@ -438,11 +422,11 @@ server <- function(input,output, session){
     first_trimmed_graph <- extract_trimmed_first_graph()
     if(!is.null(first_trimmed_graph)){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
-      erste<-paste("Patient 1", selectFirstPatient)
+      nameOfFirstPatient<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
         edge_threshold <- input$relative_edge_weight_filter / 100.0
         patientOne<- plot_graph(first_trimmed_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
-        visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
+        visExport(patientOne, type = "pdf", name = nameOfFirstPatient,label = paste("Export as PDF"), style="background-color = #fff")
       })
     }
     else {
@@ -453,11 +437,11 @@ server <- function(input,output, session){
     second_trimmed_graph <- extract_trimmed_second_graph()
     if(!is.null(second_trimmed_graph)){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
-      zweite<-paste("Patient 2", selectSecondPatient)
+      nameOfSecondtPatient<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
         edge_threshold <- input$relative_edge_weight_filter / 100.0
         patientTwo<- plot_graph(second_trimmed_graph, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
-        visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
+        visExport(patientTwo, type = "pdf", name = nameOfSecondtPatient,label = paste("Export as PDF"), style="background-color = #fff" )
       })
     }
     else {
@@ -933,15 +917,15 @@ server <- function(input,output, session){
   }) 
   
   extract_max_edge_weight <- eventReactive({
-    # input$comboSecondPatient
-    # input$comboFirstPatient
-    # input$vjSegmentSecond
-    # input$vjSegmentFirst
-    # input$partOfSequence
-    # input$distance_metric_name
-    # input$distance_metric_parameter
-    # input$csvFile
-    # # input$linkVJSegments
+    input$comboSecondPatient
+    input$comboFirstPatient
+    input$vjSegmentSecond
+    input$vjSegmentFirst
+    input$partOfSequence
+    input$distance_metric_name
+    input$distance_metric_parameter
+    input$csvFile
+    input$linkVJSegments
     extract_first_matrix
     extract_second_matrix
   }, {
