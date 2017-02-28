@@ -55,7 +55,7 @@ distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2, metric = "dl", parameter = 
     }
   }
 
-  cat(q, " ", p, " ", metric)
+  cat(q, " ", p, " ", metric, "\n")
   
   matrix <- matrix(nrow = length(arrayBcr1), ncol = length(arrayBcr2))
   
