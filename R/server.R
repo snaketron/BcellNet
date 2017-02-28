@@ -48,6 +48,7 @@ nthread <- -1
 
 #' @import shiny
 #' @importFrom shinyjs enable
+#' @importFrom shinyjs disable
 #' @importFrom shinyjs disabled
 #' @importFrom visNetwork visNetworkOutput
 function(input,output, session){
