@@ -281,7 +281,7 @@ server <- function(input,output, session){
   recalculate_edge_weight_filter <- function() {
     print("recalculating absolute edge weight filter")
     maxAbsolutValue <<- extract_max_edge_weight()
-    maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
+    maxLabel<-paste("Absolute distance (",maxAbsolutValue,"):")
     procentValue <- (((100-input$relative_edge_weight_filter)/100)*maxAbsolutValue)
     absoluteValue<-as.integer(procentValue+0.5)
     # if(absoluteValue != absoluteDistance){
