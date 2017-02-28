@@ -251,10 +251,29 @@ navbarMenu("Advance Setting",
            ),
            sidebarLayout(
              sidebarPanel (
-               textInput("threads","Threads",value=getOption("sd_num_thread") ,width = "80%"),
-               textInput("max_wait","Max wait per Parameter", value=100,width = "80%"),
-               textInput("min_wait","Min wait per Parameter",value=0,width = "80%"),
-               textInput("upload","Max Upload Size",value=1,width = "80%")
+               
+               tags$span("Threads",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
+                         popify(bsButton("help_threads", label = "", icon = icon("question"), 
+                                         style="info", size = "extra-small"),'Threads ', 
+                                content = paste0("More details for community structures:<br> "  ),trigger = "focus")),
+                                
+               textInput("threads",label = NULL,value=getOption("sd_num_thread") ,width = "90%"),
+               
+               tags$span("Max weight per parameter",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
+                         popify(bsButton("help_Max", label = "", icon = icon("question"), 
+                                         style="info", size = "extra-small"),'Max weight per Parameter ', 
+                                content = paste0("More details for community structures:<br> "  ),trigger = "focus")),
+               
+               textInput("max_weight",label = NULL,value=100,width = "90%"),
+               
+               tags$span("Min weight per parameter",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
+                         popify(bsButton("help_Min", label = "", icon = icon("question"), 
+                                         style="info", size = "extra-small"),'Min weight per Parameter ', 
+                                content = paste0("More details for community structures:<br> "  ),trigger = "focus")),
+               
+               
+               textInput("min_weight",label=NULL,value=0,width = "90%"),
+               textInput("upload","Max Upload Size",value=1,width = "90%")
                
              ),
              mainPanel(
