@@ -24,13 +24,14 @@ usePackage("shinyBS")
 
 
 data <- NULL
-maxAbsolutValue <- 100 
+maxAbsolutValue <- 100
 selectFirstPatient <- NULL
 selectSecondPatient <- NULL
 graphFirst <- NULL
 graphSecond <- NULL
-vjSegmentSelected <- FALSE
+vjSegmentLinked <- TRUE
 choicesOfSecondPatient <- NULL
+choicesOfFirstPatient <- NULL
 
 #UI
 ui <- fluidPage(
@@ -92,6 +93,8 @@ ui <- fluidPage(
       disabled(selectInput(inputId = "vjSegmentSecond",label = "Select VJ-Segment for 2nd patient",
                            choices = "whole data",selected = "whole data", multiple = FALSE, selectize = TRUE)),
       
+      checkboxInput("linkVJSegments", "Link VJ-Segments", TRUE),
+      
       selectInput(inputId = "partOfSequence",label = "Select Part of Sequence",
                   choices = c("whole sequence", "CDR3", "V sequence"),
                   selected = "whole sequence", multiple = FALSE, selectize = TRUE),
@@ -99,57 +102,62 @@ ui <- fluidPage(
       tags$hr(),
       
       #numericInput
-      #numericInput
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput( inputId = "num2",label = "Relative %",value =95,min = 0,max = 100, step = 0.01)),
       div(style="display:inline-block;vertical-align:top; width: 150px;",numericInput(inputId = "absolute", label = "Absolute (100):", 0)),
       tags$br(),
+
       
     
-      # comboBox
+    
+      
+      # HELP POPUP community
      
-      tags$span(labels("Community Selection",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
-;font-size: 20px;"),
-                popify(bsButton("q1", label = "", icon = icon("question"), style="info", size = "extra-small"),'Help for cluster ', content = paste0("More details for community structures:<br> ", 
-                                                                                                                                                     a("Fast Greedy", 
-                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_fast_greedy.html",
-                                                                                                                                                       target="_blank"),", ",
-                                                                                                                                                     a("Label Prop", 
-                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_label_prop.html",
-                                                                                                                                                       target="_blank"),", ",
-                                                                                                                                                     a("Leading Eigen", 
-                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_leading_eigen.html",
-                                                                                                                                                       target="_blank"),", ",
-                                                                                                                                                     a("Louvain", 
-                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_louvain.html",
-                                                                                                                                                       target="_blank"),", ",
-                                                                                                                                                     a("Optimal", 
-                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_optimal.html",
-                                                                                                                                                       target="_blank"),", ",
-                                                                                                                                                     a("Walktrap", 
-                                                                                                                                                       href = "http://igraph.org/r/doc/cluster_walktrap.html",
-                                                                                                                                                       target="_blank")
-                ), trigger = "focus" ) ),
-      selectInput(inputId = "select_community",
-                  label = NULL,
+      tags$span("Community Selection",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
+                popify(bsButton("q1", label = "", icon = icon("question"), 
+                                style="info", size = "extra-small"),'Help for cluster ', 
+                       content = paste0("More details for community structures:<br> ", a("Fast Greedy", href = "http://igraph.org/r/doc/cluster_fast_greedy.html", target="_blank"),", ",
+                                                                                       a("Label Prop",  href = "http://igraph.org/r/doc/cluster_label_prop.html",  target="_blank"),", ",
+                                                                                       a("Leading Eigen", href = "http://igraph.org/r/doc/cluster_leading_eigen.html", target="_blank"),", ",
+                                                                                       a("Louvain", href = "http://igraph.org/r/doc/cluster_louvain.html",target="_blank"),", ",
+                                                                                       a("Optimal", href = "http://igraph.org/r/doc/cluster_optimal.html",target="_blank"),", ",
+                                                                                       a("Walktrap",href = "http://igraph.org/r/doc/cluster_walktrap.html",target="_blank")), trigger = "focus" ) ),
+      
+      
+      # comboBox
+      
+      selectInput(inputId = "select_community",label = NULL,
                   choices = names(all_communtiy_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       
-     # tags$span(label = "Community Selection",'for'="firstPatient", 'style'="margin-top: 5px;"),
-   
-    
-        
+
+      
+      
+      # HELP POPUP Layer
+
+      tags$span("Layout Generator",'style'="font-family: Helvetica Neue,Helvetica,Arial,sans-serif;font-size: 14px;margin-bottom:5px; font-weight: 700;",
+                popify(bsButton("q1", label = "", icon = icon("question"), 
+                                style="info", size = "extra-small"),'Help for cluster ', 
+                       content = paste0("More details for community structures:<br> ", a("Fast Greedy", href = "http://igraph.org/r/doc/cluster_fast_greedy.html", target="_blank"),", ",
+                                        a("Label Prop",  href = "http://igraph.org/r/doc/cluster_label_prop.html",  target="_blank"),", ",
+                                        a("Leading Eigen", href = "http://igraph.org/r/doc/cluster_leading_eigen.html", target="_blank"),", ",
+                                        a("Louvain", href = "http://igraph.org/r/doc/cluster_louvain.html",target="_blank"),", ",
+                                        a("Optimal", href = "http://igraph.org/r/doc/cluster_optimal.html",target="_blank"),", ",
+                                        a("Walktrap",href = "http://igraph.org/r/doc/cluster_walktrap.html",target="_blank")), trigger = "focus" ) ),
+      
+      
  
-      selectInput(inputId = "select_layout",label = "Layout Generator",
+      selectInput(inputId = "select_layout",label = NULL,
                   choices = names(all_layout_algorithms()),
                   selected = NULL, multiple = FALSE, selectize = TRUE),
       
       #Buttons
    
-     # div(style="display:inline-block;vertical-align:top; ",
-          tags$span(
-            popify(
-             disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;display:inline-block;vertical-align:top; ")),'Plot Network',"1. show plot Network<br> 2. you can see the Graphs."))
-              ,
+     # # div(style="display:inline-block;vertical-align:top; ",
+     #      tags$span(
+     #        popify(
+     #         disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;display:inline-block;vertical-align:top; ")),'Plot Network',"1. show plot Network<br> 2. you can see the Graphs."))
+     # ,
+      div(style="display:inline-block;vertical-align:top; ", disabled(actionButton(inputId = "pn", label = "Plot Network", style="margin-top:10px;"))),
       div(style="display:inline-block;vertical-align:top; ",disabled(actionButton(inputId = "pdd", label = " Plot degree distribution", style="margin-top:10px;"))),
       div(style="display:inline-block;vertical-align:top; ", disabled(actionButton(inputId = "pcsd", label = " Plot community size distribution", style="margin-top:10px;")))
       # disabled(actionButton(inputId = "exportButton", label = " Export as...", style="margin-top:10px;")),
@@ -221,11 +229,13 @@ server <- function(input,output, session){
     if(is.null(input$csvFile$datapath)) return(NULL)
     
     #reset some vars
-    vjSegmentSelected <<- FALSE
     choicesOfSecondPatient <<- NULL
+    choicesOfFirstPatient <<- NULL
     
     data <<- csvToSubset(input$csvFile$datapath)
+    print("data ready!")
     possiblePatients <- names(data)
+    print(possiblePatients)
     possibleVjSegments <- NULL
     
     # Can use character(0) to remove all choices
@@ -274,36 +284,26 @@ server <- function(input,output, session){
     updateVJSegment()
   })
 
+  observeEvent(input$linkVJSegments,{
+    vjSegmentLinked <<- input$linkVJSegments
+  })
   
   # when selecting an element in first patient list, this element will be selected in combolist for
-  # second patient too, if no element for second patient would selected before.
+  # second patient too. 
   observeEvent(input$vjSegmentFirst,{
     selectedItem <- input$vjSegmentFirst
-    if(!vjSegmentSelected && (selectedItem %in% choicesOfSecondPatient)){
+    if(vjSegmentLinked && (selectedItem %in% choicesOfSecondPatient)){
       updateSelectInput(session, "vjSegmentSecond", selected = selectedItem)
     }
   })
 
-  observeEvent(input$vjSegmentSecond, {
-    vjSegmentSelected <<- TRUE
+  observeEvent(input$vjSegmentSecond,{
+    selectedItem <- input$vjSegmentSecond
+    if(vjSegmentLinked && (selectedItem %in% choicesOfFirstPatient)){
+      updateSelectInput(session, "vjSegmentFirst", selected = selectedItem)
+    }
   })
 
-  #####################Update TextInput#######################
-  #      observeEvent(input$myabsolute,{
-  #
-  #          if ( input$myabsolute>1){
-  #
-  #          absolutevalue<-(input$myabsolute)
-  #
-  #          updateTextInput(session,"myabsolute",value =absolutevalue )
-  #
-  #          relativeValue<-absolutevalue/100
-  #          updateNumericInput(session,"num2",value =relativeValue , min=0, max = 100, step = 1)
-  #
-  # }
-  #
-  #      })
-  
   #plot networt button action
   observeEvent(input$pn, {
     prepareGraphs()
@@ -312,29 +312,22 @@ server <- function(input,output, session){
     layout_algorithm <- extract_layout_algorithm()
 
     ######## match max of absolute after uploaded a graph ######
+    maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     updateNumericInput(session,"absolute",label=maxLabel)
     procentValue <-(input$num2/100)*maxAbsolutValue
     absoluteValue<-as.integer(procentValue+0.5)
     updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
-    ##################### Progress bar for Plot Network   ############################
-    # progress <- Progress$new(session, min=1, max=10)
-    # on.exit(progress$close())
-    # 
-    # progress$set(message = 'Calculation in progress',
-    #              detail = 'This may take a while...')
-    # 
-    # for (i in 1:10) {
-    #   progress$set(value = i)
-    #   Sys.sleep(0.2)
-    # }
     
     ################ Plot Graphs #####################
+    graphFirst <- extract_first_graph()
+    
     if(!is.null(graphFirst)){
       output$firstPatientLabel <- renderText(paste("Patient 1", selectFirstPatient))
       erste<-paste("Patient 1", selectFirstPatient)
       output$firstPatient <- renderVisNetwork({
-        patientOne<- plot_graph(graphFirst, edge_threshold=input$num2, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
+        edge_threshold <- 1 - (input$num2 / 100.0)
+        patientOne<- plot_graph(graphFirst, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientOne, type = "pdf", name = erste,label = paste("Export as PDF"), style="background-color = #fff")
       })
     }
@@ -343,11 +336,13 @@ server <- function(input,output, session){
       output$firstPatient <- renderVisNetwork({})
     }
     
+    graphSecond <- extract_second_graph()
     if(!is.null(graphSecond)){
       output$secondPatientLabel <- renderText(paste("Patient 2", selectSecondPatient))
       zweite<-paste("Patient 2", selectSecondPatient)
       output$secondPatient <- renderVisNetwork({
-        patientTwo<- plot_graph(graphSecond, edge_threshold=input$num2, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
+        edge_threshold <- 1 - (input$num2 / 100.0)
+        patientTwo<- plot_graph(graphSecond, edge_threshold=edge_threshold, community_algorithm = community_algorithm, layout_algorithm = layout_algorithm)
         visExport(patientTwo, type = "pdf", name = zweite,label = paste("Export as PDF"), style="background-color = #fff" )
       })
     }
@@ -361,12 +356,14 @@ server <- function(input,output, session){
   # for plotting the degree distribution
   observeEvent(input$pdd, {
     prepareGraphs()
+    maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     updateNumericInput(session,"absolute",label=maxLabel)
     procentValue <-(input$num2/100)*maxAbsolutValue
     absoluteValue<-as.integer(procentValue+0.5)
     updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
 
+    graphFirst <- extract_first_graph()
     if(!is.null(graphFirst)){
       output$firstPatientDegreeDistribution <- renderPlot(
         hist(degree(graphFirst))
@@ -376,6 +373,7 @@ server <- function(input,output, session){
       output$firstPatientDegreeDistribution <- renderPlot({})
     }
     
+    graphSecond <- extract_second_graph()
     if(!is.null(graphSecond)){
       output$secondPatientDegreeDistribution <- renderPlot(
         hist(degree(graphSecond))
@@ -388,6 +386,7 @@ server <- function(input,output, session){
   
   observeEvent(input$pcsd, {
     prepareGraphs()
+    maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     updateNumericInput(session,"absolute",label=maxLabel)
     procentValue <-(input$num2/100)*maxAbsolutValue
@@ -395,7 +394,7 @@ server <- function(input,output, session){
     updateNumericInput(session,"absolute",label=maxLabel,value =absoluteValue)
 
     community_algorithm <- extract_community_algorithm()
-
+    graphFirst <- extract_first_graph()
     if(!is.null(graphFirst)){
       output$firstPatientCommunitySizeDistribution <- renderPlot({
         hist(sizes(community_algorithm(graphFirst)))
@@ -405,6 +404,7 @@ server <- function(input,output, session){
       output$firstPatientCommunitySizeDistribution <- renderPlot({})
     }
     
+    graphSecond <- extract_second_graph()
     if(!is.null(graphSecond)){
       output$secondPatientCommunitySizeDistribution <- renderPlot(
         hist(sizes(community_algorithm(graphSecond)))
@@ -418,71 +418,6 @@ server <- function(input,output, session){
   prepareGraphs <- function() {
     if(is.null(data)) session$sendCustomMessage(type = 'testmessage',
                                                 message = 'Select data first')
-    
-
-    ########## create and plot graph of patients ###############
-
-    dataFirst <- data[[selectFirstPatient]]
-    dataSecond <- data[[selectSecondPatient]]
-    
-    if(!input$vjSegmentFirst == "whole data"){
-      dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegmentFirst,]
-    }
-    if(!input$vjSegmentSecond == "whole data"){
-      dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegmentSecond,]
-    }
-    
-    if(input$partOfSequence == "whole sequence"){
-      arrayFirst <- dataFirst$sequence
-      arraySecond <- dataSecond$sequence
-    }else if(input$partOfSequence == "CDR3"){
-      arrayFirst <- dataFirst$CDR3
-      arraySecond <- dataSecond$CDR3
-    }else{
-      arrayFirst <- dataFirst$V.sequence
-      arraySecond <- dataSecond$V.sequence
-    }
-    
-    #map of bcr and its number of occurrence
-    mulityCounterFirst <- getMapOfBcrs(arrayFirst)
-    mulityCounterSecond <- getMapOfBcrs(arraySecond)
-
-    arrayFirst <- unique(arrayFirst)
-    arraySecond <- unique(arraySecond)
-    
-    #returns null when array is numeric(0)
-    matrixFirst <- calculateDistances(arrayFirst)
-    matrixSecond <- calculateDistances(arraySecond)
-    maxAbsolutValue <<- max(matrixFirst, matrixSecond)
-    #print(maxAbsolutValue)
-    
-    #avoid numeric(0) exception
-    if(is.null(matrixFirst)){
-      matrices <- normalizeMatrix(matrixSecond, matrixSecond,groundZero = FALSE)
-      matrixSecond <- matrices[[1]]
-    }else if(is.null(matrixSecond)){
-      matrices <- normalizeMatrix(matrixFirst, matrixFirst, groundZero = FALSE)
-      matrixFirst <- matrices[[1]]
-    }else{
-      matrices <- normalizeMatrix(matrixFirst, matrixSecond, groundZero = FALSE)
-      matrixSecond <- matrices[[2]]
-      matrixFirst <- matrices[[1]]
-    }
-    
-    
-    if(!is.null(matrixFirst)){
-      graphFirst <<- buildIGraph(arrayFirst, matrixFirst, mulityCounterFirst, thresholdMax = 1.0, thresholdMin = 0)
-    }
-    else {
-      graphFirst <<- NULL
-    }
-
-    if(!is.null(matrixSecond)){
-      graphSecond <<- buildIGraph(arraySecond, matrixSecond, mulityCounterSecond, thresholdMax = 1.0, thresholdMin = 0)
-    }
-    else {
-      graphSecond <<- NULL      
-    }
   }
   
   #function to update vj segment combo list
@@ -512,7 +447,8 @@ server <- function(input,output, session){
       posSegmentsSecPat <- unique(posSegmentsSecPat)
     }
 
-    choicesOfSecondPatient <<- posSegmentsSecPat
+    choicesOfSecondPatient <<- c('whole data', posSegmentsSecPat)
+    choicesOfFirstPatient <<- c('whole data', posSegmentsFirstPat)
     
     updateSelectInput(session, "vjSegmentFirst", choices = c('whole data', posSegmentsFirstPat), selected = "whole data")
     updateSelectInput(session, "vjSegmentSecond", choices = c('whole data', posSegmentsSecPat), selected = "whole data")
@@ -528,16 +464,17 @@ server <- function(input,output, session){
         neuAbsoluteValue<-input$absolute
        # print(neuAbsoluteValue)
     if(!is.null(neuAbsoluteValue)){
+      maxAbsolutValue <<- extract_max_edge_weight()
       calProcentValue<-(neuAbsoluteValue*100)/maxAbsolutValue
       neuProcentValue<-format.default(calProcentValue,digits = 5)
       updateNumericInput(session,"num2",value = neuProcentValue, min=0, max = 100)
-      
-      
-
     }
   })
+  
+  
   ############ change relative value %, which it changes absolute value ##########
   observeEvent(input$num2,{
+    maxAbsolutValue <<- extract_max_edge_weight()
     maxLabel<-paste("Absolute(",maxAbsolutValue,"):")
     
     if(!is.numeric(input$num2)){
@@ -579,6 +516,281 @@ server <- function(input,output, session){
     selected_layout_algorithm <- all_layout_algorithms()[[input$select_layout]]
 
     return (selected_layout_algorithm)
+  })
+  
+  extract_first_array <- eventReactive({
+    input$comboFirstPatient
+    input$vjSegmentFirst
+    input$partOfSequence
+    input$csvFile
+  }, {
+    print("recalculating first array")
+    
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating sequences"), value = 0, {
+      dataFirst <- data[[selectFirstPatient]]
+      if(!input$vjSegmentFirst == "whole data"){
+        dataFirst <- dataFirst[dataFirst$VJ.segment == input$vjSegmentFirst,]
+      }
+      
+      if(input$partOfSequence == "whole sequence"){
+        arrayFirst <- dataFirst$sequence
+      }else if(input$partOfSequence == "CDR3"){
+        arrayFirst <- dataFirst$CDR3
+      }else{
+        arrayFirst <- dataFirst$V.sequence
+      }
+      
+      arrayFirst <- unique(arrayFirst)
+      
+      incProgress(1)
+    })
+    
+    return (arrayFirst)
+  })
+  
+  extract_second_array <- eventReactive({
+    input$comboSecondPatient
+    input$vjSegmentSecond
+    input$partOfSequence
+    input$csvFile
+  }, {
+    print("recalculating second array")
+    
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating sequences"), value = 0, {
+      dataSecond <- data[[selectSecondPatient]]
+      
+      if(!input$vjSegmentSecond == "whole data"){
+        dataSecond <- dataSecond[dataSecond$VJ.segment == input$vjSegmentSecond,]
+      }
+      
+      if(input$partOfSequence == "whole sequence"){
+        arraySecond <- dataSecond$sequence
+      }else if(input$partOfSequence == "CDR3"){
+        arraySecond <- dataSecond$CDR3
+      }else{
+        arraySecond <- dataSecond$V.sequence
+      }
+      
+      arraySecond <- unique(arraySecond)
+      
+      incProgress(1)
+    })
+    
+    return (arraySecond)
+  })
+  
+  extract_first_matrix <- eventReactive({
+    input$comboFirstPatient
+    input$vjSegmentFirst
+    input$partOfSequence
+    input$csvFile
+  },{
+    print("recalculating first matrix")
+    first_array <- extract_first_array()
+    
+    withProgress(message = paste0("Patient ", input$comboFirstPatient, ": calculating matrix"), value = 0, {
+      matrixFirst <- calculateDistances(first_array)
+      
+      incProgress(1)
+    })
+    
+    return (matrixFirst)
+  })
+  
+  
+  extract_second_matrix <- eventReactive({
+    input$comboSecondPatient
+    input$vjSegmentSecond
+    input$partOfSequence
+    input$csvFile
+  }, {
+    print("recalculating second matrix")
+    second_array <- extract_second_array()
+    
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": calculating matrix"), value = 0, {
+      second_matrix <- calculateDistances(second_array)
+      
+      incProgress(1)
+    })
+    
+    return (second_matrix)
+  })
+  
+  
+  extract_normalized_first_matrix <- eventReactive({
+    input$comboFirstPatient
+    input$vjSegmentFirst
+    input$partOfSequence
+    input$csvFile
+  }, {
+    first_matrix <- extract_first_matrix()
+    second_matrix <- extract_second_matrix()
+    
+    withProgress(message = paste0("Patient ", input$comboFirstPatient, ": normalizing matrix"), value = 0, {
+      #avoid numeric(0) exception
+      if(is.null(first_matrix)){
+        matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE)
+        second_matrix <- matrices[[1]]
+      }else if(is.null(second_matrix)){
+        matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE)
+        first_matrix <- matrices[[1]]
+      }else{
+        matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE)
+        second_matrix <- matrices[[2]]
+        first_matrix <- matrices[[1]]
+      }
+      
+      incProgress(1)
+    })
+    
+    return (first_matrix)
+  })
+  
+  
+  extract_normalized_second_matrix <- eventReactive({
+    input$comboSecondPatient
+    input$vjSegmentSecond
+    input$partOfSequence
+    input$csvFile
+  }, {
+    first_matrix <- extract_first_matrix()
+    second_matrix <- extract_second_matrix()
+    
+    withProgress(message = paste0("Patient ", input$comboSecondPatient, ": normalizing matrix"), value = 0, {
+      #avoid numeric(0) exception
+      if(is.null(first_matrix)){
+        matrices <- normalizeMatrix(second_matrix, second_matrix,groundZero = FALSE)
+        second_matrix <- matrices[[1]]
+      }else if(is.null(second_matrix)){
+        matrices <- normalizeMatrix(first_matrix, first_matrix, groundZero = FALSE)
+        first_matrix <- matrices[[1]]
+      }else{
+        matrices <- normalizeMatrix(first_matrix, second_matrix, groundZero = FALSE)
+        second_matrix <- matrices[[2]]
+        first_matrix <- matrices[[1]]
+      }
+      
+      incProgress(1)
+    })
+    
+    return (second_matrix)
+  }) 
+  
+  extract_max_edge_weight <- eventReactive({
+    input$comboFirstPatient
+    input$comboSecondPatient
+    input$vjSegmentFirst
+    input$vjSegmentSecond
+    input$partOfSequence
+    input$csvFile
+  }, {
+    print("recalculating max edge weight")
+    first_matrix <- extract_first_matrix()
+    second_matrix <- extract_second_matrix()
+    max_edge_weight <- max(first_matrix, second_matrix)
+    
+    return (max_edge_weight)
+  })
+  
+  extract_first_multiply_counter <- eventReactive({
+    input$comboFirstPatient
+    input$vjSegmentFirst
+    input$partOfSequence
+    input$csvFile
+  }, {
+    print("recalculating first multiplier counter")
+    
+    first_array <- extract_first_array()
+    first_mult_counter <- getMapOfBcrs(first_array)
+    
+    return (first_mult_counter)
+  })
+  
+  extract_second_multiply_counter <- eventReactive({
+    input$comboSecondPatient
+    input$vjSegmentSecond
+    input$partOfSequence
+    input$csvFile
+  }, {
+    print("recalculating second multiplier counter")
+    
+    second_array <- extract_second_array()
+    second_mult_counter <- getMapOfBcrs(second_array)
+    
+    return (second_mult_counter)
+  })
+  
+  extract_first_graph <- eventReactive({
+    input$comboFirstPatient
+    input$vjSegmentFirst
+    input$partOfSequence
+    input$absolute
+  },
+  {
+    print("recalculating first graph")
+    
+    first_norm_matrix <- extract_normalized_first_matrix()
+    if(!is.null(first_norm_matrix)){
+      first_array <- extract_first_array()
+      first_mult_counter <- extract_first_multiply_counter()
+      
+      # Create a Progress object
+      progress <- shiny::Progress$new()
+      progress$set(message = "Computing data", value = 0)
+      # Close the progress when this reactive exits (even if there's an error)
+      on.exit(progress$close())
+      
+      # Create a callback function to update progress.
+      # Each time this is called:
+      # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+      #   distance. If non-NULL, it will set the progress to that value.
+      # - It also accepts optional detail text.
+      update_progress <- function(value = NULL, detail = NULL) {
+        progress$set(value = value, detail = detail)
+      }
+      
+      return (buildIGraph(first_array, first_norm_matrix, first_mult_counter, thresholdMax = 1.0, thresholdMin = 0, update_progress))
+    }
+    else {
+      return (NULL)
+    }
+    
+  })
+  
+  extract_second_graph <- eventReactive({
+    input$comboSecondPatient
+    input$vjSegmentSecond
+    input$partOfSequence
+    input$absolute
+  },
+  {
+    print("recalculating second graph")
+    
+    second_matrix <- extract_normalized_second_matrix()
+    if(!is.null(second_matrix)){
+      second_array <- extract_second_array()
+      second_mult_counter <- extract_second_multiply_counter()
+      
+      # Create a Progress object
+      progress <- shiny::Progress$new()
+      progress$set(message = "Computing data", value = 0)
+      # Close the progress when this reactive exits (even if there's an error)
+      on.exit(progress$close())
+      
+      # Create a callback function to update progress.
+      # Each time this is called:
+      # - If `value` is NULL, it will move the progress bar 1/5 of the remaining
+      #   distance. If non-NULL, it will set the progress to that value.
+      # - It also accepts optional detail text.
+      update_progress <- function(value = NULL, detail = NULL) {
+        progress$set(value = value, detail = detail)
+      }
+      
+      return (buildIGraph(second_array, second_matrix, second_mult_counter, thresholdMax = 1.0, thresholdMin = 0, update_progress = update_progress))
+    }
+    else {
+      return (NULL)
+    }
   })
 
 }

@@ -101,14 +101,14 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
     }
 
     # normalize the weight
-    if (!is.null(nData$edges$weight)) {
+    if (is.null(nData$edges$weight)) {
       nData$edges$weight <- 0
     }
     
     nData$edges$title <- paste0("Weight: ", nData$edges$weight)
   }
 
-  nData$nodes$title <- paste0("sequence: ", nData$nodes$id)
+  nData$nodes$title <- paste0("sequence: ", nData$nodes$id, "<br />", "multiplier: ", nData$nodes$multiplyCounter)
   # hide label
   nData$nodes$label <- NA
   # apply communities onto vis graph groups
