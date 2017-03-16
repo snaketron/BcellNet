@@ -212,7 +212,7 @@ function(input,output, session){
     
     second_trimmed_graph <- extract_trimmed_second_graph()
     if(!is.null(second_trimmed_graph)){
-      output$second_graph <- renderPlot(
+      output$secondPatientDegreeDistribution <- renderPlot(
         hist(degree(second_trimmed_graph))
       )
     }
