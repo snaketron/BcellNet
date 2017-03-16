@@ -840,7 +840,9 @@ function(input,output, session){
     extract_relative_max_weight
   }, {
     first_graph <- extract_first_graph()
-    trimmed_first_graph <- trim_igraph_by_similarity(first_graph, input$relative_edge_weight_filter, 1)
+    # we get the relative edge weight filter as an absolute number so we need to divde through 100
+    divided <- input$relative_edge_weight_filter/100
+    trimmed_first_graph <- trim_igraph_by_similarity(first_graph, divided, 1)
     
     return (trimmed_first_graph)
   })
@@ -862,7 +864,9 @@ function(input,output, session){
     extract_relative_max_weight
   }, {
     second_graph <- extract_second_graph()
-    trimmed_second_graph <- trim_igraph_by_similarity(second_graph, input$relative_edge_weight_filter, 1)
+    # we get the relative edge weight filter as an absolute number so we need to divde through 100
+    divided <- input$relative_edge_weight_filter/100
+    trimmed_second_graph <- trim_igraph_by_similarity(second_graph, divided, 1)
     
     return (trimmed_second_graph)
   })
