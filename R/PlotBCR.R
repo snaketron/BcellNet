@@ -124,9 +124,17 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
     nData$nodes$multiplyCounter <- 1
   }
   minMult <- min(nData$nodes$multiplyCounter)
+  maxMult <- max(nData$nodes$multiplyCounter)
   # cat("min mult: ", minMult, ", max mult: ", maxMult, "\n")
   # print(nData$nodes$multiplyCounter)
-  nData$nodes$size <- nData$nodes$multiplyCounter / minMult * 25
+  
+  # special case because else we devide through 0
+  if (minMult == maxMult) {
+    nData$nodes$size <- 25  
+  }
+  else {
+    nData$nodes$size <- 50 * nData$nodes$multiplyCounter - minMult / (maxMult - minMult) + 25 
+  }
   
   # finally plot it
   vn <- visNetwork(nodes = nData$nodes, edges = nData$edges) %>%
