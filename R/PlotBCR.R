@@ -1,11 +1,5 @@
-usePackage <- function(p) {
-  if (!is.element(p, installed.packages()[,1]))
-    install.packages(p, dependencies = TRUE, repos="http://cran.us.r-project.org")
-  require(p, character.only = TRUE)
-}
-
-usePackage("igraph")
-usePackage("visNetwork")
+library(igraph)
+library(visNetwork)
 
 
 #' @title Plots graphs containing thresholded communties
@@ -111,10 +105,10 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
       nData$edges$weight <- 0
     }
     
-    nData$edges$title <- paste0("Similarity: ", nData$edges$weight)
+    nData$edges$title <- paste0("Weight: ", nData$edges$weight)
   }
 
-  nData$nodes$title <- paste0("Sequence: ", nData$nodes$id, "<br />", "multiplier: ", nData$nodes$multiplyCounter)
+  nData$nodes$title <- paste0("sequence: ", nData$nodes$id, "<br />", "multiplier: ", nData$nodes$multiplyCounter)
   # hide label
   nData$nodes$label <- NA
   # apply communities onto vis graph groups
@@ -145,6 +139,12 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   
   return (vn)
 }
+
+# igraph will colorize communities provided by the col=X statement
+# if given plot(communities, network, ...) form and not just plot(network, ...)
+# plot(communities, trimmed_network, mark.groups=mark_groups, vertex.size=vertex_size, edge.width=edge_width,
+#      vertex.label=NA, edge.color=edge_color,layout=network_layout, col=community_colors,
+#      main=label, edge.label=NA) 
 
 .normalize_numeric_inpuc <- function(numeric, default) {
   if (!is.numeric(numeric)) {
@@ -189,7 +189,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 #' @description \code{all_communtiy_algorithms} provides an easy dictionary of all algorithms to determine the communities. This enables access to a human readable representation of the internal functions. "Foo Bar" could be called foo_bar internally, which is not something supposed to being displayed. It will returns a dictionary mapping from \code{string} to \code{string}. The \code{plot_graph} will handle the decryption of the functions internally.
 #' 
 #' @examples
-#' BcellNet::all_communtiy_algorithms()
+#' all_communtiy_algorithms()
 #' 
 #' @aliases all_communtiy_algorithms
 #' 
@@ -203,7 +203,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
 #' @importFrom igraph cluster_walktrap
 #' 
 #' @export
-#' 
+#'
 #' @seealso \code{\link[igraph]{igraph}}
 #' @seealso \code{\link[igraph]{communities}}
 all_communtiy_algorithms <- function() {
@@ -221,20 +221,13 @@ all_communtiy_algorithms <- function() {
   return(algos)
 }
 
-#' Provides all layout algorithms
-#' 
-#' @description \code{all_layout_algorithms} provides an easy dictionary of all algorithms to determine the layouts. This enables access to a human readable representation of the internal functions. "Foo Bar" could be called foo_bar internally, which is not something supposed to being displayed. It will returns a dictionary mapping from \code{string} to \code{string}. The \code{plot_graph} will handle the decryption of the functions internally.
-#' 
-#' @keywords all_layout_algorithms
-#' 
-#' @seealso \code{\link[igraph]{igraph}}
 all_layout_algorithms <- function() {
   algos <- c(
     "Auto" = "layout_nicely",
     # "", layout_as_bipartite, # not possible since it is not partitioned
     "Star" = "layout_as_star",
     # "Tree" = "layout_as_tree", # not usefull since this is not a tree or if we have cycles
-    "Circle" = "layout_in_circle",
+    "Cicle" = "layout_in_circle",
     "Grid" = "layout_on_grid",
     "Sphere" = "layout_on_sphere",
     "Random" = "layout_randomly",

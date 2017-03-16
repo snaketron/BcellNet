@@ -480,7 +480,7 @@ function(input,output, session){
         arrayFirst <- dataFirst$V.sequence
       }
       
-      arrayFirst <- unique(arrayFirst)
+      #arrayFirst <- unique(arrayFirst)
       
       incProgress(1)
     })
@@ -512,8 +512,6 @@ function(input,output, session){
         arraySecond <- dataSecond$V.sequence
       }
       
-      arraySecond <- unique(arraySecond)
-      
       incProgress(1)
     })
     
@@ -532,6 +530,7 @@ function(input,output, session){
     print("recalculating first matrix")
     
     first_array <- extract_first_array()
+    first_array <- unique(first_array)
     distance_metric <- extract_distance_metric()
     distance_metric_parameter <- extract_distance_metric_parameter()
     
@@ -556,6 +555,7 @@ function(input,output, session){
   }, {
     print("recalculating second matrix")
     second_array <- extract_second_array()
+    second_array <- unique(second_array)
     distance_metric <- extract_distance_metric()
     distance_metric_parameter <- extract_distance_metric_parameter()
     
@@ -697,6 +697,7 @@ function(input,output, session){
     
     first_array <- extract_first_array()
     first_mult_counter <- getMapOfBcrs(first_array)
+    first_array <- unique(first_array)
     
     return (first_mult_counter)
   })
@@ -712,6 +713,7 @@ function(input,output, session){
     
     second_array <- extract_second_array()
     second_mult_counter <- getMapOfBcrs(second_array)
+    second_array <- unique(second_array)
     
     return (second_mult_counter)
   })
@@ -738,6 +740,7 @@ function(input,output, session){
     if(!is.null(first_norm_matrix)){
       first_array <- extract_first_array()
       first_mult_counter <- extract_first_multiply_counter()
+      first_array <- unique(first_array)
       
       # Create a Progress object
       progress <- shiny::Progress$new()
@@ -784,6 +787,7 @@ function(input,output, session){
     if(!is.null(second_matrix)){
       second_array <- extract_second_array()
       second_mult_counter <- extract_second_multiply_counter()
+      second_array <- unique(second_array)
       
       # Create a Progress object
       progress <- shiny::Progress$new()
