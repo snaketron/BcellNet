@@ -202,8 +202,9 @@ function(input,output, session){
     recalculate_edge_weight_filter()
     first_trimmed_graph <- extract_trimmed_first_graph()
     if(!is.null(first_trimmed_graph)){
+      first_graph_degree <- degree(first_trimmed_graph)
       output$firstPatientDegreeDistribution <- renderPlot(
-        hist(degree(first_trimmed_graph), xlab="Degree", main = paste("Degree Distribution Patient", input$comboFirstPatient))
+        hist(first_graph_degree, xlab="Degree", main = paste("Degree Distribution Patient", input$comboFirstPatient), breaks=seq(min(first_graph_degree)-0.5, max(first_graph_degree)+0.5, by=1))
       )
     }
     else {
@@ -212,8 +213,9 @@ function(input,output, session){
     
     second_trimmed_graph <- extract_trimmed_second_graph()
     if(!is.null(second_trimmed_graph)){
+      second_graph_degree <- degree(second_trimmed_graph)
       output$secondPatientDegreeDistribution <- renderPlot(
-        hist(degree(second_trimmed_graph), xlab="Degree", main = paste("Degree Distribution Patient", input$comboSecondPatient))
+        hist(second_graph_degree, xlab="Degree", main = paste("Degree Distribution Patient", input$comboSecondPatient), breaks=seq(min(second_graph_degree)-0.5, max(second_graph_degree)+0.5, by=1))
       )
     }
     else {
@@ -227,8 +229,9 @@ function(input,output, session){
     community_algorithm <- isolate(extract_community_algorithm())
     first_trimmed_graph <- extract_trimmed_first_graph()
     if(!is.null(first_trimmed_graph)){
+      first_size <- sizes(community_algorithm(first_trimmed_graph))
       output$firstPatientCommunitySizeDistribution <- renderPlot({
-        hist(sizes(community_algorithm(first_trimmed_graph)), xlab="Community", ylab="Size", main = paste("Community Size Patient", input$comboFirstPatient))
+        hist(first_size, xlab="Community", ylab="Size", main = paste("Community Size Patient", input$comboFirstPatient), breaks=seq(min(first_size)-0.5, max(first_size)+0.5, by=1))
       })
     }
     else {
@@ -237,8 +240,9 @@ function(input,output, session){
     
     second_trimmed_graph <- extract_trimmed_second_graph()
     if(!is.null(second_trimmed_graph)){
+      second_size <- sizes(community_algorithm(second_trimmed_graph))
       output$secondPatientCommunitySizeDistribution <- renderPlot(
-        hist(sizes(community_algorithm(second_trimmed_graph)), xlab="Community", ylab="Size", main = paste("Community Size Patient", input$comboSecondPatient))
+        hist(second_size, xlab="Community", ylab="Size", main = paste("Community Size Patient", input$comboSecondPatient), breaks=seq(min(second_size)-0.5, max(second_size)+0.5, by=1))
       )
     }
     else {
