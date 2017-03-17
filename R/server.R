@@ -231,7 +231,7 @@ function(input,output, session){
     if(!is.null(first_trimmed_graph)){
       first_size <- sizes(community_algorithm(first_trimmed_graph))
       output$firstPatientCommunitySizeDistribution <- renderPlot({
-        hist(first_size, xlab="Community", ylab="Size", main = paste("Community Size Patient", input$comboFirstPatient), breaks=seq(min(first_size)-0.5, max(first_size)+0.5, by=1))
+        hist(first_size, xlab="Community size", main = paste("Community Size Patient", input$comboFirstPatient), breaks=seq(min(first_size)-0.5, max(first_size)+0.5, by=1))
       })
     }
     else {
@@ -242,7 +242,7 @@ function(input,output, session){
     if(!is.null(second_trimmed_graph)){
       second_size <- sizes(community_algorithm(second_trimmed_graph))
       output$secondPatientCommunitySizeDistribution <- renderPlot(
-        hist(second_size, xlab="Community", ylab="Size", main = paste("Community Size Patient", input$comboSecondPatient), breaks=seq(min(second_size)-0.5, max(second_size)+0.5, by=1))
+        hist(second_size, xlab="Community size", main = paste("Community Size Patient", input$comboSecondPatient), breaks=seq(min(second_size)-0.5, max(second_size)+0.5, by=1))
       )
     }
     else {
