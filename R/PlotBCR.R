@@ -133,7 +133,7 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
     nData$nodes$size <- 25  
   }
   else {
-    nData$nodes$size <- 50 * nData$nodes$multiplyCounter - minMult / (maxMult - minMult) + 25 
+    nData$nodes$size <- 50 * ((nData$nodes$multiplyCounter - minMult) / (maxMult - minMult)) + 25 
   }
   
   # finally plot it
