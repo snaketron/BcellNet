@@ -75,7 +75,9 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   
   # to plot only the edges with at least of threshold level
   # we need to copy the graph and delete the edges from it
-  trimmed_network <- delete.edges(weighted_graph, which(E(weighted_graph)$weight < edge_threshold))
+  # trimmed_network <- delete.edges(weighted_graph, which(E(weighted_graph)$weight < edge_threshold))
+  # we probably dont need to trim it anymore
+  trimmed_network <- weighted_graph
   
   # detect communities
   communities <- community_algorithm(trimmed_network)
@@ -108,7 +110,11 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
     nData$edges$title <- paste0("Weight: ", nData$edges$weight)
   }
 
-  nData$nodes$title <- paste0("sequence: ", nData$nodes$id, "<br />", "multiplier: ", nData$nodes$multiplyCounter)
+  nData$nodes$title <- paste0(
+    "id: ", nData$nodes$id, "<br />",
+    "sequence: ", nData$nodes$sequence, "<br />",
+    "multiplier: ", nData$nodes$multiply_counter
+  )
   # hide label
   nData$nodes$label <- NA
   # apply communities onto vis graph groups
@@ -119,14 +125,11 @@ plot_graph <- function(weighted_graph, edge_threshold=4, community_threshold=1, 
   nData$nodes$color <- community_colors
   # for https://github.com/snaketron/BcellNet/issues/10 entry point
   # default size of vis network is 25 so min is set to that size and the others are sized relative to that
-  # maxMult <- max(nData$nodes$multiplyCounter)
-  if (is.null(nData$nodes$multiplyCounter)) {
-    nData$nodes$multiplyCounter <- 1
+  if (is.null(nData$nodes$multiply_counter)) {
+    nData$nodes$multiply_counter <- 1
   }
-  minMult <- min(nData$nodes$multiplyCounter)
-  maxMult <- max(nData$nodes$multiplyCounter)
-  # cat("min mult: ", minMult, ", max mult: ", maxMult, "\n")
-  # print(nData$nodes$multiplyCounter)
+  minMult <- min(nData$nodes$multiply_counter)
+  maxMult <- max(nData$nodes$multiply_counter)
   
   # special case because else we devide through 0
   if (minMult == maxMult) {

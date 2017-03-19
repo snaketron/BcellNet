@@ -1,4 +1,5 @@
 library(igraph)
+library(reshape2)
 
 loadSource <- function(sourceName) {
   pattern <- paste("^", sourceName, "$", sep = "")
@@ -51,33 +52,48 @@ calculateDistances <- function(arrayBcr, distanceMetric = "LD", parameter = -1, 
 #' @importFrom igraph edge
 #' @importFrom igraph as.undirected
 buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax, thresholdMin, update_progress = NULL){
+  # arrayBcr is the list of all sequences without any special information
+  # we transform this into a dataframe with a node ID a name with the sequence and a multiply counter
+  startDataVertices <- Sys.time()
   
-  graph <- graph.empty()
-  #fill graph
-  #add bcrs as verticies 
-  for(i in 1:length(arrayBcr)){
-    graph <- graph + vertex(name = arrayBcr[i], multiplyCounter = multiplyCounter[[arrayBcr[i]]]) 
+  # feedback loop
+  if (is.function(update_progress)) {
+    update_progress(value = 1/3, detail="constructing vertices")
   }
-
-  # Connect them with their distance (add edges) 
+  
   array_length <- length(arrayBcr)
   for(i in 1:array_length){
-    if (is.function(update_progress)) {
-      update_progress(value = i/array_length, detail=paste0("construct graph: ", i, " of ", array_length))
-    }
+    multiply_counter <- multiplyCounter[[arrayBcr[i]]]
+  }
+  vertices <- data.frame(id=1:array_length, sequence = arrayBcr, multiply_counter = multiply_counter)
+  
+  endDataVertices <- Sys.time()
+  print(paste("Added data vertices in: ", endDataVertices - startDataVertices))
+  
 
-    if(i > 1){
-      for(j in 1:(i-1)){ 
-        weight <- distanceMatrix[i,j]
-        #cat("\n",weight, i ,j,"\n")
-        if(weight >= thresholdMin && weight <= thresholdMax){
-          graph <- graph + edge(arrayBcr[i],arrayBcr[j], weight = weight)
-        }
-      }
-    }
+  # we only want to melt the lower triangle of the distance matrix
+  # and ignore values which are below and above our thresholds
+  # the weights are put into the column "weight"
+  startDataEdges <- Sys.time()
+  
+  # feedback loop
+  if (is.function(update_progress)) {
+    update_progress(value = 2/3, detail="constructing edges")
   }
   
-  graph <- as.undirected(graph)
+  distanceMatrix[upper.tri(distanceMatrix, diag = TRUE)] <- NA
+  distanceMatrix[distanceMatrix < thresholdMin] <- NA
+  distanceMatrix[distanceMatrix > thresholdMax] <- NA
+  melted_distances <- melt(distanceMatrix, na.rm = TRUE, value.name = "weight")
+
+  endDataEdges <- Sys.time()
+  print(paste("Added data edges in: ", endDataEdges - startDataEdges))
+  
+  # feedback loop
+  if (is.function(update_progress)) {
+    update_progress(value = 1, detail="constructing graph")
+  }
+  graph <- graph_from_data_frame(d = melted_distances, directed = FALSE, vertices = vertices)
   
   return(graph)
 }
