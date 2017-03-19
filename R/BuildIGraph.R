@@ -54,7 +54,7 @@ calculateDistances <- function(arrayBcr, distanceMetric = "LD", parameter = -1, 
 buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax, thresholdMin, update_progress = NULL){
   # arrayBcr is the list of all sequences without any special information
   # we transform this into a dataframe with a node ID a name with the sequence and a multiply counter
-  startDataVertices <- Sys.time()
+  startDataVertices <- as.numeric(Sys.time())*1000
   
   # feedback loop
   if (is.function(update_progress)) {
@@ -67,14 +67,14 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax,
   }
   vertices <- data.frame(id=1:array_length, sequence = arrayBcr, multiply_counter = multiply_counter)
   
-  endDataVertices <- Sys.time()
-  print(paste("Added data vertices in: ", endDataVertices - startDataVertices))
+  endDataVertices <- as.numeric(Sys.time())*1000
+  print(paste("Added data vertices in:", endDataVertices - startDataVertices, "ms"))
   
 
   # we only want to melt the lower triangle of the distance matrix
   # and ignore values which are below and above our thresholds
   # the weights are put into the column "weight"
-  startDataEdges <- Sys.time()
+  startDataEdges <- as.numeric(Sys.time())*1000
   
   # feedback loop
   if (is.function(update_progress)) {
@@ -86,8 +86,8 @@ buildIGraph <- function(arrayBcr, distanceMatrix, multiplyCounter, thresholdMax,
   distanceMatrix[distanceMatrix > thresholdMax] <- NA
   melted_distances <- melt(distanceMatrix, na.rm = TRUE, value.name = "weight")
 
-  endDataEdges <- Sys.time()
-  print(paste("Added data edges in: ", endDataEdges - startDataEdges))
+  endDataEdges <- as.numeric(Sys.time())*1000
+  print(paste("Added data edges in:", endDataEdges - startDataEdges, "ms"))
   
   # feedback loop
   if (is.function(update_progress)) {

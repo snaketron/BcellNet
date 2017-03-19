@@ -61,7 +61,7 @@ distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2, metric = "dl", parameter = 
     }
   }
 
-  cat(q, " ", p, " ", metric, "\n")
+  print(paste("Applying distance metric with q:", q, "p:", p, "metric:", metric))
   
   matrix <- matrix(nrow = length(arrayBcr1), ncol = length(arrayBcr2))
   
@@ -72,7 +72,7 @@ distanceArrayOfBcr <- function(arrayBcr1, arrayBcr2, metric = "dl", parameter = 
   }
   
 
-  print(as.numeric(Sys.time())*1000 - time)
+  print(paste("Applied distance metric in:", as.numeric(Sys.time())*1000 - time, "ms"))
   
   return(matrix)
 }
